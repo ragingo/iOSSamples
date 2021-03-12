@@ -1,0 +1,24 @@
+name: VideoPlayer
+
+include:
+  - ./XcodeGen/specs/configs.yml
+  - ./XcodeGen/specs/schemes.yml
+  - ./XcodeGen/specs/settings.yml
+  - path: ./XcodeGen/specs/targets.yml
+    relativePaths: false
+
+attributes:
+options:
+  defaultConfig: Debug
+  deploymentTarget:
+    iOS: 13.0
+  groupSortPosition: top
+  minimumXcodeGenVersion: 2.19.0
+  settingPresets: all
+  xcodeVerson: "12.4"
+  preGenCommand: |-
+    chmod +x ./XcodeGen/scripts/xcodegen_pregen.sh
+    ./XcodeGen/scripts/xcodegen_pregen.sh
+  postGenCommand: |-
+    chmod +x ./XcodeGen/scripts/xcodegen_postgen.sh
+    ./XcodeGen/scripts/xcodegen_postgen.sh

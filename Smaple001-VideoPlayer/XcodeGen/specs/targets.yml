@@ -1,0 +1,12 @@
+targets:
+  App:
+    platform: iOS
+    settings:
+      configs:
+        Debug:
+          PRODUCT_BUNDLE_IDENTIFIER: com.ragingo.ios-samples.sample001-videoplayer.dev
+        Release:
+          PRODUCT_BUNDLE_IDENTIFIER: com.ragingo.ios-samples.sample001-videoplayer
+    sources:
+      - path: App
+    type: application

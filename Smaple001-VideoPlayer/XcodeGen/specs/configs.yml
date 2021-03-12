@@ -1,0 +1,3 @@
+configs:
+  Debug: debug
+  Release: release
