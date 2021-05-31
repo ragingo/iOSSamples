@@ -16,9 +16,5 @@ options:
   minimumXcodeGenVersion: 2.19.0
   settingPresets: all
   xcodeVerson: "12.4"
-  preGenCommand: |-
-    chmod +x ./XcodeGen/scripts/xcodegen_pregen.sh
-    ./XcodeGen/scripts/xcodegen_pregen.sh
-  postGenCommand: |-
-    chmod +x ./XcodeGen/scripts/xcodegen_postgen.sh
-    ./XcodeGen/scripts/xcodegen_postgen.sh
+  preGenCommand: ./XcodeGen/scripts/xcodegen_pregen.sh
+  postGenCommand: ./XcodeGen/scripts/xcodegen_postgen.sh
