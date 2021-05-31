@@ -13,8 +13,8 @@ options:
   deploymentTarget:
     iOS: 13.0
   groupSortPosition: top
-  minimumXcodeGenVersion: 2.19.0
+  minimumXcodeGenVersion: 2.23.1
   settingPresets: all
-  xcodeVerson: "12.4"
+  xcodeVerson: "12.5"
   preGenCommand: ./XcodeGen/scripts/xcodegen_pregen.sh
   postGenCommand: ./XcodeGen/scripts/xcodegen_postgen.sh
