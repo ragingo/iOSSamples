@@ -11,7 +11,7 @@ attributes:
 options:
   defaultConfig: Debug
   deploymentTarget:
-    iOS: 13.0
+    iOS: 14.0
   groupSortPosition: top
   minimumXcodeGenVersion: 2.23.1
   settingPresets: all
