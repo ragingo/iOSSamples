@@ -1,6 +1,10 @@
 targets:
   App:
     platform: iOS
+    prebuildScripts:
+      - name: SwiftLint
+        path: ./XcodeGen/scripts/swiftlint.sh
+        runOnlyWhenInstalling: false
     settings:
       configs:
         Debug:
