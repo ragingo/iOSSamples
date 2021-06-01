@@ -1,0 +1,7 @@
+.DS_Store
+*.xcodeproj
+*.xcworkspace/xcuserdata/*
+.xcodegen
+
+# https://github.com/realm/SwiftLint#using-cocoapods
+Pods/SwiftLint
