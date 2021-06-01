@@ -1,2 +1,5 @@
 *.xcodeproj
 .xcodegen
+
+# https://github.com/realm/SwiftLint#using-cocoapods
+Pods/SwiftLint
