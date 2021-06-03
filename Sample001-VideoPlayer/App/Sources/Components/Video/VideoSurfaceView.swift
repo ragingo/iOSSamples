@@ -10,11 +10,7 @@ import SwiftUI
 
 // 映像部分の View
 struct VideoSurfaceView: UIViewRepresentable {
-    private let player: AVPlayer
-
-    init(player: AVPlayer) {
-        self.player = player
-    }
+    let player: AVPlayer
 
     func makeUIView(context: Context) -> UIView {
         VideoSurfaceUIView(player: player, frame: .zero)

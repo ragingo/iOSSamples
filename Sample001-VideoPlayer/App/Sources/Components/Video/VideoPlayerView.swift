@@ -15,7 +15,9 @@ struct VideoPlayerView: View {
     var body: some View {
         VStack {
             VideoSurfaceView(player: player)
-            VideoControllerView(player: player)
+            VideoControllerView(position: .constant(.zero), player: player)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
         }
         .onAppear {
             initialiseAudio()
