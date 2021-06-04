@@ -9,7 +9,7 @@ import Foundation
 import AVFoundation
 import Combine
 
-class VideoPlayer {
+class VideoPlayer: VideoPlayerProtocol {
     private static let assetLoadKeys = [
         #keyPath(AVAsset.isPlayable)
     ]

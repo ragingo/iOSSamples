@@ -12,7 +12,7 @@ struct VideoControllerView: View {
     @State private var duration: Double
     @State private var position: Double
     @State private var isPlaying: Bool
-    let player: VideoPlayer
+    private let player: VideoPlayerProtocol
 
     var body: some View {
         VStack {
@@ -37,7 +37,7 @@ struct VideoControllerView: View {
         }
     }
 
-    init(player: VideoPlayer) {
+    init(player: VideoPlayerProtocol) {
         self.duration = .zero
         self.position = .zero
         self.isPlaying = false

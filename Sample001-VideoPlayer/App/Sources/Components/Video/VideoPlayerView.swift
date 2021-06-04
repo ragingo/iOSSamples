@@ -9,7 +9,11 @@ import SwiftUI
 
 // プレーヤ
 struct VideoPlayerView: View {
-    private let player = VideoPlayer()
+    private let player: VideoPlayerProtocol
+
+    init(player: VideoPlayerProtocol = VideoPlayer()) {
+        self.player = player
+    }
 
     var body: some View {
         VStack {
