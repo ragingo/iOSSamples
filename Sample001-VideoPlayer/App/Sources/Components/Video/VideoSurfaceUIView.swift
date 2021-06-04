@@ -5,24 +5,19 @@
 //  Created by ragingo on 2021/06/03.
 //
 
-import AVFoundation
 import UIKit
 
-// AVPlayerLayer をラップした UIView 派生クラス
-// SwiftUI と繋ぐために作った
 final class VideoSurfaceUIView: UIView {
-    private let playerLayer: AVPlayerLayer = AVPlayerLayer()
-    private let player: AVPlayer
+    private let playerLayer: CALayer
 
     required init?(coder: NSCoder) {
         fatalError("not implemented")
     }
 
-    init(player: AVPlayer, frame: CGRect) {
-        self.player = player
+    init(playerLayer: CALayer, frame: CGRect) {
+        self.playerLayer = playerLayer
         super.init(frame: frame)
 
-        playerLayer.player = player
         layer.addSublayer(playerLayer)
     }
 

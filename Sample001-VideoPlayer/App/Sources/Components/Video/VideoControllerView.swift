@@ -5,19 +5,26 @@
 //  Created by ragingo on 2021/06/03.
 //
 
-import AVFoundation
 import SwiftUI
 
 // プレーヤーコントローラ
 struct VideoControllerView: View {
-    @Binding private(set) var position: Double
-    @State private var isPlaying: Bool = false
-    let player: AVPlayer
+    @State private var duration: Double
+    @State private var position: Double
+    @State private var isPlaying: Bool
+    let player: VideoPlayer
 
     var body: some View {
         VStack {
             HStack {
-                Slider(value: $position, onEditingChanged: onSliderEditingChanged)
+                Slider(
+                    value: $position,
+                    in: 0...1,
+                    onEditingChanged: onSliderEditingChanged,
+                    minimumValueLabel: Text("\(position, specifier: "%.2f")"),
+                    maximumValueLabel: Text("\(duration, specifier: "%.0f")"),
+                    label: { EmptyView() }
+                )
             }
             HStack {
                 Button(action: onPlayButtonClicked, label: {
@@ -25,6 +32,16 @@ struct VideoControllerView: View {
                 })
             }
         }
+        .onReceive(player.durationSubject) { duration in
+            self.duration = duration
+        }
+    }
+
+    init(player: VideoPlayer) {
+        self.duration = .zero
+        self.position = .zero
+        self.isPlaying = false
+        self.player = player
     }
 
     private func onSliderEditingChanged(isEditing: Bool) {
@@ -32,7 +49,6 @@ struct VideoControllerView: View {
             pause()
             return
         }
-
         play()
     }
 
@@ -47,7 +63,7 @@ struct VideoControllerView: View {
     }
 
     private func onPlayButtonClicked() {
-        if player.timeControlStatus == .playing || player.timeControlStatus == .waitingToPlayAtSpecifiedRate {
+        if player.isPlaying {
             pause()
         } else {
             play()
