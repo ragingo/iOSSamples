@@ -21,7 +21,7 @@ struct VideoControllerView: View {
                     value: $position,
                     in: 0...1,
                     onEditingChanged: onSliderEditingChanged,
-                    minimumValueLabel: Text("\(position, specifier: "%.2f")"),
+                    minimumValueLabel: Text("\(duration * position, specifier: "%.0f")"),
                     maximumValueLabel: Text("\(duration, specifier: "%.0f")"),
                     label: { EmptyView() }
                 )
@@ -53,7 +53,9 @@ struct VideoControllerView: View {
             pause()
             return
         }
-        play()
+        player.seek(seconds: duration * position) {
+            play()
+        }
     }
 
     private func play() {

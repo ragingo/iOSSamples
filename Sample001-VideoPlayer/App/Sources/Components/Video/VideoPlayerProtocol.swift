@@ -20,4 +20,5 @@ protocol VideoPlayerProtocol: AnyObject {
     func open(urlString: String)
     func play()
     func pause()
+    func seek(seconds: Double, completion: @escaping (() -> Void))
 }

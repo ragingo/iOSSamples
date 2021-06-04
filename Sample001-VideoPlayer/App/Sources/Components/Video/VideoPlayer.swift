@@ -85,6 +85,15 @@ class VideoPlayer: VideoPlayerProtocol {
         player.pause()
     }
 
+    func seek(seconds: Double, completion: @escaping (() -> Void)) {
+        player.seek(to: CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))) { isFinished in
+            if !isFinished {
+                return
+            }
+            completion()
+        }
+    }
+
     // AVURLAsset.loadValuesAsynchronously 完了時
     private func onAssetLoaded(_ asset: AVURLAsset) {
         for key in Self.assetLoadKeys {
