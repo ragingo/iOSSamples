@@ -35,6 +35,10 @@ struct VideoControllerView: View {
         .onReceive(player.durationSubject) { duration in
             self.duration = duration
         }
+        .onReceive(player.positionSubject) { position in
+            // 再生位置(%) = 再生位置(秒) / 動画長(秒)
+            self.position = position / self.duration
+        }
     }
 
     init(player: VideoPlayerProtocol) {

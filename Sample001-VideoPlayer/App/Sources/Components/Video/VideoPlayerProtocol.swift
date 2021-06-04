@@ -14,6 +14,7 @@ protocol VideoPlayerProtocol: AnyObject {
     var isPlaying: Bool { get }
     var isBuffering: Bool { get }
     var durationSubject: PassthroughSubject<Double, Never> { get }
+    var positionSubject: PassthroughSubject<Double, Never> { get }
 
     func prepare()
     func open(urlString: String)

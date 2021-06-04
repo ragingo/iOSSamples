@@ -17,6 +17,7 @@ class VideoPlayer: VideoPlayerProtocol {
     private let playerLayer = AVPlayerLayer()
     private let player = AVPlayer()
     private var durationObservation: NSKeyValueObservation?
+    private var timeObserver: Any?
 
     var layer: CALayer {
         playerLayer
@@ -35,9 +36,13 @@ class VideoPlayer: VideoPlayerProtocol {
     // 動画長(単位：秒)
     var durationSubject: PassthroughSubject<Double, Never>
 
+    // 再生位置(単位：秒)
+    var positionSubject: PassthroughSubject<Double, Never>
+
     init() {
         playerLayer.player = player
         durationSubject = .init()
+        positionSubject = .init()
     }
 
     deinit {
@@ -51,6 +56,11 @@ class VideoPlayer: VideoPlayerProtocol {
     func invalidate() {
         durationObservation?.invalidate()
         durationObservation = nil
+
+        if let observer = timeObserver {
+            player.removeTimeObserver(observer)
+            timeObserver = nil
+        }
     }
 
     func open(urlString: String) {
@@ -99,6 +109,13 @@ class VideoPlayer: VideoPlayerProtocol {
         durationObservation = player.currentItem?.observe(\.duration) { [weak self] item, _ in
             guard let self = self else { return }
             self.durationSubject.send(item.duration.seconds)
+        }
+
+        // 指定秒数の間隔で再生位置を通知
+        let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
+            guard let self = self else { return }
+            self.positionSubject.send(time.seconds)
         }
     }
 
