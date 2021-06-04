@@ -9,20 +9,33 @@ import SwiftUI
 
 // プレーヤーコントローラ
 struct VideoControllerView: View {
+    // スライダ用 (0.0 - 1.0)
+    @State private var sliderValue: Double
+    // 動画長表示用 (秒)
     @State private var duration: Double
+    // 再生位置表示用 (秒)
     @State private var position: Double
     @State private var isPlaying: Bool
+    @State private var isSeeking = false
     private let player: VideoPlayerProtocol
+
+    private var sliderMinimumValueLabel: Text {
+        Text("\(isSeeking ? sliderValue * duration : position, specifier: "%.0f")")
+    }
+
+    private var sliderMaximumValueLabel: Text {
+        Text("\(duration, specifier: "%.0f")")
+    }
 
     var body: some View {
         VStack {
             HStack {
                 Slider(
-                    value: $position,
+                    value: $sliderValue,
                     in: 0...1,
                     onEditingChanged: onSliderEditingChanged,
-                    minimumValueLabel: Text("\(duration * position, specifier: "%.0f")"),
-                    maximumValueLabel: Text("\(duration, specifier: "%.0f")"),
+                    minimumValueLabel: sliderMinimumValueLabel,
+                    maximumValueLabel: sliderMaximumValueLabel,
                     label: { EmptyView() }
                 )
             }
@@ -36,12 +49,14 @@ struct VideoControllerView: View {
             self.duration = duration
         }
         .onReceive(player.positionSubject) { position in
-            // 再生位置(%) = 再生位置(秒) / 動画長(秒)
-            self.position = position / self.duration
+            self.position = position
+            // スライダつまみ位置 = 再生位置(秒) / 動画長(秒)
+            self.sliderValue = position / self.duration
         }
     }
 
     init(player: VideoPlayerProtocol) {
+        self.sliderValue = .zero
         self.duration = .zero
         self.position = .zero
         self.isPlaying = false
@@ -50,10 +65,13 @@ struct VideoControllerView: View {
 
     private func onSliderEditingChanged(isEditing: Bool) {
         if isEditing {
+            isSeeking = true
             pause()
             return
         }
-        player.seek(seconds: duration * position) {
+        isSeeking = false
+        position = duration * sliderValue
+        player.seek(seconds: position) {
             play()
         }
     }
