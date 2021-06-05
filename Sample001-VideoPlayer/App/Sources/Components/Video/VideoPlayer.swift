@@ -132,7 +132,7 @@ class VideoPlayer: VideoPlayerProtocol {
     private func initialiseAudio() {
         let audioSession = AVAudioSession.sharedInstance()
         do {
-            try audioSession.setCategory(.playback)
+            try audioSession.setCategory(.playback, mode: .moviePlayback)
             try audioSession.setActive(true)
         } catch {
             print(error)

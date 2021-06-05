@@ -29,25 +29,21 @@ struct VideoControllerView: View {
     @State private var isSeeking = false
     private let player: VideoPlayerProtocol
 
-    private var sliderMinimumValueLabel: Text {
+    private var positionLabel: Text {
         Text(formatTime(seconds: Int(isSeeking ? sliderValue * duration : position)))
     }
 
-    private var sliderMaximumValueLabel: Text {
+    private var durationLabel: Text {
         Text(formatTime(seconds: Int(duration)))
     }
 
     var body: some View {
         VStack {
+            Slider(value: $sliderValue, onEditingChanged: onSliderEditingChanged)
             HStack {
-                Slider(
-                    value: $sliderValue,
-                    in: 0...1,
-                    onEditingChanged: onSliderEditingChanged,
-                    minimumValueLabel: sliderMinimumValueLabel,
-                    maximumValueLabel: sliderMaximumValueLabel,
-                    label: { EmptyView() }
-                )
+                positionLabel
+                Spacer()
+                durationLabel
             }
             HStack {
                 Button(action: onPlayButtonClicked, label: {
