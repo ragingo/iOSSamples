@@ -7,6 +7,16 @@
 
 import SwiftUI
 
+let secondsPerHour = 3600
+let secondsPerMinute = 60
+
+private func formatTime(seconds: Int) -> String {
+    let h = seconds / secondsPerHour
+    let m = seconds % secondsPerHour / secondsPerMinute
+    let s = seconds % secondsPerHour % secondsPerMinute
+    return String(format: "%03d:%02d:%02d", h, m, s)
+}
+
 // プレーヤーコントローラ
 struct VideoControllerView: View {
     // スライダ用 (0.0 - 1.0)
@@ -20,11 +30,11 @@ struct VideoControllerView: View {
     private let player: VideoPlayerProtocol
 
     private var sliderMinimumValueLabel: Text {
-        Text("\(isSeeking ? sliderValue * duration : position, specifier: "%.0f")")
+        Text(formatTime(seconds: Int(isSeeking ? sliderValue * duration : position)))
     }
 
     private var sliderMaximumValueLabel: Text {
-        Text("\(duration, specifier: "%.0f")")
+        Text(formatTime(seconds: Int(duration)))
     }
 
     var body: some View {
