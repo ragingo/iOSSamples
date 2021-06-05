@@ -18,12 +18,16 @@ struct VideoPlayerView: View {
     var body: some View {
         VStack {
             VideoSurfaceView(playerLayer: player.layer)
+                .padding(.horizontal, 8)
             VideoControllerView(player: player)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
         }
         .onAppear {
             player.prepare()
+        }
+        .onDisappear {
+            player.invalidate()
         }
     }
 

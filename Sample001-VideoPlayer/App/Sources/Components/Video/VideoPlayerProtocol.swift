@@ -25,6 +25,7 @@ protocol VideoPlayerProtocol: AnyObject {
     var positionSubject: PassthroughSubject<Double, Never> { get }
 
     func prepare()
+    func invalidate()
     func open(urlString: String)
     func play()
     func pause()

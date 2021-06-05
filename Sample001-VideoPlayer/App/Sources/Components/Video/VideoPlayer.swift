@@ -60,6 +60,8 @@ class VideoPlayer: VideoPlayerProtocol {
     }
 
     func invalidate() {
+        player.pause()
+
         for kvo in keyValueObservations {
             kvo?.invalidate()
         }
@@ -69,11 +71,12 @@ class VideoPlayer: VideoPlayerProtocol {
             player.removeTimeObserver(observer)
             timeObserver = nil
         }
+
+        player.replaceCurrentItem(with: nil)
+        playerLayer.player = nil
     }
 
     func open(urlString: String) {
-        invalidate()
-
         guard let url = URL(string: urlString) else {
             return
         }
