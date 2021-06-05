@@ -54,8 +54,14 @@ struct VideoControllerView: View {
                 durationLabel
             }
             HStack {
+                Button(action: onGoBackwardButtonClicked, label: {
+                    Image(systemName: "gobackward.10")
+                })
                 Button(action: onPlayButtonClicked, label: {
                     isPlaying ? Image(systemName: "pause.fill") : Image(systemName: "play.fill")
+                })
+                Button(action: onGoForwardButtonClicked, label: {
+                    Image(systemName: "goforward.10")
                 })
                 Menu {
                     ForEach(0..<RateSteps.allCases.count) { i in
@@ -98,6 +104,8 @@ struct VideoControllerView: View {
         position = duration * sliderValue
         player.seek(seconds: position) {
             play()
+            // x1.0 に戻るから、記憶している値に戻してやる
+            onRateChanged(rate: selectedRate)
         }
     }
 
@@ -117,6 +125,14 @@ struct VideoControllerView: View {
         } else {
             play()
         }
+    }
+
+    private func onGoBackwardButtonClicked() {
+        player.seek(seconds: position - 10) {}
+    }
+
+    private func onGoForwardButtonClicked() {
+        player.seek(seconds: position + 10) {}
     }
 
     private func onRateChanged(rate: RateSteps) {
