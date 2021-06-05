@@ -34,6 +34,8 @@ struct VideoControllerView: View {
     @State private var isPlaying: Bool
     @State private var isSeeking = false
     @State private var selectedRate: RateSteps = .x1_0
+    @State private var backwardButtonRotationAngle = 0.0
+    @State private var forwardButtonRotationAngle = 0.0
 
     private let player: VideoPlayerProtocol
 
@@ -54,15 +56,26 @@ struct VideoControllerView: View {
                 durationLabel
             }
             HStack {
+                // 10秒前へ
                 Button(action: onGoBackwardButtonClicked, label: {
                     Image(systemName: "gobackward.10")
                 })
+                .rotationEffect(.degrees(backwardButtonRotationAngle))
+                .animation(.easeIn)
+
+                // 再生・一時停止
                 Button(action: onPlayButtonClicked, label: {
                     isPlaying ? Image(systemName: "pause.fill") : Image(systemName: "play.fill")
                 })
+
+                // 10秒後へ
                 Button(action: onGoForwardButtonClicked, label: {
                     Image(systemName: "goforward.10")
                 })
+                .rotationEffect(.degrees(forwardButtonRotationAngle))
+                .animation(.easeIn)
+
+                // 再生速度
                 Menu {
                     ForEach(0..<RateSteps.allCases.count) { i in
                         Button(action: {
@@ -129,10 +142,12 @@ struct VideoControllerView: View {
 
     private func onGoBackwardButtonClicked() {
         player.seek(seconds: position - 10) {}
+        backwardButtonRotationAngle -= 360.0
     }
 
     private func onGoForwardButtonClicked() {
         player.seek(seconds: position + 10) {}
+        forwardButtonRotationAngle += 360.0
     }
 
     private func onRateChanged(rate: RateSteps) {
