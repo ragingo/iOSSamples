@@ -17,6 +17,12 @@ private func formatTime(seconds: Int) -> String {
     return String(format: "%03d:%02d:%02d", h, m, s)
 }
 
+private enum RateSteps: String, CaseIterable {
+    case x1_0 = "x 1.0"
+    case x1_5 = "x 1.5"
+    case x2_0 = "x 2.0"
+}
+
 // プレーヤーコントローラ
 struct VideoControllerView: View {
     // スライダ用 (0.0 - 1.0)
@@ -27,6 +33,8 @@ struct VideoControllerView: View {
     @State private var position: Double
     @State private var isPlaying: Bool
     @State private var isSeeking = false
+    @State private var selectedRate: RateSteps = .x1_0
+
     private let player: VideoPlayerProtocol
 
     private var positionLabel: Text {
@@ -47,8 +55,19 @@ struct VideoControllerView: View {
             }
             HStack {
                 Button(action: onPlayButtonClicked, label: {
-                    isPlaying ? Text("⏸") : Text("▶️")
+                    isPlaying ? Image(systemName: "pause.fill") : Image(systemName: "play.fill")
                 })
+                Menu {
+                    ForEach(0..<RateSteps.allCases.count) { i in
+                        Button(action: {
+                            onRateChanged(rate: RateSteps.allCases[i])
+                        }, label: {
+                            Text(RateSteps.allCases[i].rawValue)
+                        })
+                    }
+                } label: {
+                    Text(selectedRate.rawValue)
+                }
             }
         }
         .onReceive(player.durationSubject) { duration in
@@ -97,6 +116,18 @@ struct VideoControllerView: View {
             pause()
         } else {
             play()
+        }
+    }
+
+    private func onRateChanged(rate: RateSteps) {
+        selectedRate = rate
+        switch rate {
+        case .x1_0:
+            player.rate = 1.0
+        case .x1_5:
+            player.rate = 1.5
+        case .x2_0:
+            player.rate = 2.0
         }
     }
 }

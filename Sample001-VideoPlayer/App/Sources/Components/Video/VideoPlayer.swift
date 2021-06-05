@@ -33,6 +33,12 @@ class VideoPlayer: VideoPlayerProtocol {
         player.timeControlStatus == .waitingToPlayAtSpecifiedRate
     }
 
+    // 再生速度
+    var rate: Float {
+        get { player.rate }
+        set { player.rate = newValue }
+    }
+
     // 動画長(単位：秒)
     var durationSubject: PassthroughSubject<Double, Never>
 
@@ -106,26 +112,25 @@ class VideoPlayer: VideoPlayerProtocol {
 
         var error: NSError?
         let status = asset.statusOfValue(forKey: #keyPath(AVAsset.isPlayable), error: &error)
-        switch status {
-        case .loaded:
-            let playerItem = AVPlayerItem(asset: asset)
-            player.replaceCurrentItem(with: playerItem)
-        default:
-            return
-        }
+        assert(status == .loaded)
+
+        let playerItem = AVPlayerItem(asset: asset)
+        player.replaceCurrentItem(with: playerItem)
 
         // duration の監視
-        durationObservation = player.currentItem?.observe(\.duration) { [weak self] item, _ in
-            guard let self = self else { return }
-            self.durationSubject.send(item.duration.seconds)
-        }
+        durationObservation = player.currentItem?.observe(\.duration, changeHandler: onDurationChanged)
 
         // 指定秒数の間隔で再生位置を通知
         let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-        timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-            guard let self = self else { return }
-            self.positionSubject.send(time.seconds)
-        }
+        timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main, using: onTimeObserverCall)
+    }
+
+    private func onDurationChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<CMTime>) {
+        durationSubject.send(item.duration.seconds)
+    }
+
+    private func onTimeObserverCall(time: CMTime) {
+        positionSubject.send(time.seconds)
     }
 
     // 音声関連の初期化

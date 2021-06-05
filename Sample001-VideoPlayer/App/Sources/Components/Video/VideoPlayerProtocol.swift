@@ -13,6 +13,7 @@ protocol VideoPlayerProtocol: AnyObject {
     var layer: CALayer { get }
     var isPlaying: Bool { get }
     var isBuffering: Bool { get }
+    var rate: Float { get set }
     var durationSubject: PassthroughSubject<Double, Never> { get }
     var positionSubject: PassthroughSubject<Double, Never> { get }
 
