@@ -91,6 +91,11 @@ struct VideoControllerView: View {
                 }
             }
         }
+        .onReceive(player.statusSubject) { status in
+            if status == .readyToPlay {
+                play()
+            }
+        }
         .onReceive(player.durationSubject) { duration in
             self.duration = duration
         }

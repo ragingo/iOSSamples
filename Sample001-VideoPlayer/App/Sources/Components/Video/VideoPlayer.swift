@@ -16,7 +16,7 @@ class VideoPlayer: VideoPlayerProtocol {
 
     private let playerLayer = AVPlayerLayer()
     private let player = AVPlayer()
-    private var durationObservation: NSKeyValueObservation?
+    private var keyValueObservations: [NSKeyValueObservation?] = []
     private var timeObserver: Any?
 
     var layer: CALayer {
@@ -39,16 +39,16 @@ class VideoPlayer: VideoPlayerProtocol {
         set { player.rate = newValue }
     }
 
+    var statusSubject = PassthroughSubject<VideoLoadStatus, Never>()
+
     // 動画長(単位：秒)
-    var durationSubject: PassthroughSubject<Double, Never>
+    var durationSubject = PassthroughSubject<Double, Never>()
 
     // 再生位置(単位：秒)
-    var positionSubject: PassthroughSubject<Double, Never>
+    var positionSubject = PassthroughSubject<Double, Never>()
 
     init() {
         playerLayer.player = player
-        durationSubject = .init()
-        positionSubject = .init()
     }
 
     deinit {
@@ -60,8 +60,10 @@ class VideoPlayer: VideoPlayerProtocol {
     }
 
     func invalidate() {
-        durationObservation?.invalidate()
-        durationObservation = nil
+        for kvo in keyValueObservations {
+            kvo?.invalidate()
+        }
+        keyValueObservations.removeAll()
 
         if let observer = timeObserver {
             player.removeTimeObserver(observer)
@@ -118,11 +120,25 @@ class VideoPlayer: VideoPlayerProtocol {
         player.replaceCurrentItem(with: playerItem)
 
         // duration の監視
-        durationObservation = player.currentItem?.observe(\.duration, changeHandler: onDurationChanged)
+        keyValueObservations += [player.currentItem?.observe(\.status, changeHandler: onStatusChanged)]
+        keyValueObservations += [player.currentItem?.observe(\.duration, changeHandler: onDurationChanged)]
 
         // 指定秒数の間隔で再生位置を通知
         let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main, using: onTimeObserverCall)
+    }
+
+    private func onStatusChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<AVPlayerItem.Status>) {
+        switch item.status {
+        case .readyToPlay:
+            statusSubject.send(.readyToPlay)
+        case .unknown:
+            statusSubject.send(.unknown)
+        case .failed:
+            statusSubject.send(.failed)
+        @unknown default:
+            fatalError()
+        }
     }
 
     private func onDurationChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<CMTime>) {
