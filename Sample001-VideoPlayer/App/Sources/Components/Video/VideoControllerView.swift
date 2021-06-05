@@ -17,7 +17,9 @@ private func formatTime(seconds: Int) -> String {
     return String(format: "%03d:%02d:%02d", h, m, s)
 }
 
-private enum RateSteps: String, CaseIterable {
+private enum RateSteps: String, CaseIterable, Identifiable {
+    var id: RateSteps { self }
+
     case x1_0 = "x 1.0"
     case x1_5 = "x 1.5"
     case x2_0 = "x 2.0"
@@ -77,11 +79,11 @@ struct VideoControllerView: View {
 
                 // 再生速度
                 Menu {
-                    ForEach(0..<RateSteps.allCases.count) { i in
+                    ForEach(RateSteps.allCases) { rate in
                         Button(action: {
-                            onRateChanged(rate: RateSteps.allCases[i])
+                            onRateChanged(rate: rate)
                         }, label: {
-                            Text(RateSteps.allCases[i].rawValue)
+                            Text(rate.rawValue)
                         })
                     }
                 } label: {
