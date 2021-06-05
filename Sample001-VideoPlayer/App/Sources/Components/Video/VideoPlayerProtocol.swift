@@ -1,5 +1,5 @@
 //
-//  VideoPlayer.swift
+//  VideoPlayerProtocol.swift
 //  App
 //
 //  Created by ragingo on 2021/06/04.
