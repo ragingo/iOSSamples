@@ -28,21 +28,23 @@ private enum RateSteps: String, CaseIterable, Identifiable {
 // プレーヤーコントローラ
 struct VideoControllerView: View {
     // スライダ用 (0.0 - 1.0)
-    @State private var sliderValue: Double
+    @State private var sliderValue = 0.0
     // 動画長表示用 (秒)
-    @State private var duration: Double
+    @State private var duration = 0.0
     // 再生位置表示用 (秒)
-    @State private var position: Double
-    @State private var isPlaying: Bool
+    @State private var position = 0.0
+    @State private var isPlaying = false
     @State private var isSeeking = false
+    @State private var isSliderEditing = false
     @State private var selectedRate: RateSteps = .x1_0
     @State private var backwardButtonRotationAngle = 0.0
     @State private var forwardButtonRotationAngle = 0.0
+    private var thumbnailPreviewPosition: Binding<Double>
 
     private let player: VideoPlayerProtocol
 
     private var positionLabel: Text {
-        Text(formatTime(seconds: Int(isSeeking ? sliderValue * duration : position)))
+        Text(formatTime(seconds: Int(isSliderEditing ? sliderValue * duration : position)))
     }
 
     private var durationLabel: Text {
@@ -52,6 +54,12 @@ struct VideoControllerView: View {
     var body: some View {
         VStack {
             Slider(value: $sliderValue, onEditingChanged: onSliderEditingChanged)
+                .onChange(of: $sliderValue.wrappedValue) { _ in
+                    if !isSliderEditing {
+                        return
+                    }
+                    thumbnailPreviewPosition.wrappedValue = duration * sliderValue
+                }
             HStack {
                 positionLabel
                 Spacer()
@@ -104,29 +112,34 @@ struct VideoControllerView: View {
             // スライダつまみ位置 = 再生位置(秒) / 動画長(秒)
             self.sliderValue = position / self.duration
         }
+        .onReceive(player.isSeekingSubject) { isSeeking in
+            self.isSeeking = isSeeking
+            if !isSeeking {
+                play()
+                // x1.0 に戻るから、記憶している値に戻してやる
+                onRateChanged(rate: selectedRate)
+            }
+        }
     }
 
-    init(player: VideoPlayerProtocol) {
-        self.sliderValue = .zero
-        self.duration = .zero
-        self.position = .zero
-        self.isPlaying = false
+    init(player: VideoPlayerProtocol, thumbnailPreviewPosition: Binding<Double>) {
         self.player = player
+        self.thumbnailPreviewPosition = thumbnailPreviewPosition
     }
 
     private func onSliderEditingChanged(isEditing: Bool) {
         if isEditing {
-            isSeeking = true
+            isSliderEditing = true
             pause()
             return
         }
-        isSeeking = false
+
+        isSliderEditing = false
         position = duration * sliderValue
-        player.seek(seconds: position) {
-            play()
-            // x1.0 に戻るから、記憶している値に戻してやる
-            onRateChanged(rate: selectedRate)
-        }
+        player.seek(seconds: position)
+
+        player.cancelImageGenerationRequests()
+        thumbnailPreviewPosition.wrappedValue = .nan
     }
 
     private func play() {
@@ -148,12 +161,12 @@ struct VideoControllerView: View {
     }
 
     private func onGoBackwardButtonClicked() {
-        player.seek(seconds: position - 10) {}
+        player.seek(seconds: position - 10)
         backwardButtonRotationAngle -= 360.0
     }
 
     private func onGoForwardButtonClicked() {
-        player.seek(seconds: position + 10) {}
+        player.seek(seconds: position + 10)
         forwardButtonRotationAngle += 360.0
     }
 

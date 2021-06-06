@@ -31,11 +31,15 @@ protocol VideoPlayerProtocol: AnyObject {
     var durationSubject: PassthroughSubject<Double, Never> { get }
     var positionSubject: PassthroughSubject<Double, Never> { get }
     var isPlaybackLikelyToKeepUpSubject: PassthroughSubject<Bool, Never> { get }
+    var isSeekingSubject: PassthroughSubject<Bool, Never> { get }
 
     func prepare()
     func invalidate()
     func open(urlString: String)
     func play()
     func pause()
-    func seek(seconds: Double, completion: @escaping (() -> Void))
+    func seek(seconds: Double)
+
+    func requestGenerateImage(time: Double, completion: @escaping ((CGImage) -> Void))
+    func cancelImageGenerationRequests()
 }

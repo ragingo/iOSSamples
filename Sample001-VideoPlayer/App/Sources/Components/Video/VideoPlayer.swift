@@ -50,6 +50,8 @@ class VideoPlayer: VideoPlayerProtocol {
 
     var isPlaybackLikelyToKeepUpSubject = PassthroughSubject<Bool, Never>()
 
+    var isSeekingSubject = PassthroughSubject<Bool, Never>()
+
     init() {
         playerLayer.player = player
     }
@@ -99,14 +101,41 @@ class VideoPlayer: VideoPlayerProtocol {
         player.pause()
     }
 
-    func seek(seconds: Double, completion: @escaping (() -> Void)) {
-        player.seek(to: CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))) { isFinished in
+    func seek(seconds: Double) {
+        isSeekingSubject.send(true)
+        player.seek(to: CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))) { [weak self] isFinished in
+            guard let self = self else { return }
             if !isFinished {
                 return
             }
-            completion()
+            self.isSeekingSubject.send(false)
         }
     }
+
+    // completion はメインスレッドを保証する
+    func requestGenerateImage(time: Double, completion: @escaping ((CGImage) -> Void)) {
+        var times: [NSValue] = []
+        times += [NSValue(time: CMTime(seconds: time, preferredTimescale: CMTimeScale(NSEC_PER_SEC)))]
+
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let self = self else { return }
+            guard let imageGenerator = self.imageGenerator else { return }
+            imageGenerator.requestedTimeToleranceBefore = .zero
+            imageGenerator.requestedTimeToleranceAfter = .zero
+            imageGenerator.generateCGImagesAsynchronously(forTimes: times) { (_, image, _, _, _) in
+                guard let image = image else { return }
+                DispatchQueue.main.async {
+                    completion(image)
+                }
+            }
+        }
+    }
+
+    func cancelImageGenerationRequests() {
+        imageGenerator?.cancelAllCGImageGeneration()
+    }
+
+    private var imageGenerator: AVAssetImageGenerator?
 
     // AVURLAsset.loadValuesAsynchronously 完了時
     private func onAssetLoaded(_ asset: AVURLAsset) {
@@ -124,6 +153,8 @@ class VideoPlayer: VideoPlayerProtocol {
 
         let playerItem = AVPlayerItem(asset: asset)
         player.replaceCurrentItem(with: playerItem)
+
+        imageGenerator = AVAssetImageGenerator(asset: asset)
 
         // AVPlayerItem のプロパティの監視
         keyValueObservations += [player.currentItem?.observe(\.status, changeHandler: onStatusChanged)]

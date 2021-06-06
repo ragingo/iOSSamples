@@ -13,6 +13,8 @@ struct VideoPlayerView: View {
     private let player: VideoPlayerProtocol
     @State private var isReady = false
     @State private var isBuffering = false
+    @State private var seekThumbnail: Image?
+    @State private var thumbnailPreviewPosition: Double = .nan
 
     init(player: VideoPlayerProtocol = VideoPlayer()) {
         self.player = player
@@ -23,12 +25,32 @@ struct VideoPlayerView: View {
             VStack {
                 VideoSurfaceView(playerLayer: player.layer)
                     .padding(.horizontal, 8)
-                VideoControllerView(player: player)
+                VideoControllerView(player: player, thumbnailPreviewPosition: $thumbnailPreviewPosition)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
+                    .onChange(of: $thumbnailPreviewPosition.wrappedValue) { value in
+                        if value.isNaN {
+                            seekThumbnail = nil
+                            return
+                        }
+                        player.requestGenerateImage(time: floor(value)) { cgImage in
+                            seekThumbnail = Image(uiImage: UIImage(cgImage: cgImage))
+                        }
+
+                    }
             }
             if !isReady || isBuffering {
                 ProgressView()
+            }
+            HStack(alignment: .center, spacing: nil) {
+                // TODO: 適当に表示しているのを直す
+                if let seekThumbnail = seekThumbnail {
+                    seekThumbnail
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 300, height: 300, alignment: .center)
+                        .fixedSize()
+                }
             }
         }
         .onAppear {
