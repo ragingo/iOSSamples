@@ -11,6 +11,7 @@ import SwiftUI
 struct VideoPlayerView: View {
     private let player: VideoPlayerProtocol
     @State private var isReady = false
+    @State private var isBuffering = false
 
     init(player: VideoPlayerProtocol = VideoPlayer()) {
         self.player = player
@@ -25,7 +26,7 @@ struct VideoPlayerView: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
             }
-            if !isReady {
+            if !isReady || isBuffering {
                 ProgressView()
             }
         }
@@ -35,10 +36,16 @@ struct VideoPlayerView: View {
         .onDisappear {
             player.invalidate()
         }
-        .onReceive(player.statusSubject) { status in
+        .onReceive(player.loadStatusSubject) { status in
             if status == .readyToPlay {
                 isReady = true
             }
+        }
+        .onReceive(player.playStatusSubject) { status in
+            isBuffering = status == .buffering
+        }
+        .onReceive(player.isPlaybackLikelyToKeepUpSubject) { value in
+            isBuffering = !value
         }
     }
 

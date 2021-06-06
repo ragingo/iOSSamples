@@ -91,7 +91,7 @@ struct VideoControllerView: View {
                 }
             }
         }
-        .onReceive(player.statusSubject) { status in
+        .onReceive(player.loadStatusSubject) { status in
             if status == .readyToPlay {
                 play()
             }

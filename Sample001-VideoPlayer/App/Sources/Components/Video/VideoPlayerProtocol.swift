@@ -15,14 +15,22 @@ enum VideoLoadStatus {
     case failed
 }
 
+enum VideoPlayStatus {
+    case paused
+    case buffering
+    case playing
+}
+
 protocol VideoPlayerProtocol: AnyObject {
     var layer: CALayer { get }
     var isPlaying: Bool { get }
     var isBuffering: Bool { get }
     var rate: Float { get set }
-    var statusSubject: PassthroughSubject<VideoLoadStatus, Never> { get }
+    var loadStatusSubject: PassthroughSubject<VideoLoadStatus, Never> { get }
+    var playStatusSubject: PassthroughSubject<VideoPlayStatus, Never> { get }
     var durationSubject: PassthroughSubject<Double, Never> { get }
     var positionSubject: PassthroughSubject<Double, Never> { get }
+    var isPlaybackLikelyToKeepUpSubject: PassthroughSubject<Bool, Never> { get }
 
     func prepare()
     func invalidate()

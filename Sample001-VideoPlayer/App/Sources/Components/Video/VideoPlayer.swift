@@ -39,13 +39,16 @@ class VideoPlayer: VideoPlayerProtocol {
         set { player.rate = newValue }
     }
 
-    var statusSubject = PassthroughSubject<VideoLoadStatus, Never>()
+    var loadStatusSubject = PassthroughSubject<VideoLoadStatus, Never>()
+    var playStatusSubject = PassthroughSubject<VideoPlayStatus, Never>()
 
     // 動画長(単位：秒)
     var durationSubject = PassthroughSubject<Double, Never>()
 
     // 再生位置(単位：秒)
     var positionSubject = PassthroughSubject<Double, Never>()
+
+    var isPlaybackLikelyToKeepUpSubject = PassthroughSubject<Bool, Never>()
 
     init() {
         playerLayer.player = player
@@ -122,9 +125,13 @@ class VideoPlayer: VideoPlayerProtocol {
         let playerItem = AVPlayerItem(asset: asset)
         player.replaceCurrentItem(with: playerItem)
 
-        // duration の監視
+        // AVPlayerItem のプロパティの監視
         keyValueObservations += [player.currentItem?.observe(\.status, changeHandler: onStatusChanged)]
         keyValueObservations += [player.currentItem?.observe(\.duration, changeHandler: onDurationChanged)]
+        keyValueObservations += [player.currentItem?.observe(\.isPlaybackLikelyToKeepUp, changeHandler: onPlaybackLikelyToKeepUpChanged)]
+
+        // AVPlayer のプロパティの監視
+        keyValueObservations += [player.observe(\.timeControlStatus, changeHandler: onTimeControlStatusChanged)]
 
         // 指定秒数の間隔で再生位置を通知
         let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
@@ -134,11 +141,11 @@ class VideoPlayer: VideoPlayerProtocol {
     private func onStatusChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<AVPlayerItem.Status>) {
         switch item.status {
         case .readyToPlay:
-            statusSubject.send(.readyToPlay)
+            loadStatusSubject.send(.readyToPlay)
         case .unknown:
-            statusSubject.send(.unknown)
+            loadStatusSubject.send(.unknown)
         case .failed:
-            statusSubject.send(.failed)
+            loadStatusSubject.send(.failed)
         @unknown default:
             fatalError()
         }
@@ -146,6 +153,23 @@ class VideoPlayer: VideoPlayerProtocol {
 
     private func onDurationChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<CMTime>) {
         durationSubject.send(item.duration.seconds)
+    }
+
+    private func onPlaybackLikelyToKeepUpChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<Bool>) {
+        isPlaybackLikelyToKeepUpSubject.send(item.isPlaybackLikelyToKeepUp)
+    }
+
+    private func onTimeControlStatusChanged(player: AVPlayer, value: NSKeyValueObservedChange<AVPlayer.TimeControlStatus>) {
+        switch player.timeControlStatus {
+        case .paused:
+            playStatusSubject.send(.paused)
+        case .waitingToPlayAtSpecifiedRate:
+            playStatusSubject.send(.buffering)
+        case .playing:
+            playStatusSubject.send(.playing)
+        @unknown default:
+            fatalError()
+        }
     }
 
     private func onTimeObserverCall(time: CMTime) {
