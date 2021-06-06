@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 // プレーヤ
 struct VideoPlayerView: View {
@@ -46,6 +47,18 @@ struct VideoPlayerView: View {
         }
         .onReceive(player.isPlaybackLikelyToKeepUpSubject) { value in
             isBuffering = !value
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
+            player.pause()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+            player.pause()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
+            player.play()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            player.play()
         }
     }
 
