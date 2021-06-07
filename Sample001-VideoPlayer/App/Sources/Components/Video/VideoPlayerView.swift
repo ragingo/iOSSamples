@@ -32,10 +32,9 @@ struct VideoPlayerView: View {
                             seekThumbnail = nil
                             return
                         }
-                        player.requestGenerateImage(time: floor(value)) { cgImage in
+                        player.requestGenerateImage2(time: floor(value)) { cgImage in
                             seekThumbnail = Image(uiImage: UIImage(cgImage: cgImage))
                         }
-
                     }
             }
             if !isReady || isBuffering {

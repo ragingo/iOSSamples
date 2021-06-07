@@ -43,4 +43,5 @@ protocol VideoPlayerProtocol: AnyObject {
 
     func requestGenerateImage(time: Double, completion: @escaping ((CGImage) -> Void))
     func cancelImageGenerationRequests()
+    func requestGenerateImage2(time: Double, completion: @escaping ((CGImage) -> Void))
 }
