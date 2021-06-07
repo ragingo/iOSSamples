@@ -32,6 +32,7 @@ protocol VideoPlayerProtocol: AnyObject {
     var positionSubject: PassthroughSubject<Double, Never> { get }
     var isPlaybackLikelyToKeepUpSubject: PassthroughSubject<Bool, Never> { get }
     var isSeekingSubject: PassthroughSubject<Bool, Never> { get }
+    var loadedBufferRangeSubject: PassthroughSubject<(Double, Double), Never> { get }
 
     func prepare()
     func invalidate()

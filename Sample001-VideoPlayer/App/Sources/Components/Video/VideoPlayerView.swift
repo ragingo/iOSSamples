@@ -26,8 +26,7 @@ struct VideoPlayerView: View {
                 VideoSurfaceView(playerLayer: player.layer)
                     .padding(.horizontal, 8)
                 VideoControllerView(player: player, thumbnailPreviewPosition: $thumbnailPreviewPosition)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 24)
                     .onChange(of: $thumbnailPreviewPosition.wrappedValue) { value in
                         if value.isNaN {
                             seekThumbnail = nil

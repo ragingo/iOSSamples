@@ -14,11 +14,10 @@ private let player = VideoPlayer()
 
 struct VideoControllerView_Previews: PreviewProvider {
     static var previews: some View {
-        EmptyView()
-        //        VideoControllerView(player: player)
-        //            .onAppear {
-        //                player.open(urlString: videoURL)
-        //            }
+        VideoControllerView(player: player, thumbnailPreviewPosition: .constant(0))
+            .onAppear {
+                player.open(urlString: videoURL)
+            }
     }
 }
 

@@ -33,6 +33,7 @@ struct VideoControllerView: View {
     @State private var duration = 0.0
     // 再生位置表示用 (秒)
     @State private var position = 0.0
+    @State private var loadedBufferRange = (0.0, 0.0)
     @State private var isPlaying = false
     @State private var isSeeking = false
     @State private var isSliderEditing = false
@@ -53,7 +54,7 @@ struct VideoControllerView: View {
 
     var body: some View {
         VStack {
-            Slider(value: $sliderValue, onEditingChanged: onSliderEditingChanged)
+            VideoSlider(position: $sliderValue, loadedRange: $loadedBufferRange, onThumbDragging: onSliderEditingChanged)
                 .onChange(of: $sliderValue.wrappedValue) { _ in
                     if !isSliderEditing {
                         return
@@ -99,6 +100,7 @@ struct VideoControllerView: View {
                 }
             }
         }
+        .frame(height: 100, alignment: .top)
         .onReceive(player.loadStatusSubject) { status in
             if status == .readyToPlay {
                 play()
@@ -120,6 +122,10 @@ struct VideoControllerView: View {
                 onRateChanged(rate: selectedRate)
             }
         }
+        .onReceive(player.loadedBufferRangeSubject) { value in
+            let range = (value.0 / duration, value.1 / duration)
+            loadedBufferRange = range
+        }
     }
 
     init(player: VideoPlayerProtocol, thumbnailPreviewPosition: Binding<Double>) {
@@ -127,8 +133,8 @@ struct VideoControllerView: View {
         self.thumbnailPreviewPosition = thumbnailPreviewPosition
     }
 
-    private func onSliderEditingChanged(isEditing: Bool) {
-        if isEditing {
+    private func onSliderEditingChanged(isDragging: Bool, value: Double) {
+        if isDragging {
             isSliderEditing = true
             pause()
             return

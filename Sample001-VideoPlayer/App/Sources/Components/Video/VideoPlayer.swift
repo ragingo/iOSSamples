@@ -16,6 +16,7 @@ class VideoPlayer: VideoPlayerProtocol {
 
     private let playerLayer = AVPlayerLayer()
     private let player = AVPlayer()
+    private var imageGenerator: AVAssetImageGenerator?
     private var keyValueObservations: [NSKeyValueObservation?] = []
     private var timeObserver: Any?
 
@@ -51,6 +52,7 @@ class VideoPlayer: VideoPlayerProtocol {
     var isPlaybackLikelyToKeepUpSubject = PassthroughSubject<Bool, Never>()
 
     var isSeekingSubject = PassthroughSubject<Bool, Never>()
+    var loadedBufferRangeSubject = PassthroughSubject<(Double, Double), Never>()
 
     init() {
         playerLayer.player = player
@@ -120,8 +122,6 @@ class VideoPlayer: VideoPlayerProtocol {
         DispatchQueue.global(qos: .background).async { [weak self] in
             guard let self = self else { return }
             guard let imageGenerator = self.imageGenerator else { return }
-            imageGenerator.requestedTimeToleranceBefore = .zero
-            imageGenerator.requestedTimeToleranceAfter = .zero
             imageGenerator.generateCGImagesAsynchronously(forTimes: times) { (_, image, _, _, _) in
                 guard let image = image else { return }
                 DispatchQueue.main.async {
@@ -134,8 +134,6 @@ class VideoPlayer: VideoPlayerProtocol {
     func cancelImageGenerationRequests() {
         imageGenerator?.cancelAllCGImageGeneration()
     }
-
-    private var imageGenerator: AVAssetImageGenerator?
 
     // AVURLAsset.loadValuesAsynchronously 完了時
     private func onAssetLoaded(_ asset: AVURLAsset) {
@@ -155,11 +153,14 @@ class VideoPlayer: VideoPlayerProtocol {
         player.replaceCurrentItem(with: playerItem)
 
         imageGenerator = AVAssetImageGenerator(asset: asset)
+        imageGenerator?.requestedTimeToleranceBefore = .zero
+        imageGenerator?.requestedTimeToleranceAfter = .zero
 
         // AVPlayerItem のプロパティの監視
         keyValueObservations += [player.currentItem?.observe(\.status, changeHandler: onStatusChanged)]
         keyValueObservations += [player.currentItem?.observe(\.duration, changeHandler: onDurationChanged)]
         keyValueObservations += [player.currentItem?.observe(\.isPlaybackLikelyToKeepUp, changeHandler: onPlaybackLikelyToKeepUpChanged)]
+        keyValueObservations += [player.currentItem?.observe(\.loadedTimeRanges, changeHandler: onLoadedTimeRangesChanged)]
 
         // AVPlayer のプロパティの監視
         keyValueObservations += [player.observe(\.timeControlStatus, changeHandler: onTimeControlStatusChanged)]
@@ -188,6 +189,17 @@ class VideoPlayer: VideoPlayerProtocol {
 
     private func onPlaybackLikelyToKeepUpChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<Bool>) {
         isPlaybackLikelyToKeepUpSubject.send(item.isPlaybackLikelyToKeepUp)
+    }
+
+    private func onLoadedTimeRangesChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<[NSValue]>) {
+        guard let ranges = item.loadedTimeRanges as? [CMTimeRange] else { return }
+        if ranges.isEmpty {
+            return
+        }
+        let range = ranges[0]
+        let start = floor(range.start.seconds)
+        let end = floor(range.end.seconds)
+        loadedBufferRangeSubject.send((start, end))
     }
 
     private func onTimeControlStatusChanged(player: AVPlayer, value: NSKeyValueObservedChange<AVPlayer.TimeControlStatus>) {

@@ -14,19 +14,17 @@ struct VideoSlider: View {
     @State private var baseBarWidth: CGFloat = 0
     @State private var loadedBarOffsetX: CGFloat = 0
     @State private var loadedBarWidth: CGFloat = 0
+    @State private var isDragging = false
 
-    private let onThumbDragging: (Double) -> Void
-    private let onThumbDragged: (Double) -> Void
+    private let onThumbDragging: (Bool, Double) -> Void
 
     init(position: Binding<Double> = .constant(0),
          loadedRange: Binding<(Double, Double)> = .constant((0, 0)),
-         onThumbDragging: @escaping (Double) -> Void = { _ in },
-         onThumbDragged: @escaping (Double) -> Void = { _ in }
+         onThumbDragging: @escaping (Bool, Double) -> Void = { _, _ in }
     ) {
         self.position = position
         self.loadedRange = loadedRange
         self.onThumbDragging = onThumbDragging
-        self.onThumbDragged = onThumbDragged
     }
 
     var body: some View {
@@ -50,11 +48,13 @@ struct VideoSlider: View {
                     .offset(x: baseBarWidth - 15.0) // TODO: 動的に thumb の width を取得して 1/2 にしたい
                     .gesture(DragGesture()
                                 .onChanged { value in
-                                    baseBarWidth = min(max(value.location.x, 0), proxy.size.width)
-                                    onThumbDragging(Double(value.location.x / proxy.size.width))
+                                    isDragging = true
+                                    position.wrappedValue = Double(min(max(value.location.x, 0), proxy.size.width) / proxy.size.width)
+                                    onThumbDragging(isDragging, Double(value.location.x / proxy.size.width))
                                 }
                                 .onEnded { value in
-                                    onThumbDragged(Double(value.location.x / proxy.size.width))
+                                    isDragging = false
+                                    onThumbDragging(isDragging, Double(value.location.x / proxy.size.width))
                                 }
                     )
             }
@@ -64,7 +64,22 @@ struct VideoSlider: View {
                 updateLoadedBarWidth(width: proxy.size.width)
             }
             .onChange(of: position.wrappedValue) { value in
+                if value.isNaN {
+                    return
+                }
                 updateBaseBarWidth(width: proxy.size.width, ratio: value)
+            }
+            .onChange(of: loadedRange.0.wrappedValue) { value in
+                if value.isNaN {
+                    return
+                }
+                updateLoadedBarOffsetX(width: proxy.size.width)
+            }
+            .onChange(of: loadedRange.1.wrappedValue) { value in
+                if value.isNaN {
+                    return
+                }
+                updateLoadedBarWidth(width: proxy.size.width)
             }
         }
     }
