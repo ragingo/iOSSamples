@@ -31,6 +31,7 @@ final class VideoListViewModel: ObservableObject {
         workItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
 
+            // samples: https://hls-js.netlify.app/demo/
             let videos = [
                 Video(id: 1, title: "sintel", url: "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
                 Video(id: 2, title: "bipbopall 1", url: "http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"),

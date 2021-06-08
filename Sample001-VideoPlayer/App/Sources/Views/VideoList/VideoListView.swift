@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// samples: https://hls-js.netlify.app/demo/
-
 struct VideoListView: View {
     @ObservedObject private var viewModel: VideoListViewModel
 
