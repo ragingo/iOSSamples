@@ -10,22 +10,28 @@ import SwiftUI
 // samples: https://hls-js.netlify.app/demo/
 
 struct VideoListView: View {
-    @State private var videoURLs = [
-        "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8",
-        "http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8",
-        "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8",
-        "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-        "https://test-streams.mux.dev/test_001/stream.m3u8"
-    ]
+    @ObservedObject private var viewModel: VideoListViewModel
+
+    init(viewModel: VideoListViewModel = VideoListViewModel()) {
+        self.viewModel = viewModel
+    }
 
     var body: some View {
-        NavigationView {
-            List(0..<videoURLs.count) { i in
-                NavigationLink(destination: VideoView(urlString: videoURLs[i])) {
-                    Text(videoURLs[i])
+        ZStack {
+            NavigationView {
+                List(viewModel.videos) { video in
+                    NavigationLink(destination: VideoView(urlString: video.url)) {
+                        Text(video.title)
+                    }
                 }
+                .navigationTitle("videos")
             }
-            .navigationTitle("videos")
+            if viewModel.isLoading {
+                ProgressView()
+            }
+        }
+        .onAppear {
+            viewModel.fetchItems()
         }
     }
 }
