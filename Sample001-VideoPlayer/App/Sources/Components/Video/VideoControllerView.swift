@@ -72,7 +72,7 @@ struct VideoControllerView: View {
                     Image(systemName: "gobackward.10")
                 })
                 .rotationEffect(.degrees(backwardButtonRotationAngle))
-                .animation(.easeIn)
+                .animation(.easeIn, value: backwardButtonRotationAngle)
 
                 // 再生・一時停止
                 Button(action: onPlayButtonClicked, label: {
@@ -84,7 +84,7 @@ struct VideoControllerView: View {
                     Image(systemName: "goforward.10")
                 })
                 .rotationEffect(.degrees(forwardButtonRotationAngle))
-                .animation(.easeIn)
+                .animation(.easeIn, value: forwardButtonRotationAngle)
 
                 // 再生速度
                 Menu {
