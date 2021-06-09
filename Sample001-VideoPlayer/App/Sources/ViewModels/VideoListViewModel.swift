@@ -8,11 +8,17 @@
 import Combine
 import Foundation
 
-struct Video: Identifiable {
+struct Video: Decodable, Identifiable {
     var id: Int
     var title: String
     var url: String
 }
+
+struct VideosResponse: Decodable {
+    var videos: [Video]
+}
+
+private let jsonFileURL = "https://raw.githubusercontent.com/ragingo/iOSSamples/main/Sample001-VideoPlayer/SampleData/videos.json"
 
 // VideoListView で使う ViewModel
 final class VideoListViewModel: ObservableObject {
@@ -20,20 +26,21 @@ final class VideoListViewModel: ObservableObject {
 
     @MainActor
     func fetchItems() async {
-        async {
-            // delay
-            await Task.sleep(2)
+        guard let url = URL(string: jsonFileURL) else {
+            return
+        }
 
-            // samples: https://hls-js.netlify.app/demo/
-            let videos = [
-                Video(id: 1, title: "sintel", url: "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"),
-                Video(id: 2, title: "bipbopall 1", url: "http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"),
-                Video(id: 3, title: "bipbopall 2", url: "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"),
-                Video(id: 4, title: "x36xhzz", url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"),
-                Video(id: 5, title: "test_001", url: "https://test-streams.mux.dev/test_001/stream.m3u8")
-            ]
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("sample_video_player", forHTTPHeaderField: "User-Agent")
 
-            self.videos = videos
+        do {
+            let (data, _) = try await URLSession.shared.data(for: request)
+            let decoder = JSONDecoder()
+            let response = try decoder.decode(VideosResponse.self, from: data)
+            videos = response.videos
+        } catch {
+            print(error)
         }
     }
 }
