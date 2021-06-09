@@ -8,16 +8,6 @@
 import Combine
 import Foundation
 
-struct Video: Decodable, Identifiable {
-    var id: Int
-    var title: String
-    var url: String
-}
-
-struct VideosResponse: Decodable {
-    var videos: [Video]
-}
-
 private let jsonFileURL = "https://raw.githubusercontent.com/ragingo/iOSSamples/main/Sample001-VideoPlayer/SampleData/videos.json"
 
 // VideoListView で使う ViewModel

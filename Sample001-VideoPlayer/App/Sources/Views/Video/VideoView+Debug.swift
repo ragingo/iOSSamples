@@ -9,9 +9,10 @@ import SwiftUI
 
 #if DEBUG
 
+private let video = Video(id: 1, title: "a", url: "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8")
 struct VideoView_Previews: PreviewProvider {
     static var previews: some View {
-        VideoView(urlString: "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8")
+        VideoView(video: video)
     }
 }
 

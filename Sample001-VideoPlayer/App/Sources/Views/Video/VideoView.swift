@@ -8,20 +8,21 @@
 import SwiftUI
 
 struct VideoView: View {
+    @ObservedObject private var viewModel: VideoViewModel
     @State private var videoPlayerView: VideoPlayerView?
-    private let urlString: String
 
-    init(urlString: String) {
-        self.urlString = urlString
+    init(video: Video) {
+        viewModel = VideoViewModel(video: video)
     }
 
     var body: some View {
         VStack {
+            Text(viewModel.video.title)
             videoPlayerView
         }
         .onAppear {
             videoPlayerView = VideoPlayerView()
-            videoPlayerView?.open(urlString: urlString)
+            videoPlayerView?.open(urlString: viewModel.video.url)
         }
     }
 }

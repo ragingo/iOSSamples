@@ -19,7 +19,7 @@ struct VideoListView: View {
         ZStack {
             NavigationView {
                 List(viewModel.videos) { video in
-                    NavigationLink(destination: VideoView(urlString: video.url)) {
+                    NavigationLink(destination: VideoView(video: video)) {
                         Text(video.title)
                     }
                 }
