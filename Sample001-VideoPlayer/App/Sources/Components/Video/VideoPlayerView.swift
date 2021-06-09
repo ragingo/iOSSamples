@@ -32,7 +32,7 @@ struct VideoPlayerView: View {
                             seekThumbnail = nil
                             return
                         }
-                        player.requestGenerateImage2(time: floor(value)) { cgImage in
+                        player.requestGenerateImage(time: floor(value)) { cgImage in
                             seekThumbnail = Image(uiImage: UIImage(cgImage: cgImage))
                         }
                     }
@@ -46,7 +46,7 @@ struct VideoPlayerView: View {
                     seekThumbnail
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 300, height: 300, alignment: .center)
+                        .frame(width: 200, height: 200, alignment: .center)
                         .fixedSize()
                 }
             }
