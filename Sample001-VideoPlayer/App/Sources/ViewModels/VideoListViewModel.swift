@@ -16,20 +16,13 @@ struct Video: Identifiable {
 
 // VideoListView で使う ViewModel
 final class VideoListViewModel: ObservableObject {
-    @Published private(set) var isLoading = false
     @Published private(set) var videos = [Video]()
 
-    private var workItem: DispatchWorkItem?
-
-    init() {
-    }
-
-    func fetchItems() {
-        isLoading = true
-
-        workItem?.cancel()
-        workItem = DispatchWorkItem { [weak self] in
-            guard let self = self else { return }
+    @MainActor
+    func fetchItems() async {
+        async {
+            // delay
+            await Task.sleep(2)
 
             // samples: https://hls-js.netlify.app/demo/
             let videos = [
@@ -39,11 +32,8 @@ final class VideoListViewModel: ObservableObject {
                 Video(id: 4, title: "x36xhzz", url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"),
                 Video(id: 5, title: "test_001", url: "https://test-streams.mux.dev/test_001/stream.m3u8")
             ]
+
             self.videos = videos
-
-            self.isLoading = false
         }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(3), execute: workItem!)
     }
 }

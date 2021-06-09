@@ -9,6 +9,7 @@ import SwiftUI
 
 struct VideoListView: View {
     @ObservedObject private var viewModel: VideoListViewModel
+    @State private var isLoading = false
 
     init(viewModel: VideoListViewModel = VideoListViewModel()) {
         self.viewModel = viewModel
@@ -22,14 +23,21 @@ struct VideoListView: View {
                         Text(video.title)
                     }
                 }
+                .refreshable {
+                    isLoading = true
+                    await viewModel.fetchItems()
+                    isLoading = false
+                }
                 .navigationTitle("videos")
             }
-            if viewModel.isLoading {
+            if isLoading {
                 ProgressView()
             }
         }
-        .onAppear {
-            viewModel.fetchItems()
+        .task {
+            isLoading = true
+            await viewModel.fetchItems()
+            isLoading = false
         }
     }
 }
