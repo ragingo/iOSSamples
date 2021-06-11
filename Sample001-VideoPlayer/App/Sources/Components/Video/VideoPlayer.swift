@@ -22,6 +22,7 @@ class VideoPlayer: VideoPlayerProtocol {
     private var videoOutput: AVPlayerItemVideoOutput?
     private var keyValueObservations: [NSKeyValueObservation?] = []
     private var timeObserver: Any?
+    private var generatedImageCache: [Double: CGImage] = [:]
 
     var layer: CALayer {
         playerLayer
@@ -45,17 +46,14 @@ class VideoPlayer: VideoPlayerProtocol {
 
     var loadStatusSubject = PassthroughSubject<VideoLoadStatus, Never>()
     var playStatusSubject = PassthroughSubject<VideoPlayStatus, Never>()
-
     // 動画長(単位：秒)
     var durationSubject = PassthroughSubject<Double, Never>()
-
     // 再生位置(単位：秒)
     var positionSubject = PassthroughSubject<Double, Never>()
-
     var isPlaybackLikelyToKeepUpSubject = PassthroughSubject<Bool, Never>()
-
     var isSeekingSubject = PassthroughSubject<Bool, Never>()
     var loadedBufferRangeSubject = PassthroughSubject<(Double, Double), Never>()
+    var generatedImageSubject = PassthroughSubject<(Double, CGImage), Never>()
 
     init() {
         playerLayer.player = player
@@ -120,50 +118,38 @@ class VideoPlayer: VideoPlayerProtocol {
     // completion はメインスレッドを保証する
     // HLS の場合、Iフレームのみのプレイリストというものが無い場合、 generateCGImagesAsynchronously は失敗するらしい ><
     // https://stackoverflow.com/questions/32112205/m3u8-file-avassetimagegenerator-error
-    func requestGenerateImage(time: Double, completion: @escaping ((CGImage) -> Void)) {
+    func requestGenerateImage(time: Double) {
+        if let image = generatedImageCache[time] {
+            generatedImageSubject.send((time, image))
+            return
+        }
+
         var times: [NSValue] = []
         times += [NSValue(time: CMTime(seconds: time, preferredTimescale: CMTimeScale(NSEC_PER_SEC)))]
 
-        DispatchQueue.global(qos: .background).async { [weak self] in
-            guard let self = self else { return }
-            guard let imageGenerator = self.imageGenerator else { return }
-            imageGenerator.generateCGImagesAsynchronously(forTimes: times) { (_, image, _, _, _) in
-                guard let image = image else { return }
-                DispatchQueue.main.async {
-                    completion(image)
-                }
+        guard let imageGenerator = self.imageGenerator else { return }
+
+        imageGenerator.generateCGImagesAsynchronously(forTimes: times) { (requestedTime, image, actualTime, result, error) in
+            guard error == nil else { return }
+            guard result == .succeeded else { return }
+            guard let image = image else { return }
+            let requestedSeconds = floor(requestedTime.seconds)
+            let actualSeconds = floor(actualTime.seconds)
+            if !requestedSeconds.isEqual(to: actualSeconds) {
+                return
+            }
+
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                // 雑に枚数上限無しで保持させてみる
+                self.generatedImageCache[requestedSeconds] = image
+                self.generatedImageSubject.send((requestedSeconds, image))
             }
         }
     }
 
     func cancelImageGenerationRequests() {
         imageGenerator?.cancelAllCGImageGeneration()
-    }
-
-    // TODO: 重くて使い物にならないからなんとかする。
-    func requestGenerateImage2(time: Double, completion: @escaping ((CGImage) -> Void)) {
-        print("start requestGenerateImage2(\(time))")
-        DispatchQueue.global(qos: .background).async { [weak self] in
-            guard let self = self else { return }
-            guard let output = self.videoOutput else { return }
-
-            let cmtime = CMTime(seconds: time, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-            guard let pixelBuffer = output.copyPixelBuffer(forItemTime: cmtime, itemTimeForDisplay: nil) else {
-                return
-            }
-
-            let image = CIImage(cvPixelBuffer: pixelBuffer)
-            let context = CIContext()
-            let rect = CGRect(x: 0, y: 0, width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
-            guard let imageRef = context.createCGImage(image, from: rect) else {
-                return
-            }
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500)) {
-                print("finish requestGenerateImage2(\(time))")
-                completion(imageRef)
-            }
-        }
     }
 
     // AVURLAsset.loadValuesAsynchronously 完了時

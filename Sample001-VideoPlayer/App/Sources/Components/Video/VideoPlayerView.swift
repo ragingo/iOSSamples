@@ -32,9 +32,7 @@ struct VideoPlayerView: View {
                             seekThumbnail = nil
                             return
                         }
-                        player.requestGenerateImage(time: floor(value)) { cgImage in
-                            seekThumbnail = Image(uiImage: UIImage(cgImage: cgImage))
-                        }
+                        player.requestGenerateImage(time: floor(value))
                     }
             }
             if !isReady || isBuffering {
@@ -67,6 +65,9 @@ struct VideoPlayerView: View {
         }
         .onReceive(player.isPlaybackLikelyToKeepUpSubject) { value in
             isBuffering = !value
+        }
+        .onReceive(player.generatedImageSubject) { (_, cgImage) in
+            seekThumbnail = Image(uiImage: UIImage(cgImage: cgImage))
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
             player.pause()

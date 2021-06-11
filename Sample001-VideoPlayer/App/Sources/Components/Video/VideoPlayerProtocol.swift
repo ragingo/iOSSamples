@@ -33,6 +33,7 @@ protocol VideoPlayerProtocol: AnyObject {
     var isPlaybackLikelyToKeepUpSubject: PassthroughSubject<Bool, Never> { get }
     var isSeekingSubject: PassthroughSubject<Bool, Never> { get }
     var loadedBufferRangeSubject: PassthroughSubject<(Double, Double), Never> { get }
+    var generatedImageSubject: PassthroughSubject<(Double, CGImage), Never> { get }
 
     func prepare()
     func invalidate()
@@ -41,7 +42,6 @@ protocol VideoPlayerProtocol: AnyObject {
     func pause()
     func seek(seconds: Double)
 
-    func requestGenerateImage(time: Double, completion: @escaping ((CGImage) -> Void))
+    func requestGenerateImage(time: Double)
     func cancelImageGenerationRequests()
-    func requestGenerateImage2(time: Double, completion: @escaping ((CGImage) -> Void))
 }
