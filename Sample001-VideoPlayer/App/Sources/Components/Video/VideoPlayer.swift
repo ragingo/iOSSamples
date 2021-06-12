@@ -118,7 +118,7 @@ class VideoPlayer: VideoPlayerProtocol {
     // completion はメインスレッドを保証する
     // HLS の場合、Iフレームのみのプレイリストというものが無い場合、 generateCGImagesAsynchronously は失敗するらしい ><
     // https://stackoverflow.com/questions/32112205/m3u8-file-avassetimagegenerator-error
-    func requestGenerateImage(time: Double) {
+    func requestGenerateImage(time: Double, size: CGSize) {
         if let image = generatedImageCache[time] {
             generatedImageSubject.send((time, image))
             return
@@ -128,6 +128,7 @@ class VideoPlayer: VideoPlayerProtocol {
         times += [NSValue(time: CMTime(seconds: time, preferredTimescale: CMTimeScale(NSEC_PER_SEC)))]
 
         guard let imageGenerator = self.imageGenerator else { return }
+        imageGenerator.maximumSize = size
 
         imageGenerator.generateCGImagesAsynchronously(forTimes: times) { (requestedTime, image, actualTime, result, error) in
             guard error == nil else { return }

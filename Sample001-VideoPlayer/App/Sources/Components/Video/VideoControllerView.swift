@@ -37,7 +37,9 @@ struct VideoControllerView: View {
     @State private var isPlaying = false
     @State private var isSeeking = false
     @State private var isSliderEditing = false
+    @State private var isLocking = false
     @State private var selectedRate: RateSteps = .x1_0
+    @State private var lockingButtonRotationAngle = 0.0
     @State private var backwardButtonRotationAngle = 0.0
     @State private var forwardButtonRotationAngle = 0.0
     private var thumbnailPreviewPosition: Binding<Double>
@@ -61,23 +63,37 @@ struct VideoControllerView: View {
                     }
                     thumbnailPreviewPosition.wrappedValue = duration * sliderValue
                 }
+                .disabled(isLocking)
             HStack {
                 positionLabel
                 Spacer()
                 durationLabel
             }
             HStack {
+                Button(action: onLockButtonClicked, label: {
+                    isLocking
+                        ? Image(systemName: "lock.rotation")
+                        : Image(systemName: "lock.rotation.open")
+                })
+                .rotationEffect(.degrees(lockingButtonRotationAngle))
+                .animation(.easeIn, value: lockingButtonRotationAngle)
+                .foregroundColor(isLocking ? .red : .primary)
+
                 // 10秒前へ
                 Button(action: onGoBackwardButtonClicked, label: {
                     Image(systemName: "gobackward.10")
                 })
                 .rotationEffect(.degrees(backwardButtonRotationAngle))
                 .animation(.easeIn, value: backwardButtonRotationAngle)
+                .foregroundColor(.primary)
+                .disabled(isLocking)
 
                 // 再生・一時停止
                 Button(action: onPlayButtonClicked, label: {
                     isPlaying ? Image(systemName: "pause.fill") : Image(systemName: "play.fill")
                 })
+                .foregroundColor(.primary)
+                .disabled(isLocking)
 
                 // 10秒後へ
                 Button(action: onGoForwardButtonClicked, label: {
@@ -85,6 +101,8 @@ struct VideoControllerView: View {
                 })
                 .rotationEffect(.degrees(forwardButtonRotationAngle))
                 .animation(.easeIn, value: forwardButtonRotationAngle)
+                .foregroundColor(.primary)
+                .disabled(isLocking)
 
                 // 再生速度
                 Menu {
@@ -98,6 +116,8 @@ struct VideoControllerView: View {
                 } label: {
                     Text(selectedRate.rawValue)
                 }
+                .foregroundColor(.primary)
+                .disabled(isLocking)
             }
         }
         .frame(height: 100, alignment: .top)
@@ -156,6 +176,11 @@ struct VideoControllerView: View {
     private func pause() {
         isPlaying = false
         player.pause()
+    }
+
+    private func onLockButtonClicked() {
+        isLocking = !isLocking
+        lockingButtonRotationAngle += 360.0
     }
 
     private func onPlayButtonClicked() {

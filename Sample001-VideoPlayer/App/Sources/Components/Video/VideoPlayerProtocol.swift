@@ -42,6 +42,6 @@ protocol VideoPlayerProtocol: AnyObject {
     func pause()
     func seek(seconds: Double)
 
-    func requestGenerateImage(time: Double)
+    func requestGenerateImage(time: Double, size: CGSize)
     func cancelImageGenerationRequests()
 }

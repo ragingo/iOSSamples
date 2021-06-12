@@ -10,6 +10,7 @@ import UIKit
 
 // プレーヤ
 struct VideoPlayerView: View {
+    private static let thumbnailSize = CGSize(width: 200, height: 200)
     private let player: VideoPlayerProtocol
     @State private var isReady = false
     @State private var isBuffering = false
@@ -32,7 +33,7 @@ struct VideoPlayerView: View {
                             seekThumbnail = nil
                             return
                         }
-                        player.requestGenerateImage(time: floor(value))
+                        player.requestGenerateImage(time: floor(value), size: Self.thumbnailSize)
                     }
             }
             if !isReady || isBuffering {
