@@ -52,9 +52,11 @@ struct VideoPlayerView: View {
             }
         }
         .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
             player.prepare()
         }
         .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
             player.invalidate()
         }
         .onReceive(player.loadStatusSubject) { status in
