@@ -20,6 +20,7 @@ struct VideoListView: View {
                 List(viewModel.videos) { video in
                     NavigationLink(destination: VideoView(video: video)) {
                         Text(video.title)
+                            .lineLimit(1)
                     }
                 }
                 .refreshable {
