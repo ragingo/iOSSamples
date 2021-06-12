@@ -2,7 +2,7 @@
   "videos": [
     {
       "id": 1,
-      "title": "[HLS] sintel",
+      "title": "[HLS] Sintel",
       "url": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
     },
     {
@@ -44,6 +44,66 @@
       "id": 9,
       "title": "[mp4] Big Buck Bunny",
       "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+    },
+    {
+      "id": 10,
+      "title": "[mp4] Elephants Dream",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
+    },
+    {
+      "id": 11,
+      "title": "[mp4] For Bigger Blazes",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    },
+    {
+      "id": 12,
+      "title": "[mp4] For Bigger Escapes",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
+    },
+    {
+      "id": 13,
+      "title": "[mp4] For Bigger Fun",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
+    },
+    {
+      "id": 14,
+      "title": "[mp4] For Bigger Joyrides",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+    },
+    {
+      "id": 15,
+      "title": "[mp4] For Bigger Meltdowns",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
+    },
+    {
+      "id": 16,
+      "title": "[mp4] Sintel",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
+    },
+    {
+      "id": 17,
+      "title": "[mp4] SubaruOutbackOnStreetAndDirt",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
+    },
+    {
+      "id": 18,
+      "title": "[mp4] Tears Of Steel",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
+    },
+    {
+      "id": 19,
+      "title": "[mp4] Volkswagen GTI Review",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
+    },
+    {
+      "id": 20,
+      "title": "[mp4] We Are Going On Bullrun",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4"
+    },
+    {
+      "id": 21,
+      "title": "[mp4] What Car Can You Get For A Grand",
+      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4"
     }
   ]
 }
