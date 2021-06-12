@@ -39,6 +39,11 @@
       "id": 8,
       "title": "[mp4] Earth",
       "url": "https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_1920_18MG.mp4"
+    },
+    {
+      "id": 9,
+      "title": "[mp4] Big Buck Bunny",
+      "url": "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
     }
   ]
 }
