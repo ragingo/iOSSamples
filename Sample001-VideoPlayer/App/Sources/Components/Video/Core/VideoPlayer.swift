@@ -19,7 +19,6 @@ class VideoPlayer: VideoPlayerProtocol {
     private let playerLayer = AVPlayerLayer()
     private let player = AVPlayer()
     private var imageGenerator: AVAssetImageGenerator?
-    private var videoOutput: AVPlayerItemVideoOutput?
     private var keyValueObservations: [NSKeyValueObservation?] = []
     private var timeObserver: Any?
     private var generatedImageCache: [Double: CGImage] = [:]
@@ -230,10 +229,7 @@ extension VideoPlayer {
         let status = asset.statusOfValue(forKey: #keyPath(AVAsset.isPlayable), error: &error)
         assert(status == .loaded)
 
-        videoOutput = AVPlayerItemVideoOutput()
-
         let playerItem = AVPlayerItem(asset: asset)
-        playerItem.add(videoOutput!)
         player.replaceCurrentItem(with: playerItem)
 
         imageGenerator = AVAssetImageGenerator(asset: asset)
@@ -254,6 +250,7 @@ extension VideoPlayer {
         timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main, using: onTimeObserverCall)
     }
 
+    // AVPlayerItem.status 変更時
     private func onStatusChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<AVPlayerItem.Status>) {
         switch item.status {
         case .readyToPlay:
@@ -267,14 +264,17 @@ extension VideoPlayer {
         }
     }
 
+    // AVPlayerItem.duration 変更時
     private func onDurationChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<CMTime>) {
         durationSubject.send(item.duration.seconds)
     }
 
+    // AVPlayerItem.isPlaybackLikelyToKeepUp 変更時
     private func onPlaybackLikelyToKeepUpChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<Bool>) {
         isPlaybackLikelyToKeepUpSubject.send(item.isPlaybackLikelyToKeepUp)
     }
 
+    // AVPlayerItem.loadedTimeRanges 変更時
     private func onLoadedTimeRangesChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<[NSValue]>) {
         guard let ranges = item.loadedTimeRanges as? [CMTimeRange] else { return }
         if ranges.isEmpty {
@@ -286,6 +286,7 @@ extension VideoPlayer {
         loadedBufferRangeSubject.send((start, end))
     }
 
+    // AVPlayer.timeControlStatus 変更時
     private func onTimeControlStatusChanged(player: AVPlayer, value: NSKeyValueObservedChange<AVPlayer.TimeControlStatus>) {
         switch player.timeControlStatus {
         case .paused:
@@ -299,6 +300,8 @@ extension VideoPlayer {
         }
     }
 
+    // AVPlayer.addPeriodicTimeObserver() で指定した関数
+    // 定期的にメインスレッドで実行される
     private func onTimeObserverCall(time: CMTime) {
         positionSubject.send(time.seconds)
     }
