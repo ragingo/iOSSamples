@@ -9,6 +9,14 @@ import SwiftUI
 
 struct VideoListView: View {
     @ObservedObject private var viewModel: VideoListViewModel
+    @State private var searchText = ""
+
+    private var filteredVideos: [Video] {
+        viewModel.videos
+            .filter { video in
+                searchText.isEmpty ? true : video.title.contains(searchText)
+            }
+    }
 
     init(viewModel: VideoListViewModel = VideoListViewModel()) {
         self.viewModel = viewModel
@@ -17,7 +25,7 @@ struct VideoListView: View {
     var body: some View {
         ZStack {
             NavigationView {
-                List(viewModel.videos) { video in
+                List(filteredVideos) { video in
                     NavigationLink(destination: VideoView(video: video)) {
                         Text(video.title)
                             .lineLimit(1)
@@ -26,6 +34,8 @@ struct VideoListView: View {
                 .refreshable {
                     await viewModel.fetchItems()
                 }
+                .searchable(text: $searchText)
+                .autocapitalization(.none)
                 .navigationTitle("videos")
             }
             if viewModel.isLoading {
