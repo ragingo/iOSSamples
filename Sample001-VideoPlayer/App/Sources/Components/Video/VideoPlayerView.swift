@@ -16,6 +16,7 @@ struct VideoPlayerView: View {
     @State private var isBuffering = false
     @State private var seekThumbnail: Image?
     @State private var thumbnailPreviewPosition: Double = .nan
+    @State private var bandwidths: [Int] = []
 
     init(player: VideoPlayerProtocol = VideoPlayer()) {
         self.player = player
@@ -26,7 +27,7 @@ struct VideoPlayerView: View {
             VStack {
                 VideoSurfaceView(playerLayer: player.layer)
                     .padding(.horizontal, 8)
-                VideoControllerView(player: player, thumbnailPreviewPosition: $thumbnailPreviewPosition)
+                VideoControllerView(player: player, thumbnailPreviewPosition: $thumbnailPreviewPosition, bandwidths: $bandwidths)
                     .padding(.horizontal, 24)
                     .onChange(of: $thumbnailPreviewPosition.wrappedValue) { value in
                         if value.isNaN {
@@ -70,6 +71,9 @@ struct VideoPlayerView: View {
         .onReceive(player.generatedImageSubject) { (_, cgImage) in
             seekThumbnail = Image(uiImage: UIImage(cgImage: cgImage))
         }
+        .onReceive(player.bandwidthsSubject) { value in
+            bandwidths = value
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
             player.pause()
         }
@@ -85,6 +89,8 @@ struct VideoPlayerView: View {
     }
 
     func open(urlString: String) {
-        player.open(urlString: urlString)
+        async { [weak player] in
+            await player?.open(urlString: urlString)
+        }
     }
 }

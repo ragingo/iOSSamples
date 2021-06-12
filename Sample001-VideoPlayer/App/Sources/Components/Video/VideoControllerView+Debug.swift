@@ -14,9 +14,11 @@ private let player = VideoPlayer()
 
 struct VideoControllerView_Previews: PreviewProvider {
     static var previews: some View {
-        VideoControllerView(player: player, thumbnailPreviewPosition: .constant(0))
+        VideoControllerView(player: player, thumbnailPreviewPosition: .constant(0), bandwidths: .constant([1, 2, 3]))
             .onAppear {
-                player.open(urlString: videoURL)
+                async {
+                    await player.open(urlString: videoURL)
+                }
             }
     }
 }

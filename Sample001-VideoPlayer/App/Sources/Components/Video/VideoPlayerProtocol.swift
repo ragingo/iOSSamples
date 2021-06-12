@@ -34,14 +34,16 @@ protocol VideoPlayerProtocol: AnyObject {
     var isSeekingSubject: PassthroughSubject<Bool, Never> { get }
     var loadedBufferRangeSubject: PassthroughSubject<(Double, Double), Never> { get }
     var generatedImageSubject: PassthroughSubject<(Double, CGImage), Never> { get }
+    var bandwidthsSubject: PassthroughSubject<[Int], Never> { get }
 
     func prepare()
     func invalidate()
-    func open(urlString: String)
+    func open(urlString: String) async
     func play()
     func pause()
     func seek(seconds: Double)
 
     func requestGenerateImage(time: Double, size: CGSize)
     func cancelImageGenerationRequests()
+    func changePreferredPeakBitRate(value: Int)
 }

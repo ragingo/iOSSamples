@@ -43,6 +43,7 @@ struct VideoControllerView: View {
     @State private var backwardButtonRotationAngle = 0.0
     @State private var forwardButtonRotationAngle = 0.0
     private var thumbnailPreviewPosition: Binding<Double>
+    private var bandwidths: Binding<[Int]>
 
     private let player: VideoPlayerProtocol
 
@@ -52,6 +53,12 @@ struct VideoControllerView: View {
 
     private var durationLabel: Text {
         Text(formatTime(seconds: Int(duration)))
+    }
+
+    private static var numberFormatter: NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        return formatter
     }
 
     var body: some View {
@@ -118,6 +125,23 @@ struct VideoControllerView: View {
                 }
                 .foregroundColor(.primary)
                 .disabled(isLocking)
+
+                // 画質(bandwidth)
+                if !bandwidths.isEmpty {
+                    Menu {
+                        ForEach(bandwidths.indices) { i in
+                            Button(action: {
+                                onBandwidthChanged(value: bandwidths.wrappedValue[i])
+                            }, label: {
+                                Text(Self.numberFormatter.string(from: NSNumber(value: bandwidths.wrappedValue[i])) ?? "0")
+                            })
+                        }
+                    } label: {
+                        Image(systemName: "list.number")
+                    }
+                    .foregroundColor(.primary)
+                    .disabled(isLocking)
+                }
             }
         }
         .frame(height: 100, alignment: .top)
@@ -148,9 +172,10 @@ struct VideoControllerView: View {
         }
     }
 
-    init(player: VideoPlayerProtocol, thumbnailPreviewPosition: Binding<Double>) {
+    init(player: VideoPlayerProtocol, thumbnailPreviewPosition: Binding<Double>, bandwidths: Binding<[Int]>) {
         self.player = player
         self.thumbnailPreviewPosition = thumbnailPreviewPosition
+        self.bandwidths = bandwidths
     }
 
     private func onSliderEditingChanged(isDragging: Bool, value: Double) {
@@ -211,5 +236,9 @@ struct VideoControllerView: View {
         case .x2_0:
             player.rate = 2.0
         }
+    }
+
+    private func onBandwidthChanged(value: Int) {
+        player.changePreferredPeakBitRate(value: value)
     }
 }

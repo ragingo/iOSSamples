@@ -54,6 +54,7 @@ class VideoPlayer: VideoPlayerProtocol {
     var isSeekingSubject = PassthroughSubject<Bool, Never>()
     var loadedBufferRangeSubject = PassthroughSubject<(Double, Double), Never>()
     var generatedImageSubject = PassthroughSubject<(Double, CGImage), Never>()
+    var bandwidthsSubject = PassthroughSubject<[Int], Never>()
 
     init() {
         playerLayer.player = player
@@ -84,9 +85,12 @@ class VideoPlayer: VideoPlayerProtocol {
         playerLayer.player = nil
     }
 
-    func open(urlString: String) {
+    func open(urlString: String) async {
         guard let url = URL(string: urlString) else {
             return
+        }
+        if url.pathExtension == "m3u8" {
+            await parseMasterPlaylist(url: url)
         }
         // 非同期でロード開始
         let asset = AVURLAsset(url: url)
@@ -153,6 +157,65 @@ class VideoPlayer: VideoPlayerProtocol {
         imageGenerator?.cancelAllCGImageGeneration()
     }
 
+    func changePreferredPeakBitRate(value: Int) {
+        player.currentItem?.preferredPeakBitRate = Double(value)
+    }
+
+    // 音声関連の初期化
+    private func initialiseAudio() {
+        let audioSession = AVAudioSession.sharedInstance()
+        do {
+            try audioSession.setCategory(.playback, mode: .moviePlayback)
+            try audioSession.setActive(true)
+        } catch {
+            print(error)
+        }
+    }
+
+    // 画質(bandwidth)一覧を降順で取得
+    // 取得した値は bandwidthsSubject で流す
+    private func parseMasterPlaylist(url: URL) async {
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let response = response as? HTTPURLResponse else {
+                return
+            }
+            if ![200].contains(response.statusCode) {
+                return
+            }
+            guard let m3u8Content = String(data: data, encoding: .utf8) else {
+                return
+            }
+
+            let lines = m3u8Content.split(separator: "\n")
+            let streamInfs = lines.filter { line in line.starts(with: "#EXT-X-STREAM-INF:") }
+            var bandwidths = streamInfs.map { inf -> Int in
+                guard let regex = try? NSRegularExpression(pattern: #"[:,]BANDWIDTH=(\d+)(\,|$)"#) else {
+                    return -1
+                }
+                guard let result = regex.firstMatch(in: String(inf), range: .init(location: 0, length: inf.count)) else {
+                    return -1
+                }
+                let group1 = result.range(at: 1)
+                let value = (inf as NSString).substring(with: group1)
+                return Int(value) ?? -1
+            }
+
+            bandwidths.sort()
+
+            DispatchQueue.main.async { [weak self, bandwidths] in
+                self?.bandwidthsSubject.send(bandwidths)
+            }
+        } catch {
+            print(error)
+        }
+    }
+}
+
+// MARK: - Callbacks
+extension VideoPlayer {
     // AVURLAsset.loadValuesAsynchronously 完了時
     private func onAssetLoaded(_ asset: AVURLAsset) {
         for key in Self.assetLoadKeys {
@@ -238,16 +301,5 @@ class VideoPlayer: VideoPlayerProtocol {
 
     private func onTimeObserverCall(time: CMTime) {
         positionSubject.send(time.seconds)
-    }
-
-    // 音声関連の初期化
-    private func initialiseAudio() {
-        let audioSession = AVAudioSession.sharedInstance()
-        do {
-            try audioSession.setCategory(.playback, mode: .moviePlayback)
-            try audioSession.setActive(true)
-        } catch {
-            print(error)
-        }
     }
 }
