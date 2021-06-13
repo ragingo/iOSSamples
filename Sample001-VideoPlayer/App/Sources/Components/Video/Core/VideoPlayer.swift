@@ -89,7 +89,10 @@ class VideoPlayer: VideoPlayerProtocol {
             return
         }
         if url.pathExtension == "m3u8" {
-            await parseMasterPlaylist(url: url)
+            let bandwidths = await Self.parseMasterPlaylist(url: url)
+            DispatchQueue.main.async { [weak self] in
+                self?.bandwidthsSubject.send(bandwidths)
+            }
         }
         // 非同期でロード開始
         let asset = AVURLAsset(url: url)
@@ -166,47 +169,6 @@ class VideoPlayer: VideoPlayerProtocol {
         do {
             try audioSession.setCategory(.playback, mode: .moviePlayback)
             try audioSession.setActive(true)
-        } catch {
-            print(error)
-        }
-    }
-
-    // 画質(bandwidth)一覧を降順で取得
-    // 取得した値は bandwidthsSubject で流す
-    private func parseMasterPlaylist(url: URL) async {
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        do {
-            let (data, response) = try await URLSession.shared.data(from: url)
-            guard let response = response as? HTTPURLResponse else {
-                return
-            }
-            if ![200].contains(response.statusCode) {
-                return
-            }
-            guard let m3u8Content = String(data: data, encoding: .utf8) else {
-                return
-            }
-
-            let lines = m3u8Content.split(separator: "\n")
-            let streamInfs = lines.filter { line in line.starts(with: "#EXT-X-STREAM-INF:") }
-            var bandwidths = streamInfs.map { inf -> Int in
-                guard let regex = try? NSRegularExpression(pattern: #"[:,]BANDWIDTH=(\d+)(\,|$)"#) else {
-                    return -1
-                }
-                guard let result = regex.firstMatch(in: String(inf), range: .init(location: 0, length: inf.count)) else {
-                    return -1
-                }
-                let group1 = result.range(at: 1)
-                let value = (inf as NSString).substring(with: group1)
-                return Int(value) ?? -1
-            }
-
-            bandwidths.sort()
-
-            DispatchQueue.main.async { [weak self, bandwidths] in
-                self?.bandwidthsSubject.send(bandwidths)
-            }
         } catch {
             print(error)
         }
@@ -304,5 +266,55 @@ extension VideoPlayer {
     // 定期的にメインスレッドで実行される
     private func onTimeObserverCall(time: CMTime) {
         positionSubject.send(time.seconds)
+    }
+}
+
+extension VideoPlayer {
+    // 画質(bandwidth)一覧を降順で取得
+    private static func parseMasterPlaylist(url: URL) async -> [Int] {
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+
+        var m3u8Content: String = ""
+
+        // .m3u8 ファイルの中身を取得
+        do {
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard let response = response as? HTTPURLResponse else {
+                return []
+            }
+            if ![200].contains(response.statusCode) {
+                return []
+            }
+            guard let content = String(data: data, encoding: .utf8) else {
+                return []
+            }
+            m3u8Content = content
+        } catch {
+            print(error)
+        }
+
+        guard let regex = try? NSRegularExpression(pattern: #"[:,]BANDWIDTH=(\d+)(\,|$)"#) else {
+            return []
+        }
+
+        // 改行で分割
+        let lines = m3u8Content.split(separator: "\n")
+        // #EXT-X-STREAM-INF で始まる行だけ取り出す
+        let streamInfs = lines.filter { line in line.starts(with: "#EXT-X-STREAM-INF:") }
+        // BANDWIDTH=xxx の値だけ取り出す
+        let bandwidths = streamInfs
+            .compactMap { inf -> Int? in
+                let inputRange = NSRange(location: 0, length: inf.count)
+                guard let result = regex.firstMatch(in: String(inf), range: inputRange) else {
+                    return nil
+                }
+                let group1 = result.range(at: 1)
+                let value = (inf as NSString).substring(with: group1)
+                return Int(value)
+            }
+            .sorted()
+
+        return bandwidths
     }
 }
