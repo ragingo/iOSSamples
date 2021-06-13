@@ -199,28 +199,7 @@ extension VideoPlayer {
             player.replaceCurrentItem(with: playerItem)
         } else {
             let composition = AVMutableComposition()
-            guard let addedVideoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {
-                return
-            }
-            guard let addedAudioTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) else {
-                return
-            }
-            let range = CMTimeRange(start: .zero, duration: asset.duration)
-            let videoTrack = asset.tracks.first { track in track.mediaType == .video }
-            let audioTrack = asset.tracks.first { track in track.mediaType == .audio }
-            do {
-                if let track = videoTrack {
-                    try addedVideoTrack.insertTimeRange(range, of: track, at: .zero)
-                }
-                if let track = audioTrack {
-                    try addedAudioTrack.insertTimeRange(range, of: track, at: .zero)
-                }
-            } catch {
-                print(error)
-                return
-            }
-
-            let playerItem = AVPlayerItem(asset: composition)
+            let playerItem = Self.createVideoPlayerItem(asset: asset, composition: composition)
             player.replaceCurrentItem(with: playerItem)
             playerItem.videoComposition = Self.createVideoComposition(composition: composition)
         }
@@ -350,6 +329,24 @@ extension VideoPlayer {
             .sorted()
 
         return bandwidths
+    }
+
+    private static func createVideoPlayerItem(asset: AVAsset, composition: AVMutableComposition) -> AVPlayerItem {
+        let videoTrack = asset.tracks.first { track in track.mediaType == .video }
+        let audioTrack = asset.tracks.first { track in track.mediaType == .audio }
+        let range = CMTimeRange(start: .zero, duration: asset.duration)
+
+        if let track = videoTrack {
+            let addedVideoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)
+            try? addedVideoTrack?.insertTimeRange(range, of: track, at: .zero)
+        }
+
+        if let track = audioTrack {
+            let addedAudioTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)
+            try? addedAudioTrack?.insertTimeRange(range, of: track, at: .zero)
+        }
+
+        return AVPlayerItem(asset: composition)
     }
 
     // AVVideoComposition を作って返す
