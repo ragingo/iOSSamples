@@ -27,6 +27,8 @@ class VideoPlayer: VideoPlayerProtocol {
         playerLayer
     }
 
+    var isLiveStreaming: Bool = false
+
     // 再生中か
     var isPlaying: Bool {
         player.timeControlStatus == .playing || player.timeControlStatus == .waitingToPlayAtSpecifiedRate
@@ -89,6 +91,7 @@ class VideoPlayer: VideoPlayerProtocol {
             return
         }
         if url.pathExtension == "m3u8" {
+            isLiveStreaming = true
             let bandwidths = await Self.parseMasterPlaylist(url: url)
             DispatchQueue.main.async { [weak self] in
                 self?.bandwidthsSubject.send(bandwidths)
@@ -191,8 +194,36 @@ extension VideoPlayer {
         let status = asset.statusOfValue(forKey: #keyPath(AVAsset.isPlayable), error: &error)
         assert(status == .loaded)
 
-        let playerItem = AVPlayerItem(asset: asset)
-        player.replaceCurrentItem(with: playerItem)
+        if isLiveStreaming {
+            let playerItem = AVPlayerItem(asset: asset)
+            player.replaceCurrentItem(with: playerItem)
+        } else {
+            let composition = AVMutableComposition()
+            guard let addedVideoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid) else {
+                return
+            }
+            guard let addedAudioTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) else {
+                return
+            }
+            let range = CMTimeRange(start: .zero, duration: asset.duration)
+            let videoTrack = asset.tracks.first { track in track.mediaType == .video }
+            let audioTrack = asset.tracks.first { track in track.mediaType == .audio }
+            do {
+                if let track = videoTrack {
+                    try addedVideoTrack.insertTimeRange(range, of: track, at: .zero)
+                }
+                if let track = audioTrack {
+                    try addedAudioTrack.insertTimeRange(range, of: track, at: .zero)
+                }
+            } catch {
+                print(error)
+                return
+            }
+
+            let playerItem = AVPlayerItem(asset: composition)
+            player.replaceCurrentItem(with: playerItem)
+            playerItem.videoComposition = Self.createVideoComposition(composition: composition)
+        }
 
         imageGenerator = AVAssetImageGenerator(asset: asset)
         imageGenerator?.requestedTimeToleranceBefore = .zero
@@ -245,6 +276,9 @@ extension VideoPlayer {
         let range = ranges[0]
         let start = floor(range.start.seconds)
         let end = floor(range.end.seconds)
+        if start.isNaN || start.isInfinite || end.isNaN || end.isInfinite {
+            return
+        }
         loadedBufferRangeSubject.send((start, end))
     }
 
@@ -316,5 +350,22 @@ extension VideoPlayer {
             .sorted()
 
         return bandwidths
+    }
+
+    // AVVideoComposition を作って返す
+    private static func createVideoComposition(composition: AVMutableComposition) -> AVMutableVideoComposition? {
+        guard let filter = CIFilter(name: "CIColorInvert") else { return nil }
+
+        let videoComposition = AVMutableVideoComposition(asset: composition) { request in
+            let inputImage = request.sourceImage.clampedToExtent()
+            filter.setValue(inputImage, forKey: kCIInputImageKey)
+            guard let outputImage = filter.outputImage else { return }
+            let outputImage2 = outputImage.cropped(to: inputImage.extent)
+            request.finish(with: outputImage2, context: nil)
+        }
+
+        videoComposition.renderSize = composition.naturalSize
+
+        return videoComposition
     }
 }

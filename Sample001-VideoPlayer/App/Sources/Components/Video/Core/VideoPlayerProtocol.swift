@@ -23,6 +23,7 @@ enum VideoPlayStatus {
 
 protocol VideoPlayerProtocol: AnyObject {
     var layer: CALayer { get }
+    var isLiveStreaming: Bool { get }
     var isPlaying: Bool { get }
     var isBuffering: Bool { get }
     var rate: Float { get set }

@@ -94,6 +94,10 @@ struct VideoSlider: View {
 
     private func updateLoadedBarWidth(width: CGFloat) {
         let range = loadedRange.wrappedValue
-        loadedBarWidth = width * CGFloat(range.1 - range.0)
+        let value = width * CGFloat(range.1 - range.0)
+        if value.isNaN || value.isInfinite {
+            return
+        }
+        loadedBarWidth = value
     }
 }
