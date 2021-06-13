@@ -84,6 +84,8 @@ class VideoPlayer: VideoPlayerProtocol {
 
         player.replaceCurrentItem(with: nil)
         playerLayer.player = nil
+
+        generatedImageCache.removeAll()
     }
 
     func open(urlString: String) async {
