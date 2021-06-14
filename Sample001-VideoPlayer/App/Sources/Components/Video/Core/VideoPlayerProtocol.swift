@@ -8,6 +8,7 @@
 import Combine
 import Foundation
 import QuartzCore
+import CoreImage
 
 enum VideoLoadStatus {
     case unknown
@@ -47,4 +48,5 @@ protocol VideoPlayerProtocol: AnyObject {
     func requestGenerateImage(time: Double, size: CGSize)
     func cancelImageGenerationRequests()
     func changePreferredPeakBitRate(value: Int)
+    func applyFilter(filter: CIFilter)
 }

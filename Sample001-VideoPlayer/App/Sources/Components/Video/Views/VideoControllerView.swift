@@ -25,6 +25,13 @@ private enum RateSteps: String, CaseIterable, Identifiable {
     case x2_0 = "x 2.0"
 }
 
+private enum Filter: String, CaseIterable, Identifiable {
+    var id: Filter { self }
+
+    case invert = "invert"
+    case gaussianBlur = "gaussian blur"
+}
+
 // プレーヤーコントローラ
 struct VideoControllerView: View {
     // スライダ用 (0.0 - 1.0)
@@ -142,6 +149,21 @@ struct VideoControllerView: View {
                     .foregroundColor(.primary)
                     .disabled(isLocking)
                 }
+
+                // フィルター
+                Menu {
+                    ForEach(Filter.allCases) { filter in
+                        Button(action: {
+                            onFilterChanged(filter: filter)
+                        }, label: {
+                            Text(filter.rawValue)
+                        })
+                    }
+                } label: {
+                    Text("filter")
+                }
+                .foregroundColor(.primary)
+                .disabled(isLocking)
             }
         }
         .frame(height: 100, alignment: .top)
@@ -240,5 +262,18 @@ struct VideoControllerView: View {
 
     private func onBandwidthChanged(value: Int) {
         player.changePreferredPeakBitRate(value: value)
+    }
+
+    private func onFilterChanged(filter: Filter) {
+        switch filter {
+        case .invert:
+            if let f = CIFilter(name: "CIColorInvert") {
+                player.applyFilter(filter: f)
+            }
+        case .gaussianBlur:
+            if let f = CIFilter(name: "CIGaussianBlur") {
+                player.applyFilter(filter: f)
+            }
+        }
     }
 }

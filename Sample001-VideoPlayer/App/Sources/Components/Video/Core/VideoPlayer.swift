@@ -22,6 +22,7 @@ class VideoPlayer: VideoPlayerProtocol {
     private var keyValueObservations: [NSKeyValueObservation?] = []
     private var timeObserver: Any?
     private var generatedImageCache: [Double: CGImage] = [:]
+    private var filter: CIFilter?
 
     var layer: CALayer {
         playerLayer
@@ -168,6 +169,10 @@ class VideoPlayer: VideoPlayerProtocol {
         player.currentItem?.preferredPeakBitRate = Double(value)
     }
 
+    func applyFilter(filter: CIFilter) {
+        self.filter = filter
+    }
+
     // 音声関連の初期化
     private func initialiseAudio() {
         let audioSession = AVAudioSession.sharedInstance()
@@ -203,7 +208,7 @@ extension VideoPlayer {
             let composition = AVMutableComposition()
             let playerItem = Self.createVideoPlayerItem(asset: asset, composition: composition)
             player.replaceCurrentItem(with: playerItem)
-            playerItem.videoComposition = Self.createVideoComposition(composition: composition)
+            playerItem.videoComposition = createVideoComposition(composition: composition)
         }
 
         imageGenerator = AVAssetImageGenerator(asset: asset)
@@ -352,10 +357,12 @@ extension VideoPlayer {
     }
 
     // AVVideoComposition を作って返す
-    private static func createVideoComposition(composition: AVMutableComposition) -> AVMutableVideoComposition? {
-        guard let filter = CIFilter(name: "CIColorInvert") else { return nil }
-
-        let videoComposition = AVMutableVideoComposition(asset: composition) { request in
+    private func createVideoComposition(composition: AVMutableComposition) -> AVMutableVideoComposition? {
+        let videoComposition = AVMutableVideoComposition(asset: composition) { [weak self] request in
+            guard let filter = self?.filter else {
+                request.finish(with: request.sourceImage, context: nil)
+                return
+            }
             let inputImage = request.sourceImage.clampedToExtent()
             filter.setValue(inputImage, forKey: kCIInputImageKey)
             guard let outputImage = filter.outputImage else { return }
