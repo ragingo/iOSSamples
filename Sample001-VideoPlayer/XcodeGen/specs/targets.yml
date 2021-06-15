@@ -6,6 +6,9 @@ targets:
         path: ./XcodeGen/scripts/swiftlint.sh
         runOnlyWhenInstalling: false
     settings:
+      base:
+        MTL_COMPILER_FLAGS: -fcikernel
+        MTLLINKER_FLAGS: -cikernel
       configs:
         Debug:
           PRODUCT_BUNDLE_IDENTIFIER: com.ragingo.ios-samples.sample001-videoplayer.dev

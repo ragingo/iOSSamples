@@ -276,17 +276,23 @@ struct VideoControllerView: View {
 
     private func onFlipButtonCliecked() {
         flipButtonRotationAngle += 180.0
+        player.clearFilters()
+        player.addFilter(filter: FlipFilter())
     }
 
     private func onFilterChanged(filter: Filter) {
         switch filter {
         case .invert:
             if let f = CIFilter(name: "CIColorInvert") {
-                player.applyFilter(filter: f)
+                player.clearFilters()
+                player.addFilter(filter: FlipFilter())
+                player.addFilter(filter: f)
             }
         case .gaussianBlur:
             if let f = CIFilter(name: "CIGaussianBlur") {
-                player.applyFilter(filter: f)
+                player.clearFilters()
+                player.addFilter(filter: FlipFilter())
+                player.addFilter(filter: f)
             }
         }
     }

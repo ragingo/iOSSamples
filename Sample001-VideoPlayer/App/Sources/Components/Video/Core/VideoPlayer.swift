@@ -22,7 +22,7 @@ class VideoPlayer: VideoPlayerProtocol {
     private var keyValueObservations: [NSKeyValueObservation?] = []
     private var timeObserver: Any?
     private var generatedImageCache: [Double: CGImage] = [:]
-    private var filter: CIFilter?
+    private var filters: [CIFilter] = []
 
     var layer: CALayer {
         playerLayer
@@ -169,8 +169,12 @@ class VideoPlayer: VideoPlayerProtocol {
         player.currentItem?.preferredPeakBitRate = Double(value)
     }
 
-    func applyFilter(filter: CIFilter) {
-        self.filter = filter
+    func addFilter(filter: CIFilter) {
+        self.filters += [filter]
+    }
+
+    func clearFilters() {
+        filters.removeAll()
     }
 
     // 音声関連の初期化
@@ -359,15 +363,20 @@ extension VideoPlayer {
     // AVVideoComposition を作って返す
     private func createVideoComposition(composition: AVMutableComposition) -> AVMutableVideoComposition? {
         let videoComposition = AVMutableVideoComposition(asset: composition) { [weak self] request in
-            guard let filter = self?.filter else {
+            guard let self = self else {
                 request.finish(with: request.sourceImage, context: nil)
                 return
             }
-            let inputImage = request.sourceImage.clampedToExtent()
-            filter.setValue(inputImage, forKey: kCIInputImageKey)
-            guard let outputImage = filter.outputImage else { return }
-            let outputImage2 = outputImage.cropped(to: inputImage.extent)
-            request.finish(with: outputImage2, context: nil)
+
+            var nextInputImage = request.sourceImage.clampedToExtent()
+
+            for filter in self.filters {
+                filter.setValue(nextInputImage, forKey: kCIInputImageKey)
+                guard let outputImage = filter.outputImage else { continue }
+                nextInputImage = outputImage.cropped(to: nextInputImage.extent)
+            }
+
+            request.finish(with: nextInputImage, context: nil)
         }
 
         videoComposition.renderSize = composition.naturalSize
