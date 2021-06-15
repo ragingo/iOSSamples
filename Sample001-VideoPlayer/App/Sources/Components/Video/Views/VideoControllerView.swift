@@ -49,6 +49,7 @@ struct VideoControllerView: View {
     @State private var lockingButtonRotationAngle = 0.0
     @State private var backwardButtonRotationAngle = 0.0
     @State private var forwardButtonRotationAngle = 0.0
+    @State private var flipButtonRotationAngle = 0.0
     private var thumbnailPreviewPosition: Binding<Double>
     private var bandwidths: Binding<[Int]>
 
@@ -149,6 +150,15 @@ struct VideoControllerView: View {
                     .foregroundColor(.primary)
                     .disabled(isLocking)
                 }
+
+                // 左右反転
+                Button(action: onFlipButtonCliecked, label: {
+                    Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right")
+                })
+                .rotation3DEffect(.degrees(flipButtonRotationAngle), axis: (x: 0, y: 1, z:0))
+                .animation(.easeIn, value: flipButtonRotationAngle)
+                .foregroundColor(.primary)
+                .disabled(isLocking)
 
                 // フィルター
                 Menu {
@@ -262,6 +272,10 @@ struct VideoControllerView: View {
 
     private func onBandwidthChanged(value: Int) {
         player.changePreferredPeakBitRate(value: value)
+    }
+
+    private func onFlipButtonCliecked() {
+        flipButtonRotationAngle += 180.0
     }
 
     private func onFilterChanged(filter: Filter) {
