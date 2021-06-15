@@ -32,3 +32,7 @@ mint bootstrap
 #   XcodeGen 実行後に pod install が実行される
 make xcodegen
 ```
+
+# 動作の様子
+
+https://user-images.githubusercontent.com/4784032/121989985-01195700-cdd8-11eb-85f7-559b2b59663e.mov
