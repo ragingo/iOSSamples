@@ -1,0 +1,14 @@
+settings:
+  base:
+    # Architectures
+    SDKROOT: iphoneos
+    # Deployment
+    TARGETED_DEVICE_FAMILY: 1,2
+    # Swift
+    SWIFT_VERSION: 5.3 # https://developer.apple.com/jp/support/xcode/
+
+  configs:
+    Debug:
+      DEBUG_INFORMATION_FORMAT: dwarf
+    Release:
+      DEBUG_INFORMATION_FORMAT: dwarf-with-dsym
