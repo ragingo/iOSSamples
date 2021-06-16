@@ -50,8 +50,11 @@ struct VideoControllerView: View {
     @State private var backwardButtonRotationAngle = 0.0
     @State private var forwardButtonRotationAngle = 0.0
     @State private var flipButtonRotationAngle = 0.0
+    @State private var isFlip = false
     private var thumbnailPreviewPosition: Binding<Double>
     private var bandwidths: Binding<[Int]>
+
+    @State private var flipFilter: FlipFilter?
 
     private let player: VideoPlayerProtocol
 
@@ -275,9 +278,16 @@ struct VideoControllerView: View {
     }
 
     private func onFlipButtonCliecked() {
+        isFlip = !isFlip
         flipButtonRotationAngle += 180.0
-        player.clearFilters()
-        player.addFilter(filter: FlipFilter())
+
+        if flipFilter == nil {
+            flipFilter = FlipFilter()
+        }
+        if let flipFilter = flipFilter {
+            flipFilter.setValue(isFlip, forKey: FlipFilter.Keys.isFlip)
+            player.addFilter(filter: flipFilter)
+        }
     }
 
     private func onFilterChanged(filter: Filter) {
@@ -285,13 +295,19 @@ struct VideoControllerView: View {
         case .invert:
             if let f = CIFilter(name: "CIColorInvert") {
                 player.clearFilters()
-                player.addFilter(filter: FlipFilter())
+                if let flipFilter = flipFilter {
+                    flipFilter.setValue(isFlip, forKey: FlipFilter.Keys.isFlip)
+                    player.addFilter(filter: flipFilter)
+                }
                 player.addFilter(filter: f)
             }
         case .gaussianBlur:
             if let f = CIFilter(name: "CIGaussianBlur") {
                 player.clearFilters()
-                player.addFilter(filter: FlipFilter())
+                if let flipFilter = flipFilter {
+                    flipFilter.setValue(isFlip, forKey: FlipFilter.Keys.isFlip)
+                    player.addFilter(filter: flipFilter)
+                }
                 player.addFilter(filter: f)
             }
         }

@@ -10,8 +10,10 @@
 
 using namespace metal;
 
-extern "C" float4 flip(coreimage::sampler s) {
-    float2 coord = s.coord();
-    coord.x = 1.0f - coord.x;
-    return s.sample(coord);
+extern "C" float4 flip(coreimage::sampler sampler, int isFlip) {
+    float2 coord = sampler.coord();
+    if (isFlip) {
+        coord.x = 1.0f - coord.x;
+    }
+    return sampler.sample(coord);
 }

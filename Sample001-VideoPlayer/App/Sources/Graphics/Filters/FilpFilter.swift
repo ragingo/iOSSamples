@@ -11,6 +11,11 @@ import CoreImage
 class FlipFilter: CIFilter {
     private let kernel: CIKernel?
     private var inputImage: CIImage?
+    private var isFlip = false
+
+    struct Keys {
+        static let isFlip = "isFlip"
+    }
 
     override init() {
         kernel = Self.loadKernel()
@@ -29,6 +34,12 @@ class FlipFilter: CIFilter {
                 kCIAttributeClass: "CIImage",
                 kCIAttributeDisplayName: "Image",
                 kCIAttributeType: kCIAttributeTypeImage
+            ],
+            Keys.isFlip: [
+                kCIAttributeIdentity: 1,
+                kCIAttributeClass: "Int",
+                kCIAttributeDisplayName: "Int",
+                kCIAttributeType: kCIAttributeTypeInteger
             ]
         ]
     }
@@ -37,6 +48,8 @@ class FlipFilter: CIFilter {
         switch key {
         case kCIInputImageKey:
             inputImage = value as? CIImage
+        case Keys.isFlip:
+            isFlip = value as? Bool ?? false
         default:
             break
         }
@@ -46,7 +59,7 @@ class FlipFilter: CIFilter {
         guard let kernel = kernel else { return nil }
         guard let inputImage = inputImage else { return nil }
         let sampler = CISampler(image: inputImage)
-        return kernel.apply(extent: inputImage.extent, roiCallback: { _, r in r }, arguments: [sampler])
+        return kernel.apply(extent: inputImage.extent, roiCallback: { _, r in r }, arguments: [sampler, isFlip ? 1 : 0])
     }
 
     private static func loadKernel() -> CIKernel? {
