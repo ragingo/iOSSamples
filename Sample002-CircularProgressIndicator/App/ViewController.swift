@@ -9,9 +9,21 @@ import UIKit
 
 class ViewController: UIViewController {
 
+    private var circularProgressIndicator: CircularProgressIndicator?
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+
+        let indicator = CircularProgressIndicator()
+        indicator.bounds = .init(x: 0, y: 0, width: 50, height: 50)
+        indicator.center = view.center
+        indicator.baseColor = .yellow
+        indicator.barColor = .orange
+        circularProgressIndicator = indicator
+        view.addSubview(indicator)
+
+        // indicator.updateProgressWithAnimation(duration: 3)
+        indicator.updateProgress(value: 0.5)
     }
 
 }
