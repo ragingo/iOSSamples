@@ -16,6 +16,7 @@ class CircularProgressIndicator: UIControl {
 
     var baseColor: UIColor = .gray
     var barColor: UIColor = .green
+    var content: UIView?
 
     override init(frame: CGRect) {
         baseLayer = Self.makeBaseLayer()
@@ -50,10 +51,10 @@ class CircularProgressIndicator: UIControl {
     }
 
     override func draw(_ rect: CGRect) {
-        let center = CGPoint(x: frame.size.width / 2.0, y: frame.size.height / 2.0)
-        let radius = frame.size.width / 2.0
-        let startAngle = CGFloat.pi / 2.0 * -1
-        let endAngle = 3 * CGFloat.pi / 2.0
+        let center = CGPoint(x: bounds.size.width / 2.0, y: bounds.size.height / 2.0)
+        let radius = bounds.size.width / 2.0
+        let startAngle = -CGFloat.pi / 2.0
+        let endAngle = CGFloat.pi * (3.0 / 2.0)
         let circle = UIBezierPath(arcCenter: center, radius: radius, startAngle: startAngle, endAngle: endAngle, clockwise: true)
 
         baseLayer.strokeColor = baseColor.cgColor
@@ -61,6 +62,35 @@ class CircularProgressIndicator: UIControl {
 
         barLayer.strokeColor = barColor.cgColor
         barLayer.path = circle.cgPath
+
+        if let content = content {
+            if !self.subviews.contains(where: { v in v == content }) {
+                self.addSubview(content)
+                self.bringSubviewToFront(content)
+                content.translatesAutoresizingMaskIntoConstraints = false
+
+                let ratio = 1.732 / 2.0 // √3 / 2 の比率を矩形の幅に掛けて、矩形を円の内側に収める
+                self.addConstraints([
+                    NSLayoutConstraint(
+                        item: content, attribute: .centerX, relatedBy: .equal,
+                        toItem: self, attribute: .centerX, multiplier: 1.0, constant: 0
+                    ),
+                    NSLayoutConstraint(
+                        item: content, attribute: .centerY, relatedBy: .equal,
+                        toItem: self, attribute: .centerY, multiplier: 1.0, constant: 0
+                    ),
+                    NSLayoutConstraint(
+                        item: content, attribute: .width, relatedBy: .equal,
+                        toItem: self, attribute: .width, multiplier: ratio, constant: 0
+                    ),
+                    NSLayoutConstraint(
+                        item: content, attribute: .height, relatedBy: .equal,
+                        toItem: self, attribute: .height, multiplier: ratio, constant: 0
+                    )
+                ])
+
+            }
+        }
     }
 
     func updateProgress(value: Double) {
@@ -68,12 +98,13 @@ class CircularProgressIndicator: UIControl {
         barLayer.strokeEnd = value
     }
 
+    // 主にデバッグ用
     func updateProgressWithAnimation(duration: TimeInterval) {
         let animation = CABasicAnimation(keyPath: "strokeEnd")
         animation.duration = duration
         animation.toValue = 1.0
         animation.fillMode = .forwards
-        animation.isRemovedOnCompletion = false
+        animation.isRemovedOnCompletion = true // 完了時に消えるからデバッグに便利
         barLayer.add(animation, forKey: "strokeEndAnimation")
     }
 }
