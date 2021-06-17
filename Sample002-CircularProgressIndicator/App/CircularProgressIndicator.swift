@@ -7,16 +7,21 @@
 
 import UIKit
 
-class CircularProgressIndicator: UIControl {
+@IBDesignable class CircularProgressIndicator: UIControl {
     private static let defaultBaseColor = UIColor.gray
     private static let defaultBarColor = UIColor.green
+    private static let defaultBarWidth = CGFloat(2.0)
 
     private var baseLayer: CAShapeLayer
     private var barLayer: CAShapeLayer
 
-    var baseColor: UIColor = .gray
-    var barColor: UIColor = .green
+    @IBInspectable var baseColor: UIColor = defaultBaseColor
+    @IBInspectable var barColor: UIColor = defaultBarColor
+    @IBInspectable var barWidth: CGFloat = defaultBarWidth
+
     var content: UIView?
+    var contentSize: CGSize?
+    var isContentAutoResize: Bool = false
 
     override init(frame: CGRect) {
         baseLayer = Self.makeBaseLayer()
@@ -25,28 +30,35 @@ class CircularProgressIndicator: UIControl {
 
         layer.addSublayer(baseLayer)
         layer.addSublayer(barLayer)
+        backgroundColor = .clear
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        baseLayer = Self.makeBaseLayer()
+        barLayer = Self.makeBarLayer()
+        super.init(coder: coder)
+
+        layer.addSublayer(baseLayer)
+        layer.addSublayer(barLayer)
+        backgroundColor = .clear
     }
 
     private static func makeBaseLayer() -> CAShapeLayer {
         let layer = CAShapeLayer()
         layer.fillColor = UIColor.clear.cgColor
-        layer.strokeColor = Self.defaultBaseColor.cgColor
+        layer.strokeColor = defaultBaseColor.cgColor
         layer.lineCap = .round
-        layer.lineWidth = 2.0
+        layer.lineWidth = defaultBarWidth
         return layer
     }
 
     private static func makeBarLayer() -> CAShapeLayer {
         let layer = CAShapeLayer()
         layer.fillColor = UIColor.clear.cgColor
-        layer.strokeColor = Self.defaultBarColor.cgColor
+        layer.strokeColor = defaultBarColor.cgColor
         layer.strokeEnd = 0.0
         layer.lineCap = .round
-        layer.lineWidth = 2.0
+        layer.lineWidth = defaultBarWidth
         return layer
     }
 
@@ -59,26 +71,21 @@ class CircularProgressIndicator: UIControl {
 
         baseLayer.strokeColor = baseColor.cgColor
         baseLayer.path = circle.cgPath
+        baseLayer.lineWidth = barWidth
 
         barLayer.strokeColor = barColor.cgColor
         barLayer.path = circle.cgPath
+        barLayer.lineWidth = barWidth
 
-        if let content = content {
-            if !self.subviews.contains(where: { v in v == content }) {
-                self.addSubview(content)
-                self.bringSubviewToFront(content)
-                content.translatesAutoresizingMaskIntoConstraints = false
+        if let content = content, content.superview == nil {
+            self.addSubview(content)
+            self.bringSubviewToFront(content)
+            content.translatesAutoresizingMaskIntoConstraints = false
 
-                let ratio = 1.732 / 2.0 // √3 / 2 の比率を矩形の幅に掛けて、矩形を円の内側に収める
+            // 自動リサイズ
+            if isContentAutoResize {
+                let ratio = CGFloat(1.732 / 2.0) // √3 / 2 の比率を矩形の幅に掛けて、矩形を円の内側に収める
                 self.addConstraints([
-                    NSLayoutConstraint(
-                        item: content, attribute: .centerX, relatedBy: .equal,
-                        toItem: self, attribute: .centerX, multiplier: 1.0, constant: 0
-                    ),
-                    NSLayoutConstraint(
-                        item: content, attribute: .centerY, relatedBy: .equal,
-                        toItem: self, attribute: .centerY, multiplier: 1.0, constant: 0
-                    ),
                     NSLayoutConstraint(
                         item: content, attribute: .width, relatedBy: .equal,
                         toItem: self, attribute: .width, multiplier: ratio, constant: 0
@@ -88,14 +95,37 @@ class CircularProgressIndicator: UIControl {
                         toItem: self, attribute: .height, multiplier: ratio, constant: 0
                     )
                 ])
-
+            } else if let contentSize = contentSize {
+                content.bounds = .init(origin: .zero, size: contentSize)
+                content.addConstraints([
+                    NSLayoutConstraint(
+                        item: content, attribute: .width, relatedBy: .equal,
+                        toItem: nil, attribute: .width, multiplier: 1.0, constant: contentSize.width
+                    ),
+                    NSLayoutConstraint(
+                        item: content, attribute: .height, relatedBy: .equal,
+                        toItem: nil, attribute: .height, multiplier: 1.0, constant: contentSize.height
+                    )
+                ])
             }
+
+            // 上下中央揃え
+            self.addConstraints([
+                NSLayoutConstraint(
+                    item: content, attribute: .centerX, relatedBy: .equal,
+                    toItem: self, attribute: .centerX, multiplier: 1.0, constant: 0
+                ),
+                NSLayoutConstraint(
+                    item: content, attribute: .centerY, relatedBy: .equal,
+                    toItem: self, attribute: .centerY, multiplier: 1.0, constant: 0
+                )
+            ])
         }
     }
 
     func updateProgress(value: Double) {
-        // TODO: validation
-        barLayer.strokeEnd = value
+        let strokeEnd = min(max(value, 0.0), 1.00)
+        barLayer.strokeEnd = CGFloat(strokeEnd)
     }
 
     // 主にデバッグ用

@@ -25,6 +25,7 @@ class ViewController: UIViewController {
         indicator.baseColor = .yellow
         indicator.barColor = .orange
         indicator.content = imageView
+        indicator.isContentAutoResize = true
         circularProgressIndicator = indicator
         view.addSubview(indicator)
 
