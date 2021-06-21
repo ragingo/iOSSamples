@@ -1,0 +1,18 @@
+targets:
+  App:
+    platform: iOS
+    prebuildScripts:
+      - name: SwiftLint
+        path: ./XcodeGen/scripts/swiftlint.sh
+        runOnlyWhenInstalling: false
+    settings:
+      base:
+        SWIFT_OBJC_BRIDGING_HEADER: "./App/ShaderTypes.h"
+      configs:
+        Debug:
+          PRODUCT_BUNDLE_IDENTIFIER: com.ragingo.ios-samples.sample003-metal.dev
+        Release:
+          PRODUCT_BUNDLE_IDENTIFIER: com.ragingo.ios-samples.sample003-metal
+    sources:
+      - path: App
+    type: application
