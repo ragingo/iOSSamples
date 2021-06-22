@@ -23,14 +23,11 @@ class MainViewController: UIViewController, MTKViewDelegate {
         self.device = device
         self.commandQueue = device.makeCommandQueue()
 
-        let mtkView = MTKView()
+        let mtkView = MTKView(frame: view.layer.frame, device: device)
         view.addSubview(mtkView)
-        mtkView.bounds = view.bounds
-        mtkView.device = device
         mtkView.delegate = self
         mtkView.enableSetNeedsDisplay = true
         mtkView.framebufferOnly = false
-        //        mtkView.setNeedsDisplay()
 
         loadTexture()
     }
