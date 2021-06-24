@@ -8,7 +8,7 @@
 import UIKit
 import MetalKit
 
-class MainViewController: UIViewController, MTKViewDelegate {
+class MainViewController: UIViewController {
     private var device: MTLDevice!
     private var renderPipelineState: MTLRenderPipelineState?
     private var commandQueue: MTLCommandQueue!
@@ -29,6 +29,7 @@ class MainViewController: UIViewController, MTKViewDelegate {
 
     private var vertexBuffer: MTLBuffer?
     private var texCoordsBuffer: MTLBuffer?
+    private let metalLayer = CAMetalLayer()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,20 +41,20 @@ class MainViewController: UIViewController, MTKViewDelegate {
         self.device = device
         self.commandQueue = device.makeCommandQueue()
 
-        let mtkView = MTKView(frame: view.layer.frame, device: device)
-        view.addSubview(mtkView)
-        mtkView.delegate = self
-        mtkView.enableSetNeedsDisplay = true
-        mtkView.framebufferOnly = false
+        view.layer.addSublayer(metalLayer)
+        metalLayer.frame = view.frame
+        metalLayer.device = device
+        metalLayer.framebufferOnly = false
+        metalLayer.drawableSize = view.bounds.size
+
+        let displayLink = CADisplayLink(target: self, selector: #selector(onDisplayLinkCallback))
+        displayLink.add(to: .current, forMode: .default)
 
         loadTexture()
     }
 
-    func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
-    }
-
-    func draw(in view: MTKView) {
-        guard let drawable = view.currentDrawable else {
+    @objc private func onDisplayLinkCallback(displaylink: CADisplayLink) {
+        guard let drawable = metalLayer.nextDrawable() else {
             return
         }
 
@@ -130,11 +131,8 @@ class MainViewController: UIViewController, MTKViewDelegate {
                 self.texture = texture
 
                 DispatchQueue.main.async {
-                    guard let mtkView = self.view.subviews.first as? MTKView else {
-                        return
-                    }
-                    mtkView.colorPixelFormat = texture.pixelFormat
-                    mtkView.setNeedsDisplay()
+                    self.metalLayer.pixelFormat = texture.pixelFormat
+                    self.metalLayer.setNeedsDisplay()
                 }
             }
         }
