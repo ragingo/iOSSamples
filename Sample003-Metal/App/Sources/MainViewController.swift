@@ -122,20 +122,52 @@ class MainViewController: UIViewController {
                 response.statusCode == 200 else {
                 return
             }
+
             guard let data = data else { return }
+            guard let texture = self.makeTexture(from: data) else { return }
+            self.texture = texture
 
-            let textureLoader = MTKTextureLoader(device: self.device)
-            textureLoader.newTexture(data: data, options: nil) { (texture, error) in
-                guard error == nil else { return }
-                guard let texture = texture else { return }
-                self.texture = texture
-
-                DispatchQueue.main.async {
-                    self.metalLayer.pixelFormat = texture.pixelFormat
-                    self.metalLayer.setNeedsDisplay()
-                }
+            DispatchQueue.main.async {
+                self.metalLayer.pixelFormat = texture.pixelFormat
+                self.metalLayer.setNeedsDisplay()
             }
         }
         task.resume()
+    }
+
+    private func makeTexture(from data: Data) -> MTLTexture? {
+        guard let dataProvider = CGDataProvider(data: data as CFData) else {
+            return nil
+        }
+        guard let image = CGImage(jpegDataProviderSource: dataProvider, decode: nil, shouldInterpolate: true, intent: .defaultIntent) else {
+            return nil
+        }
+
+        let desc = MTLTextureDescriptor.texture2DDescriptor(
+            pixelFormat: .bgra8Unorm,
+            width: image.width,
+            height: image.height,
+            mipmapped: false
+        )
+        desc.sampleCount = 1
+
+        guard let texture = device.makeTexture(descriptor: desc) else {
+            return nil
+        }
+
+        data.withUnsafeBytes { pointer in
+            guard let baseAddress = pointer.baseAddress else {
+                return
+            }
+            let region = MTLRegionMake2D(0, 0, image.width, image.height)
+            texture.replace(
+                region: region,
+                mipmapLevel: 0,
+                withBytes: baseAddress,
+                bytesPerRow: image.bytesPerRow
+            )
+        }
+
+        return texture
     }
 }
