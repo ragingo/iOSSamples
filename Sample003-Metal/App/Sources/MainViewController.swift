@@ -65,6 +65,8 @@ class MainViewController: UIViewController {
         guard let texture = texture else { return }
 
         renderPassDescriptor.colorAttachments[0].texture = drawable.texture
+        renderPassDescriptor.colorAttachments[0].loadAction = .clear
+        renderPassDescriptor.colorAttachments[0].storeAction = .store
 
         guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) else {
             return
@@ -143,30 +145,37 @@ class MainViewController: UIViewController {
             return nil
         }
 
+        guard let context = CGContext(
+            data: nil,
+            width: image.width,
+            height: image.height,
+            bitsPerComponent: image.bitsPerComponent,
+            bytesPerRow: image.bytesPerRow,
+            space: image.colorSpace!,
+            bitmapInfo: image.bitmapInfo.rawValue
+        ) else {
+            return nil
+        }
+        context.draw(image, in: .init(x: 0, y: 0, width: image.width, height: image.height))
+
         let desc = MTLTextureDescriptor.texture2DDescriptor(
             pixelFormat: .bgra8Unorm,
             width: image.width,
             height: image.height,
             mipmapped: false
         )
-        desc.sampleCount = 1
 
         guard let texture = device.makeTexture(descriptor: desc) else {
             return nil
         }
 
-        data.withUnsafeBytes { pointer in
-            guard let baseAddress = pointer.baseAddress else {
-                return
-            }
-            let region = MTLRegionMake2D(0, 0, image.width, image.height)
-            texture.replace(
-                region: region,
-                mipmapLevel: 0,
-                withBytes: baseAddress,
-                bytesPerRow: image.bytesPerRow
-            )
-        }
+        let region = MTLRegionMake2D(0, 0, image.width, image.height)
+        texture.replace(
+            region: region,
+            mipmapLevel: 0,
+            withBytes: context.data!,
+            bytesPerRow: image.bytesPerRow
+        )
 
         return texture
     }
