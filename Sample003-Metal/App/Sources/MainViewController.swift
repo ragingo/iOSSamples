@@ -126,7 +126,7 @@ class MainViewController: UIViewController {
             }
 
             guard let data = data else { return }
-            guard let texture = self.makeTexture(from: data) else { return }
+            guard let texture = RgTexture(device: self.device, data: data)?.mtlTexture else { return }
             self.texture = texture
 
             DispatchQueue.main.async {
@@ -135,48 +135,5 @@ class MainViewController: UIViewController {
             }
         }
         task.resume()
-    }
-
-    private func makeTexture(from data: Data) -> MTLTexture? {
-        guard let dataProvider = CGDataProvider(data: data as CFData) else {
-            return nil
-        }
-        guard let image = CGImage(jpegDataProviderSource: dataProvider, decode: nil, shouldInterpolate: true, intent: .defaultIntent) else {
-            return nil
-        }
-
-        guard let context = CGContext(
-            data: nil,
-            width: image.width,
-            height: image.height,
-            bitsPerComponent: image.bitsPerComponent,
-            bytesPerRow: image.bytesPerRow,
-            space: image.colorSpace!,
-            bitmapInfo: image.bitmapInfo.rawValue
-        ) else {
-            return nil
-        }
-        context.draw(image, in: .init(x: 0, y: 0, width: image.width, height: image.height))
-
-        let desc = MTLTextureDescriptor.texture2DDescriptor(
-            pixelFormat: .bgra8Unorm,
-            width: image.width,
-            height: image.height,
-            mipmapped: false
-        )
-
-        guard let texture = device.makeTexture(descriptor: desc) else {
-            return nil
-        }
-
-        let region = MTLRegionMake2D(0, 0, image.width, image.height)
-        texture.replace(
-            region: region,
-            mipmapLevel: 0,
-            withBytes: context.data!,
-            bytesPerRow: image.bytesPerRow
-        )
-
-        return texture
     }
 }
