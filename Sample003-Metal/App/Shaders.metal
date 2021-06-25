@@ -33,5 +33,6 @@ fragment float4 default_fs(ColorInOut in [[ stage_in ]],
 {
     constexpr sampler colorSampler;
     float4 color = texture.sample(colorSampler, in.texCoords);
+    color = color.bgra;
     return color;
 }
