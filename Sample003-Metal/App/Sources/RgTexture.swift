@@ -9,9 +9,13 @@ import CoreGraphics
 import Metal
 
 struct RgTexture {
-    let mtlTexture: MTLTexture?
+    private(set) var mtlTexture: MTLTexture?
 
     init?(device: MTLDevice, data: Data) {
+        mtlTexture = data2Texture(device: device, data: data)
+    }
+
+    private func data2Texture(device: MTLDevice, data: Data) -> MTLTexture? {
         guard let dataProvider = CGDataProvider(data: data as CFData) else {
             return nil
         }
@@ -67,6 +71,6 @@ struct RgTexture {
             bytesPerRow: image.bytesPerRow
         )
 
-        mtlTexture = texture
+        return texture
     }
 }
