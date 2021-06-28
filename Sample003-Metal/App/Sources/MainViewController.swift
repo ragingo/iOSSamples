@@ -116,17 +116,9 @@ class MainViewController: UIViewController {
         var request = URLRequest(url: url)
         request.setValue("ios_metal_test", forHTTPHeaderField: "UserAgent")
 
-        let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
+        RgTextureLoader.load(request: request, device: device) { [weak self] texture in
             guard let self = self else { return }
-            guard error == nil else { return }
-            guard
-                let response = response as? HTTPURLResponse,
-                response.statusCode == 200 else {
-                return
-            }
-
-            guard let data = data else { return }
-            guard let texture = RgTexture(device: self.device, data: data)?.mtlTexture else { return }
+            guard let texture = texture?.mtlTexture else { return }
             self.texture = texture
 
             DispatchQueue.main.async {
@@ -134,6 +126,5 @@ class MainViewController: UIViewController {
                 self.metalLayer.setNeedsDisplay()
             }
         }
-        task.resume()
     }
 }
