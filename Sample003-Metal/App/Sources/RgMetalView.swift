@@ -58,6 +58,9 @@ class RgMetalView: UIView {
         let displayLink = CADisplayLink(target: self, selector: #selector(onDisplayLinkCallback))
         displayLink.add(to: .current, forMode: .default)
 
+        vertexBuffer = device.makeBuffer(bytes: vertices, length: vertexBufferSize)
+        texCoordsBuffer = device.makeBuffer(bytes: texCoords, length: texCoordsBufferSize)
+
         // テクスチャのロード
         loadTexture()
     }
@@ -66,23 +69,11 @@ class RgMetalView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    @objc private func onDisplayLinkCallback(displaylink: CADisplayLink) {
-        guard let drawable = metalLayer.nextDrawable() else {
-            return
-        }
-
-        guard let commandBuffer = commandQueue.makeCommandBuffer() else {
-            return
-        }
-
-        guard let vertexBuffer = device.makeBuffer(bytes: vertices, length: vertexBufferSize) else {
-            return
-        }
-
-        guard let texCoordsBuffer = device.makeBuffer(bytes: texCoords, length: texCoordsBufferSize) else {
-            return
-        }
-
+    @objc private func onDisplayLinkCallback(_: CADisplayLink) {
+        guard let drawable = metalLayer.nextDrawable() else { return }
+        guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
+        guard let vertexBuffer = vertexBuffer else { return }
+        guard let texCoordsBuffer = texCoordsBuffer else { return }
         guard let texture = texture else { return }
 
         guard let renderPipelineState = makeRenderPipelineState(pixelFormat: texture.pixelFormat) else {
@@ -137,6 +128,7 @@ class RgMetalView: UIView {
             self.texture = texture
 
             DispatchQueue.main.async {
+                // https://developer.apple.com/documentation/quartzcore/cametallayer/1478155-pixelformat
                 self.metalLayer.pixelFormat = texture.pixelFormat
                 self.metalLayer.setNeedsDisplay()
             }
