@@ -13,6 +13,8 @@
 		52E169C927E63EDC0027F35F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52E169C827E63EDC0027F35F /* Preview Assets.xcassets */; };
 		52E169D227E640320027F35F /* ContentView.Previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D127E640320027F35F /* ContentView.Previews.swift */; };
 		52E169D627E652620027F35F /* ARViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D527E652620027F35F /* ARViewController.swift */; };
+		52E169D827E76FA90027F35F /* EyeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D727E76FA90027F35F /* EyeTracker.swift */; };
+		52E169DA27E794290027F35F /* Collection+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D927E794290027F35F /* Collection+Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +26,8 @@
 		52E169D127E640320027F35F /* ContentView.Previews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.Previews.swift; sourceTree = "<group>"; };
 		52E169D327E6485D0027F35F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		52E169D527E652620027F35F /* ARViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARViewController.swift; sourceTree = "<group>"; };
+		52E169D727E76FA90027F35F /* EyeTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyeTracker.swift; sourceTree = "<group>"; };
+		52E169D927E794290027F35F /* Collection+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Collection+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +63,7 @@
 				52E169D327E6485D0027F35F /* Info.plist */,
 				52E169CF27E63FE30027F35F /* Views */,
 				52E169C127E63EDB0027F35F /* App.swift */,
+				52E169D927E794290027F35F /* Collection+Extensions.swift */,
 				52E169C527E63EDC0027F35F /* Assets.xcassets */,
 				52E169C727E63EDC0027F35F /* Preview Content */,
 			);
@@ -95,6 +100,7 @@
 			isa = PBXGroup;
 			children = (
 				52E169D527E652620027F35F /* ARViewController.swift */,
+				52E169D727E76FA90027F35F /* EyeTracker.swift */,
 			);
 			path = ARViewController;
 			sourceTree = "<group>";
@@ -171,8 +177,10 @@
 			files = (
 				52E169D227E640320027F35F /* ContentView.Previews.swift in Sources */,
 				52E169C427E63EDB0027F35F /* ContentView.swift in Sources */,
+				52E169D827E76FA90027F35F /* EyeTracker.swift in Sources */,
 				52E169C227E63EDB0027F35F /* App.swift in Sources */,
 				52E169D627E652620027F35F /* ARViewController.swift in Sources */,
+				52E169DA27E794290027F35F /* Collection+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
