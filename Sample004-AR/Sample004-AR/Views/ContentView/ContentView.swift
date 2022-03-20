@@ -9,23 +9,33 @@ import ARKit
 import SwiftUI
 
 struct ContentView: View {
+    @State private var isLookingAway: Bool = false
+    @State private var isDrowsy: Bool = false
+
+    // MARK: - Debug Properties
     @State private var distanceLabelText: String = ""
-    @State private var leftEyePosition: SCNVector3 = SCNVector3Zero
-    @State private var rightEyePosition: SCNVector3 = SCNVector3Zero
+    @State private var eyePositionLeft: SCNVector3 = SCNVector3Zero
+    @State private var eyePositionRight: SCNVector3 = SCNVector3Zero
+    @State private var eyeBlinkLeft: CGFloat = .zero
+    @State private var eyeBlinkRight: CGFloat = .zero
     @State private var lookAtX: Int = 0
     @State private var lookAtY: Int = 0
 
     var body: some View {
         if ARFaceTrackingConfiguration.isSupported {
             ZStack {
-                ARViewController(distanceLabelText: $distanceLabelText,
-                                 leftEyePosition: $leftEyePosition,
-                                 rightEyePosition: $rightEyePosition,
+                ARViewController(isLookingAway: $isLookingAway,
+                                 isDrowsy: $isDrowsy,
+                                 distanceLabelText: $distanceLabelText,
+                                 eyePositionLeft: $eyePositionLeft,
+                                 eyePositionRight: $eyePositionRight,
+                                 eyeBlinkLeft: $eyeBlinkLeft,
+                                 eyeBlinkRight: $eyeBlinkRight,
                                  lookAtX: $lookAtX,
                                  lookAtY: $lookAtY)
                     .edgesIgnoringSafeArea(.all)
 
-                if abs(lookAtX) > 500 {
+                if isLookingAway || isDrowsy {
                     Rectangle()
                         .stroke(.red, lineWidth: 10)
                         .edgesIgnoringSafeArea(.all)
@@ -33,8 +43,10 @@ struct ContentView: View {
 
                 VStack {
                     Text(distanceLabelText)
-                    Text("left eye: x=\(leftEyePosition.x), y=\(leftEyePosition.y), z=\(leftEyePosition.z)")
-                    Text("right eye: x=\(rightEyePosition.x), y=\(rightEyePosition.y), z=\(rightEyePosition.z)")
+                    Text("eye pos l: x=\(eyePositionLeft.x), y=\(eyePositionLeft.y), z=\(eyePositionLeft.z)")
+                    Text("eye pos r: x=\(eyePositionRight.x), y=\(eyePositionRight.y), z=\(eyePositionRight.z)")
+                    Text("eye blink l: \(eyeBlinkLeft)")
+                    Text("eye blink r: \(eyeBlinkRight)")
                     Text("look at: x=\(lookAtX), y=\(lookAtY)")
                 }
             }

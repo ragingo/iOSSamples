@@ -12,9 +12,15 @@ import ARKit
 struct ARViewController: UIViewControllerRepresentable {
     typealias UIViewControllerType = ViewController
 
+    @Binding var isLookingAway: Bool
+    @Binding var isDrowsy: Bool
+
+    // MARK: - Debug Properties
     @Binding var distanceLabelText: String
-    @Binding var leftEyePosition: SCNVector3
-    @Binding var rightEyePosition: SCNVector3
+    @Binding var eyePositionLeft: SCNVector3
+    @Binding var eyePositionRight: SCNVector3
+    @Binding var eyeBlinkLeft: CGFloat
+    @Binding var eyeBlinkRight: CGFloat
     @Binding var lookAtX: Int
     @Binding var lookAtY: Int
 
@@ -37,24 +43,26 @@ struct ARViewController: UIViewControllerRepresentable {
             parent = viewController
         }
 
-        func didUpdate(leftEyePosition: SCNVector3,
-                       rightEyePosition: SCNVector3,
-                       lookAtPositionX: CGFloat,
-                       lookAtPositionY: CGFloat) {
+        func didUpdate(result: EyeTrackerResult) {
+            parent.isLookingAway = result.isLookingAway
+            parent.isDrowsy = result.isDrowsy
+
+            parent.eyePositionLeft = result.eyePositionLeft
+            parent.eyePositionRight = result.eyePositionRight
+            parent.eyeBlinkLeft = result.eyeBlinkLeft
+            parent.eyeBlinkRight = result.eyeBlinkRight
+
             // カメラとの距離
-            let left = leftEyePosition
-            let right = rightEyePosition
+            let left = result.eyePositionLeft
+            let right = result.eyePositionRight
             let distance = (left.length() + right.length()) / 2
             parent.distanceLabelText = "\(Int(round(distance * 100))) cm"
-
-            parent.leftEyePosition = leftEyePosition
-            parent.rightEyePosition = rightEyePosition
 
             // 視線
             // actual point size of iPhoneX screen
             let phoneScreenPointSize = CGSize(width: 375, height: 812)
-            parent.lookAtX = Int(round(lookAtPositionX + phoneScreenPointSize.width / 2))
-            parent.lookAtY = Int(round(lookAtPositionY + phoneScreenPointSize.height / 2))
+            parent.lookAtX = Int(round(result.lookAtPositionX + phoneScreenPointSize.width / 2))
+            parent.lookAtY = Int(round(result.lookAtPositionY + phoneScreenPointSize.height / 2))
         }
     }
 }

@@ -9,26 +9,43 @@ import ARKit
 import SceneKit
 
 protocol EyeTrackerDelegate {
-    func didUpdate(leftEyePosition: SCNVector3,
-                   rightEyePosition: SCNVector3,
-                   lookAtPositionX: CGFloat,
-                   lookAtPositionY: CGFloat)
+    func didUpdate(result: EyeTrackerResult)
+}
+
+struct EyeTrackerResult {
+    let isLookingAway: Bool
+    let isDrowsy: Bool
+
+    let eyePositionLeft: SCNVector3
+    let eyePositionRight: SCNVector3
+    let eyeBlinkLeft: CGFloat
+    let eyeBlinkRight: CGFloat
+    let lookAtPositionX: CGFloat
+    let lookAtPositionY: CGFloat
 }
 
 final class EyeTracker: NSObject {
     var delegate: EyeTrackerDelegate?
-    let faceNode = SCNNode()
-    let eyeLeftNode = SCNNode()
-    let eyeRightNode = SCNNode()
-    let targetEyeLeftNode = SCNNode()
-    let targetEyeRightNode = SCNNode()
-    var eyeLookAtPositionXs: [CGFloat] = []
-    var eyeLookAtPositionYs: [CGFloat] = []
-    let phoneScreenSize = CGSize(width: 0.0623908297, height: 0.135096943231532)
-    let phoneScreenPointSize = CGSize(width: 375, height: 812)
-    let virtualPhoneNode = SCNNode()
-    let virtualScreenNode = SCNNode(geometry: SCNPlane(width: 1, height: 1))
     let sceneView = ARSCNView(frame: .init(x: 0, y: 0, width: 500, height: 500))
+
+    private let faceNode = SCNNode()
+    private let eyeLeftNode = SCNNode()
+    private let eyeRightNode = SCNNode()
+    private let targetEyeLeftNode = SCNNode()
+    private let targetEyeRightNode = SCNNode()
+    private var eyeLookAtPositionXs: [CGFloat] = []
+    private var eyeLookAtPositionYs: [CGFloat] = []
+    private let phoneScreenSize = CGSize(width: 0.0623908297, height: 0.135096943231532)
+    private let phoneScreenPointSize = CGSize(width: 375, height: 812)
+    private let virtualPhoneNode = SCNNode()
+    private let virtualScreenNode = SCNNode(geometry: SCNPlane(width: 1, height: 1))
+
+    // 余所見しているかどうか
+    // だいぶ雑
+    private var isLookingAway: Bool {
+        let x = Int(round(eyeLookAtPositionXs.average + phoneScreenPointSize.width / 2))
+        return abs(x) > 500
+    }
 
     override init() {
         super.init()
@@ -62,6 +79,11 @@ final class EyeTracker: NSObject {
         eyeRightNode.simdTransform = anchor.rightEyeTransform
         eyeLeftNode.simdTransform = anchor.leftEyeTransform
 
+        let eyeBlinkLeft = CGFloat(anchor.blendShapes[.eyeBlinkLeft]?.floatValue ?? .zero)
+        let eyeBlinkRight = CGFloat(anchor.blendShapes[.eyeBlinkRight]?.floatValue ?? .zero)
+        // TODO: 5秒継続したら「眠たそう」と判定する
+        let isDrowsy = eyeBlinkLeft > 0.4 || eyeBlinkRight > 0.4
+
         let lookAtLeft = lookAt(from: targetEyeLeftNode.worldPosition, to: eyeLeftNode.worldPosition)
         let lookAtRight = lookAt(from: targetEyeRightNode.worldPosition, to: eyeRightNode.worldPosition)
 
@@ -74,10 +96,15 @@ final class EyeTracker: NSObject {
 
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            self.delegate?.didUpdate(leftEyePosition: self.eyeLeftNode.worldPosition,
-                                     rightEyePosition: self.eyeRightNode.worldPosition,
-                                     lookAtPositionX: self.eyeLookAtPositionXs.average,
-                                     lookAtPositionY: self.eyeLookAtPositionYs.average)
+            let result = EyeTrackerResult(isLookingAway: self.isLookingAway,
+                                          isDrowsy: isDrowsy,
+                                          eyePositionLeft: self.eyeLeftNode.worldPosition,
+                                          eyePositionRight: self.eyeRightNode.worldPosition,
+                                          eyeBlinkLeft: eyeBlinkLeft,
+                                          eyeBlinkRight: eyeBlinkRight,
+                                          lookAtPositionX: self.eyeLookAtPositionXs.average,
+                                          lookAtPositionY: self.eyeLookAtPositionYs.average)
+            self.delegate?.didUpdate(result: result)
         }
     }
 }
