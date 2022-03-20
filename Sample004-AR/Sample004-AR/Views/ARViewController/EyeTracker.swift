@@ -26,7 +26,7 @@ struct EyeTrackerResult {
 
 final class EyeTracker: NSObject {
     var delegate: EyeTrackerDelegate?
-    let sceneView = ARSCNView(frame: .init(x: 0, y: 0, width: 500, height: 500))
+    let sceneView = ARSCNView(frame: .init(x: 0, y: 0, width: 1, height: 1))
 
     private let faceNode = SCNNode()
     private let eyeLeftNode = SCNNode()

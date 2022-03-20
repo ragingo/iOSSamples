@@ -75,8 +75,16 @@ extension ARViewController {
         override func viewDidLoad() {
             super.viewDidLoad()
 
+            eyeTracker.sceneView.translatesAutoresizingMaskIntoConstraints = false
             eyeTracker.sceneView.automaticallyUpdatesLighting = true
             view.addSubview(eyeTracker.sceneView)
+
+            NSLayoutConstraint.activate([
+                eyeTracker.sceneView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+                eyeTracker.sceneView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
+                eyeTracker.sceneView.topAnchor.constraint(equalTo: view.topAnchor, constant: 0),
+                eyeTracker.sceneView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: 0),
+            ])
         }
 
         override func viewWillAppear(_ animated: Bool) {
@@ -94,14 +102,3 @@ extension ARViewController {
         }
     }
 }
-
-extension SCNVector3 {
-    func length() -> Float {
-        return sqrtf(x * x + y * y + z * z)
-    }
-}
-
-func - (l: SCNVector3, r: SCNVector3) -> SCNVector3 {
-    return SCNVector3Make(l.x - r.x, l.y - r.y, l.z - r.z)
-}
-

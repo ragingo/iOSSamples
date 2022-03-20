@@ -15,6 +15,7 @@
 		52E169D627E652620027F35F /* ARViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D527E652620027F35F /* ARViewController.swift */; };
 		52E169D827E76FA90027F35F /* EyeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D727E76FA90027F35F /* EyeTracker.swift */; };
 		52E169DA27E794290027F35F /* Collection+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D927E794290027F35F /* Collection+Extensions.swift */; };
+		52E169DC27E7A5630027F35F /* SCNVector3+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169DB27E7A5630027F35F /* SCNVector3+Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		52E169D527E652620027F35F /* ARViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARViewController.swift; sourceTree = "<group>"; };
 		52E169D727E76FA90027F35F /* EyeTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyeTracker.swift; sourceTree = "<group>"; };
 		52E169D927E794290027F35F /* Collection+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Collection+Extensions.swift"; sourceTree = "<group>"; };
+		52E169DB27E7A5630027F35F /* SCNVector3+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SCNVector3+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,7 @@
 				52E169CF27E63FE30027F35F /* Views */,
 				52E169C127E63EDB0027F35F /* App.swift */,
 				52E169D927E794290027F35F /* Collection+Extensions.swift */,
+				52E169DB27E7A5630027F35F /* SCNVector3+Extensions.swift */,
 				52E169C527E63EDC0027F35F /* Assets.xcassets */,
 				52E169C727E63EDC0027F35F /* Preview Content */,
 			);
@@ -181,6 +184,7 @@
 				52E169C227E63EDB0027F35F /* App.swift in Sources */,
 				52E169D627E652620027F35F /* ARViewController.swift in Sources */,
 				52E169DA27E794290027F35F /* Collection+Extensions.swift in Sources */,
+				52E169DC27E7A5630027F35F /* SCNVector3+Extensions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
