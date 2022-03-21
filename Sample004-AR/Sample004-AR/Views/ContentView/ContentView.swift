@@ -23,14 +23,7 @@ struct ContentView: View {
     var body: some View {
         if ARFaceTrackingConfiguration.isSupported {
             ZStack {
-                ARViewController(isLookingAway: $isLookingAway,
-                                 isDrowsy: $isDrowsy,
-                                 eyePositionLeft: $eyePositionLeft,
-                                 eyePositionRight: $eyePositionRight,
-                                 lookAtX: $lookAtX,
-                                 lookAtY: $lookAtY,
-                                 eyeBlinkLeft: $eyeBlinkLeft,
-                                 eyeBlinkRight: $eyeBlinkRight)
+                arView
                     .edgesIgnoringSafeArea(.all)
 
                 if isLookingAway || isDrowsy {
@@ -39,17 +32,37 @@ struct ContentView: View {
                         .edgesIgnoringSafeArea(.all)
                 }
 
-                VStack {
-                    Text("eye pos l: x=\(eyePositionLeft.x), y=\(eyePositionLeft.y), z=\(eyePositionLeft.z)")
-                    Text("eye pos r: x=\(eyePositionRight.x), y=\(eyePositionRight.y), z=\(eyePositionRight.z)")
-                    Text("eye blink l: \(eyeBlinkLeft)")
-                    Text("eye blink r: \(eyeBlinkRight)")
-                    Text("look at: x=\(lookAtX), y=\(lookAtY)")
-                }
+                debugView
             }
         } else {
-            Text("顔認識非対応(T_T)")
-                .padding()
+            unsupportedView
         }
+    }
+}
+
+private extension ContentView {
+    var arView: some View {
+        ARViewController(isLookingAway: $isLookingAway,
+                         isDrowsy: $isDrowsy,
+                         eyePositionLeft: $eyePositionLeft,
+                         eyePositionRight: $eyePositionRight,
+                         lookAtX: $lookAtX,
+                         lookAtY: $lookAtY,
+                         eyeBlinkLeft: $eyeBlinkLeft,
+                         eyeBlinkRight: $eyeBlinkRight)
+    }
+
+    var debugView: some View {
+        VStack {
+            Text("eye pos l: x=\(eyePositionLeft.x), y=\(eyePositionLeft.y), z=\(eyePositionLeft.z)")
+            Text("eye pos r: x=\(eyePositionRight.x), y=\(eyePositionRight.y), z=\(eyePositionRight.z)")
+            Text("eye blink l: \(eyeBlinkLeft)")
+            Text("eye blink r: \(eyeBlinkRight)")
+            Text("look at: x=\(lookAtX), y=\(lookAtY)")
+        }
+    }
+
+    var unsupportedView: some View {
+        Text("顔認識非対応(T_T)")
     }
 }
