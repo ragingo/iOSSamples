@@ -7,6 +7,7 @@
 
 import ARKit
 import SceneKit
+import Collections
 
 protocol EyeTrackerDelegate {
     func didUpdate(result: EyeTrackerResult)
@@ -33,8 +34,8 @@ final class EyeTracker: NSObject {
     private let eyeRightNode = SCNNode()
     private let targetEyeLeftNode = SCNNode()
     private let targetEyeRightNode = SCNNode()
-    private var eyeLookAtPositionXs: [CGFloat] = []
-    private var eyeLookAtPositionYs: [CGFloat] = []
+    private var eyeLookAtPositionXs = Deque<CGFloat>()
+    private var eyeLookAtPositionYs = Deque<CGFloat>()
     private let phoneScreenSize = CGSize(width: 0.0623908297, height: 0.135096943231532)
     private let phoneScreenPointSize = CGSize(width: 375, height: 812)
     private let virtualPhoneNode = SCNNode()
@@ -89,10 +90,14 @@ final class EyeTracker: NSObject {
 
         // 最新の10件だけを保持する
         let capacity = 10
+        if eyeLookAtPositionXs.count == capacity {
+            _ = eyeLookAtPositionXs.popFirst()
+        }
+        if eyeLookAtPositionYs.count == capacity {
+            _ = eyeLookAtPositionYs.popFirst()
+        }
         eyeLookAtPositionXs.append((lookAtRight.x + lookAtLeft.x) / 2)
         eyeLookAtPositionYs.append(-(lookAtRight.y + lookAtLeft.y) / 2)
-        eyeLookAtPositionXs = Array(eyeLookAtPositionXs.suffix(capacity))
-        eyeLookAtPositionYs = Array(eyeLookAtPositionYs.suffix(capacity))
 
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
