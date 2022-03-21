@@ -29,10 +29,10 @@ struct ContentView: View {
                                  distanceLabelText: $distanceLabelText,
                                  eyePositionLeft: $eyePositionLeft,
                                  eyePositionRight: $eyePositionRight,
-                                 eyeBlinkLeft: $eyeBlinkLeft,
-                                 eyeBlinkRight: $eyeBlinkRight,
                                  lookAtX: $lookAtX,
-                                 lookAtY: $lookAtY)
+                                 lookAtY: $lookAtY,
+                                 eyeBlinkLeft: $eyeBlinkLeft,
+                                 eyeBlinkRight: $eyeBlinkRight)
                     .edgesIgnoringSafeArea(.all)
 
                 if isLookingAway || isDrowsy {

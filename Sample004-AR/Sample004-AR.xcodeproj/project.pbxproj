@@ -13,11 +13,12 @@
 		52E169C927E63EDC0027F35F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52E169C827E63EDC0027F35F /* Preview Assets.xcassets */; };
 		52E169D227E640320027F35F /* ContentView.Previews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D127E640320027F35F /* ContentView.Previews.swift */; };
 		52E169D627E652620027F35F /* ARViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D527E652620027F35F /* ARViewController.swift */; };
-		52E169D827E76FA90027F35F /* EyeTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D727E76FA90027F35F /* EyeTracker.swift */; };
+		52E169D827E76FA90027F35F /* LookingDirectionTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D727E76FA90027F35F /* LookingDirectionTracker.swift */; };
 		52E169DA27E794290027F35F /* Collection+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169D927E794290027F35F /* Collection+Extensions.swift */; };
 		52E169DC27E7A5630027F35F /* SCNVector3+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169DB27E7A5630027F35F /* SCNVector3+Extensions.swift */; };
 		52E169E027E878150027F35F /* Collections in Frameworks */ = {isa = PBXBuildFile; productRef = 52E169DF27E878150027F35F /* Collections */; };
 		52E169E227E878150027F35F /* DequeModule in Frameworks */ = {isa = PBXBuildFile; productRef = 52E169E127E878150027F35F /* DequeModule */; };
+		52E169E427E8BAFA0027F35F /* BlinkTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E169E327E8BAFA0027F35F /* BlinkTracker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -29,9 +30,10 @@
 		52E169D127E640320027F35F /* ContentView.Previews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.Previews.swift; sourceTree = "<group>"; };
 		52E169D327E6485D0027F35F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		52E169D527E652620027F35F /* ARViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARViewController.swift; sourceTree = "<group>"; };
-		52E169D727E76FA90027F35F /* EyeTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EyeTracker.swift; sourceTree = "<group>"; };
+		52E169D727E76FA90027F35F /* LookingDirectionTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LookingDirectionTracker.swift; sourceTree = "<group>"; };
 		52E169D927E794290027F35F /* Collection+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Collection+Extensions.swift"; sourceTree = "<group>"; };
 		52E169DB27E7A5630027F35F /* SCNVector3+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SCNVector3+Extensions.swift"; sourceTree = "<group>"; };
+		52E169E327E8BAFA0027F35F /* BlinkTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BlinkTracker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -107,7 +109,8 @@
 			isa = PBXGroup;
 			children = (
 				52E169D527E652620027F35F /* ARViewController.swift */,
-				52E169D727E76FA90027F35F /* EyeTracker.swift */,
+				52E169D727E76FA90027F35F /* LookingDirectionTracker.swift */,
+				52E169E327E8BAFA0027F35F /* BlinkTracker.swift */,
 			);
 			path = ARViewController;
 			sourceTree = "<group>";
@@ -191,8 +194,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				52E169D227E640320027F35F /* ContentView.Previews.swift in Sources */,
+				52E169E427E8BAFA0027F35F /* BlinkTracker.swift in Sources */,
 				52E169C427E63EDB0027F35F /* ContentView.swift in Sources */,
-				52E169D827E76FA90027F35F /* EyeTracker.swift in Sources */,
+				52E169D827E76FA90027F35F /* LookingDirectionTracker.swift in Sources */,
 				52E169C227E63EDB0027F35F /* App.swift in Sources */,
 				52E169D627E652620027F35F /* ARViewController.swift in Sources */,
 				52E169DA27E794290027F35F /* Collection+Extensions.swift in Sources */,
