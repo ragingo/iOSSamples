@@ -22,6 +22,7 @@ struct LookingDirectionTrackerResult {
     let lookAtPositionY: CGFloat
 }
 
+// 参考資料: https://dev.classmethod.jp/articles/eye-scrollable-web-view/
 final class LookingDirectionTracker: NSObject {
     var delegate: LookingDirectionTrackerDelegate?
 
@@ -96,10 +97,10 @@ final class LookingDirectionTracker: NSObject {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             let result = LookingDirectionTrackerResult(isLookingAway: self.isLookingAway,
-                                          eyePositionLeft: self.eyeLeftNode.worldPosition,
-                                          eyePositionRight: self.eyeRightNode.worldPosition,
-                                          lookAtPositionX: self.eyeLookAtPositionXs.average,
-                                          lookAtPositionY: self.eyeLookAtPositionYs.average)
+                                                       eyePositionLeft: self.eyeLeftNode.worldPosition,
+                                                       eyePositionRight: self.eyeRightNode.worldPosition,
+                                                       lookAtPositionX: self.eyeLookAtPositionXs.average,
+                                                       lookAtPositionY: self.eyeLookAtPositionYs.average)
             self.delegate?.didUpdate(result: result)
         }
     }

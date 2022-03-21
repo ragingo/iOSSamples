@@ -16,7 +16,6 @@ struct ARViewController: UIViewControllerRepresentable {
     @Binding var isDrowsy: Bool
 
     // MARK: - Debug Properties
-    @Binding var distanceLabelText: String
     @Binding var eyePositionLeft: SCNVector3
     @Binding var eyePositionRight: SCNVector3
     @Binding var lookAtX: Int
@@ -52,18 +51,8 @@ extension ARViewController.Coordinator: LookingDirectionTrackerDelegate {
         parent.isLookingAway = result.isLookingAway
         parent.eyePositionLeft = result.eyePositionLeft
         parent.eyePositionRight = result.eyePositionRight
-
-        // カメラとの距離
-        let left = result.eyePositionLeft
-        let right = result.eyePositionRight
-        let distance = (left.length() + right.length()) / 2
-        parent.distanceLabelText = "\(Int(round(distance * 100))) cm"
-
-        // 視線
-        // actual point size of iPhoneX screen
-        let phoneScreenPointSize = CGSize(width: 375, height: 812)
-        parent.lookAtX = Int(round(result.lookAtPositionX + phoneScreenPointSize.width / 2))
-        parent.lookAtY = Int(round(result.lookAtPositionY + phoneScreenPointSize.height / 2))
+        parent.lookAtX = Int(round(result.lookAtPositionX))
+        parent.lookAtY = Int(round(result.lookAtPositionY))
     }
 }
 

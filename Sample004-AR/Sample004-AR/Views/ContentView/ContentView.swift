@@ -13,7 +13,6 @@ struct ContentView: View {
     @State private var isDrowsy: Bool = false
 
     // MARK: - Debug Properties
-    @State private var distanceLabelText: String = ""
     @State private var eyePositionLeft: SCNVector3 = SCNVector3Zero
     @State private var eyePositionRight: SCNVector3 = SCNVector3Zero
     @State private var eyeBlinkLeft: CGFloat = .zero
@@ -26,7 +25,6 @@ struct ContentView: View {
             ZStack {
                 ARViewController(isLookingAway: $isLookingAway,
                                  isDrowsy: $isDrowsy,
-                                 distanceLabelText: $distanceLabelText,
                                  eyePositionLeft: $eyePositionLeft,
                                  eyePositionRight: $eyePositionRight,
                                  lookAtX: $lookAtX,
@@ -42,7 +40,6 @@ struct ContentView: View {
                 }
 
                 VStack {
-                    Text(distanceLabelText)
                     Text("eye pos l: x=\(eyePositionLeft.x), y=\(eyePositionLeft.y), z=\(eyePositionLeft.z)")
                     Text("eye pos r: x=\(eyePositionRight.x), y=\(eyePositionRight.y), z=\(eyePositionRight.z)")
                     Text("eye blink l: \(eyeBlinkLeft)")
