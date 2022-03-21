@@ -9,6 +9,7 @@ import ARKit
 import SwiftUI
 
 struct ContentView: View {
+    @State private var feedbackGenerator: UINotificationFeedbackGenerator?
     @State private var isLookingAway: Bool = false
     @State private var isDrowsy: Bool = false
 
@@ -20,20 +21,13 @@ struct ContentView: View {
     @State private var lookAtX: Int = 0
     @State private var lookAtY: Int = 0
 
+    init() {
+        feedbackGenerator = UINotificationFeedbackGenerator()
+    }
+
     var body: some View {
         if ARFaceTrackingConfiguration.isSupported {
-            ZStack {
-                arView
-                    .edgesIgnoringSafeArea(.all)
-
-                if isLookingAway || isDrowsy {
-                    Rectangle()
-                        .stroke(.red, lineWidth: 10)
-                        .edgesIgnoringSafeArea(.all)
-                }
-
-                debugView
-            }
+            supportedView
         } else {
             unsupportedView
         }
@@ -41,6 +35,28 @@ struct ContentView: View {
 }
 
 private extension ContentView {
+    var supportedView: some View {
+        ZStack {
+            arView
+                .edgesIgnoringSafeArea(.all)
+
+            if isLookingAway || isDrowsy {
+                Rectangle()
+                    .stroke(.red, lineWidth: 10)
+                    .edgesIgnoringSafeArea(.all)
+                    .onAppear {
+                        self.feedbackGenerator?.notificationOccurred(.error)
+                    }
+            }
+
+            debugView
+        }
+        .onAppear {
+            self.feedbackGenerator = UINotificationFeedbackGenerator()
+            self.feedbackGenerator?.prepare()
+        }
+    }
+
     var arView: some View {
         ARViewController(isLookingAway: $isLookingAway,
                          isDrowsy: $isDrowsy,
