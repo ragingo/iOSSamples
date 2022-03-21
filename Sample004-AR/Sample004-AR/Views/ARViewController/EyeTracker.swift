@@ -41,6 +41,9 @@ final class EyeTracker: NSObject {
     private let virtualPhoneNode = SCNNode()
     private let virtualScreenNode = SCNNode(geometry: SCNPlane(width: 1, height: 1))
 
+    private var eyeClosedStartTime = Date()
+    private var isEyeClosed = false
+
     // 余所見しているかどうか
     // だいぶ雑
     private var isLookingAway: Bool {
@@ -83,7 +86,22 @@ final class EyeTracker: NSObject {
         let eyeBlinkLeft = CGFloat(anchor.blendShapes[.eyeBlinkLeft]?.floatValue ?? .zero)
         let eyeBlinkRight = CGFloat(anchor.blendShapes[.eyeBlinkRight]?.floatValue ?? .zero)
         // TODO: 5秒継続したら「眠たそう」と判定する
-        let isDrowsy = eyeBlinkLeft > 0.4 || eyeBlinkRight > 0.4
+        let isCurrentEyeClosed = eyeBlinkLeft > 0.4 || eyeBlinkRight > 0.4
+        let isDrowsy: Bool
+        if isCurrentEyeClosed {
+            if isEyeClosed {
+                let now = Date()
+                let diff = now.timeIntervalSinceNow - eyeClosedStartTime.timeIntervalSinceNow
+                isDrowsy = diff > 3.0
+            } else {
+                isEyeClosed = true
+                eyeClosedStartTime = Date()
+                isDrowsy = false
+            }
+        } else {
+            isEyeClosed = false
+            isDrowsy = false
+        }
 
         let lookAtLeft = lookAt(from: targetEyeLeftNode.worldPosition, to: eyeLeftNode.worldPosition)
         let lookAtRight = lookAt(from: targetEyeRightNode.worldPosition, to: eyeRightNode.worldPosition)
