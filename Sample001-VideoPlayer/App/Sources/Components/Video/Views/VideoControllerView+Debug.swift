@@ -16,7 +16,7 @@ struct VideoControllerView_Previews: PreviewProvider {
     static var previews: some View {
         VideoControllerView(player: player, thumbnailPreviewPosition: .constant(0), bandwidths: .constant([1, 2, 3]))
             .onAppear {
-                async {
+                Task {
                     await player.open(urlString: videoURL)
                 }
             }

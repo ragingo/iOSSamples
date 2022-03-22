@@ -91,7 +91,7 @@ struct VideoPlayerView: View {
     }
 
     func open(urlString: String) {
-        async { [weak player] in
+        Task { [weak player] in
             await player?.open(urlString: urlString)
         }
     }
