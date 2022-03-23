@@ -8,6 +8,7 @@
 import SwiftUI
 import UIKit
 import Speech
+import Combine
 
 // プレーヤ
 struct VideoPlayerView: View {
@@ -20,17 +21,11 @@ struct VideoPlayerView: View {
     @State private var seekThumbnail: Image?
     @State private var thumbnailPreviewPosition: Double = .nan
     @State private var bandwidths: [Int] = []
-    @State fileprivate var closedCaption: String = ""
+    @State fileprivate var closedCaption: String = "ここに字幕が表示されます"
 
     init(player: VideoPlayerProtocol = VideoPlayer()) {
         self.player = player
         speechRecognizer = SpeechRecognizer()
-        speechRecognizer.onUpdate = { [self] text in
-            DispatchQueue.main.async {
-                self.closedCaption = text
-                print(text)
-            }
-        }
         player.onAudioSampleBufferUpdate = { [self] sampleBuffer in
             speechRecognizer.appendBuffer(sampleBuffer: sampleBuffer)
         }
@@ -39,12 +34,6 @@ struct VideoPlayerView: View {
     var body: some View {
         ZStack {
             VStack {
-                // 表示されない・・・
-                //                Text(closedCaption)
-                //                    .lineLimit(2)
-                //                    .foregroundColor(.red)
-                //                    .background(.gray)
-                //                    .frame(width: 100, height: 100, alignment: .center)
                 VideoSurfaceView(playerLayer: player.layer)
                     .padding(.horizontal, 8)
                 VideoControllerView(player: player, thumbnailPreviewPosition: $thumbnailPreviewPosition, bandwidths: $bandwidths)
@@ -57,6 +46,11 @@ struct VideoPlayerView: View {
                         player.requestGenerateImage(time: floor(value), size: Self.thumbnailSize)
                     }
             }
+
+            Text(closedCaption)
+                .foregroundColor(.black)
+                .background(.gray.opacity(0.5))
+                .padding(.horizontal, 8)
 
             if !isReady || isBuffering {
                 ProgressView()
@@ -99,6 +93,9 @@ struct VideoPlayerView: View {
         .onReceive(player.bandwidthsSubject) { value in
             bandwidths = value
         }
+        .onReceive(speechRecognizer.partialClosedCaption) { value in
+            closedCaption = value
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
             player.pause()
         }
@@ -121,7 +118,7 @@ struct VideoPlayerView: View {
 }
 
 class SpeechRecognizer {
-    var onUpdate: ((String) -> Void)?
+    let partialClosedCaption = PassthroughSubject<String, Never>()
 
     private let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
     private let request: SFSpeechAudioBufferRecognitionRequest
@@ -143,7 +140,7 @@ class SpeechRecognizer {
                 return
             }
             let text = result.bestTranscription.formattedString
-            self.onUpdate?(text)
+            self.partialClosedCaption.send(text)
         }
     }
 
