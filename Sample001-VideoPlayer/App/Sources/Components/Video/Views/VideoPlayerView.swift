@@ -7,24 +7,44 @@
 
 import SwiftUI
 import UIKit
+import Speech
 
 // プレーヤ
 struct VideoPlayerView: View {
     private static let thumbnailSize = CGSize(width: 200, height: 200)
     private let player: VideoPlayerProtocol
+    private let speechRecognizer: SpeechRecognizer
+
     @State private var isReady = false
     @State private var isBuffering = false
     @State private var seekThumbnail: Image?
     @State private var thumbnailPreviewPosition: Double = .nan
     @State private var bandwidths: [Int] = []
+    @State fileprivate var closedCaption: String = ""
 
     init(player: VideoPlayerProtocol = VideoPlayer()) {
         self.player = player
+        speechRecognizer = SpeechRecognizer()
+        speechRecognizer.onUpdate = { [self] text in
+            DispatchQueue.main.async {
+                self.closedCaption = text
+                print(text)
+            }
+        }
+        player.onAudioSampleBufferUpdate = { [self] sampleBuffer in
+            speechRecognizer.appendBuffer(sampleBuffer: sampleBuffer)
+        }
     }
 
     var body: some View {
         ZStack {
             VStack {
+                // 表示されない・・・
+                //                Text(closedCaption)
+                //                    .lineLimit(2)
+                //                    .foregroundColor(.red)
+                //                    .background(.gray)
+                //                    .frame(width: 100, height: 100, alignment: .center)
                 VideoSurfaceView(playerLayer: player.layer)
                     .padding(.horizontal, 8)
                 VideoControllerView(player: player, thumbnailPreviewPosition: $thumbnailPreviewPosition, bandwidths: $bandwidths)
@@ -37,9 +57,11 @@ struct VideoPlayerView: View {
                         player.requestGenerateImage(time: floor(value), size: Self.thumbnailSize)
                     }
             }
+
             if !isReady || isBuffering {
                 ProgressView()
             }
+
             HStack(alignment: .center, spacing: nil) {
                 // TODO: 適当に表示しているのを直す
                 if let seekThumbnail = seekThumbnail {
@@ -54,6 +76,7 @@ struct VideoPlayerView: View {
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
             player.prepare()
+            speechRecognizer.run()
         }
         .onDisappear {
             UIApplication.shared.isIdleTimerDisabled = false
@@ -95,4 +118,37 @@ struct VideoPlayerView: View {
             await player?.open(urlString: urlString)
         }
     }
+}
+
+class SpeechRecognizer {
+    var onUpdate: ((String) -> Void)?
+
+    private let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
+    private let request: SFSpeechAudioBufferRecognitionRequest
+    private var task: SFSpeechRecognitionTask?
+
+    init() {
+        request = SFSpeechAudioBufferRecognitionRequest()
+        request.shouldReportPartialResults = true
+        // デバイス上で音声認識(インターネット接続しない。インターネット版を使うと毎分リクエストが途切れるから再セットアップ処理が必要。)
+        request.requiresOnDeviceRecognition = true
+    }
+
+    func run() {
+        task = recognizer.recognitionTask(with: request) { [weak self] result, _ in
+            guard let self = self else {
+                return
+            }
+            guard let result = result else {
+                return
+            }
+            let text = result.bestTranscription.formattedString
+            self.onUpdate?(text)
+        }
+    }
+
+    func appendBuffer(sampleBuffer: CMSampleBuffer) {
+        request.appendAudioSampleBuffer(sampleBuffer)
+    }
+
 }
