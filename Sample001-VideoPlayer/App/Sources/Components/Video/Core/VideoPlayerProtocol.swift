@@ -9,6 +9,7 @@ import Combine
 import Foundation
 import QuartzCore
 import CoreImage
+import CoreMedia
 
 enum VideoLoadStatus {
     case unknown
@@ -23,6 +24,7 @@ enum VideoPlayStatus {
 }
 
 protocol VideoPlayerProtocol: AnyObject {
+    var onAudioSampleBufferUpdate: ((CMSampleBuffer) -> Void)? { get set }
     var layer: CALayer { get }
     var isLiveStreaming: Bool { get }
     var isPlaying: Bool { get }
