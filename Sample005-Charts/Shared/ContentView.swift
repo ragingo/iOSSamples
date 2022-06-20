@@ -11,9 +11,11 @@ struct ContentView: View {
     var body: some View {
         GeometryReader { geo in
             ScrollView {
-                Text(" 雑な棒グラフ(横向き)")
+                Text("雑な円グラフ")
+                makePieChart()
+                Text("雑な棒グラフ(横向き)")
                 makeHorizontalBarChart(geo: geo, maxValue: 100)
-                Text(" 雑な棒グラフ(縦向き)")
+                Text("雑な棒グラフ(縦向き)")
                 makeVerticalBarChart(geo: geo, maxValue: 100)
             }
         }
@@ -84,6 +86,63 @@ struct ContentView: View {
         .frame(height: 200)
         .frame(minWidth: 0, maxWidth: .infinity, alignment: .bottomLeading)
         .background(Color.yellow)
+    }
+
+    @ViewBuilder
+    private func makePieChart() -> some View {
+        let totalCount = 100
+        let items = makeShuffledData(range: 0..<1000, count: totalCount)
+        let groups = Dictionary(grouping: items, by: { $0 % 5 })
+        var startAngle: Angle = .degrees(-90)
+        var endAngle: Angle = .degrees(-90)
+
+        let pies: [(key: Int, startAngle: Angle, endAngle: Angle)] = groups.map { group in
+            startAngle = endAngle
+            let percentage = (CGFloat(group.value.count) / CGFloat(totalCount))
+            endAngle = .degrees(startAngle.degrees + 360 * percentage)
+            return (group.key, startAngle, endAngle)
+        }
+
+
+        ZStack {
+            GeometryReader { geo in
+                let frame = geo.frame(in: .local)
+                let center = CGPoint(x: frame.midX, y: frame.midY)
+                let r = geo.size.width / 2
+
+                ForEach(0..<pies.count, id: \.self) { index in
+                    let pie = pies[index]
+
+                    ZStack {
+                        Path { path in
+                            path.move(to: center)
+                            // clockwise おかしいと思ったら・・・そういうことらしい
+                            // https://stackoverflow.com/a/57226474
+                            path.addArc(
+                                center: center,
+                                radius: r,
+                                startAngle: pie.startAngle,
+                                endAngle: pie.endAngle,
+                                clockwise: false
+                            )
+                        }
+                        .fill(randomColor())
+
+                        // pie の中心に配置したいけど数学が分からん
+                        Text("\(pie.key)")
+                            .position(x: center.x, y: center.y)
+                    }
+                }
+            }
+        }
+        .frame(width: 300, height: 300)
+    }
+
+    private func randomColor() -> Color {
+        let r = Double.random(in: 0...1.0)
+        let g = Double.random(in: 0...1.0)
+        let b = Double.random(in: 0...1.0)
+        return Color(red: r, green: g, blue: b)
     }
 }
 
