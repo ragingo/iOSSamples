@@ -74,7 +74,7 @@ struct ContentView: View {
                     Rectangle()
                         .frame(width: 30, height: length)
                         .overlay(
-                            LinearGradient(colors: [.red, .green], startPoint: .leading, endPoint: .trailing)
+                            LinearGradient(colors: [.red, .green], startPoint: .bottom, endPoint: .top)
                         )
                         .cornerRadius(8)
                     Text("\(item)")
