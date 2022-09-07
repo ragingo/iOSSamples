@@ -7,9 +7,13 @@
 
 import SwiftUI
 import UIKit
+import OrderedCollections
 
 struct ContentView2: View {
-    @State private var blocks: [Int: [(Int, Color)]] = [:]
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    @State private var blocks: OrderedDictionary<Int, [(Int, Color)]> = .init()
+    @State private var angle: Angle = .degrees(0)
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -18,7 +22,8 @@ struct ContentView2: View {
                     if let row = blocks[row] {
                         ForEach(row, id: \.0) { id, col in
                             col
-                                .frame(width: 2, height: 2)
+                                .frame(width: 10, height: 10)
+                                .rotation3DEffect(angle, axis: (x: CGFloat(0.0), y: CGFloat(1.0), z: CGFloat(0.0)))
                         }
                     }
                 }
@@ -28,6 +33,9 @@ struct ContentView2: View {
         .background(.blue.opacity(0.3))
         .padding()
         .onAppear(perform: onApper)
+        .onReceive(timer) { _ in
+            angle.degrees += 10
+        }
     }
 
     // TODO: 表示は壊れてるから、気が向いたら直す
@@ -74,7 +82,7 @@ struct ContentView2: View {
         }
 
         let bytesPerPixel = cgImage.bitsPerPixel / 8
-        var blocks: [Int: [(Int, Color)]] = [:]
+        var blocks: OrderedDictionary<Int, [(Int, Color)]> = .init()
         var pixels: [(Int, Color)] = []
 
         (0..<h).forEach { row in

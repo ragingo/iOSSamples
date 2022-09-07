@@ -12,6 +12,7 @@
 		5212326328BB4C5500E6D462 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5212326228BB4C5500E6D462 /* Assets.xcassets */; };
 		5212326628BB4C5500E6D462 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5212326528BB4C5500E6D462 /* Preview Assets.xcassets */; };
 		5212326D28BBBAC300E6D462 /* ContentView2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5212326C28BBBAC300E6D462 /* ContentView2.swift */; };
+		5212327028C8DAED00E6D462 /* OrderedCollections in Frameworks */ = {isa = PBXBuildFile; productRef = 5212326F28C8DAED00E6D462 /* OrderedCollections */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5212327028C8DAED00E6D462 /* OrderedCollections in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,6 +88,9 @@
 			dependencies = (
 			);
 			name = "Sample007-ImageProcessing";
+			packageProductDependencies = (
+				5212326F28C8DAED00E6D462 /* OrderedCollections */,
+			);
 			productName = "Sample007-ImageProcessing";
 			productReference = 5212325B28BB4C5400E6D462 /* Sample007-ImageProcessing.app */;
 			productType = "com.apple.product-type.application";
@@ -114,6 +119,9 @@
 				Base,
 			);
 			mainGroup = 5212325228BB4C5400E6D462;
+			packageReferences = (
+				5212326E28C8DAED00E6D462 /* XCRemoteSwiftPackageReference "swift-collections" */,
+			);
 			productRefGroup = 5212325C28BB4C5400E6D462 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -343,6 +351,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		5212326E28C8DAED00E6D462 /* XCRemoteSwiftPackageReference "swift-collections" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/apple/swift-collections.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		5212326F28C8DAED00E6D462 /* OrderedCollections */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5212326E28C8DAED00E6D462 /* XCRemoteSwiftPackageReference "swift-collections" */;
+			productName = OrderedCollections;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5212325328BB4C5400E6D462 /* Project object */;
 }
