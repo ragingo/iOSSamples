@@ -11,7 +11,7 @@ import SwiftUI
 struct Sample007_ImageProcessingApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView2()
+            RootView()
         }
     }
 }

@@ -1,5 +1,5 @@
 //
-//  ContentView2.swift
+//  Pix2ColorTextView.swift
 //  Sample007-ImageProcessing
 //
 //  Created by ragingo on 2022/08/28.
@@ -9,7 +9,7 @@ import SwiftUI
 import UIKit
 import OrderedCollections
 
-struct ContentView2: View {
+struct Pix2ColorTextView: View {
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     @State private var blocks: OrderedDictionary<Int, [(Int, Color)]> = .init()
@@ -32,14 +32,13 @@ struct ContentView2: View {
         .padding(8)
         .background(.blue.opacity(0.3))
         .padding()
-        .onAppear(perform: onApper)
+        .onAppear(perform: onAppear)
         .onReceive(timer) { _ in
             angle.degrees += 10
         }
     }
 
-    // TODO: 表示は壊れてるから、気が向いたら直す
-    private func onApper() {
+    private func onAppear() {
         guard let uiImage = UIImage(named: "cat") else {
             return
         }
@@ -104,6 +103,6 @@ struct ContentView2: View {
 
 struct ContentView2_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView2()
+        Pix2ColorTextView()
     }
 }

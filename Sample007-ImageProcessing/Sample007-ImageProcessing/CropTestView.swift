@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  CropTestView.swift
 //  Sample007-ImageProcessing
 //
 //  Created by ragingo on 2022/08/28.
@@ -8,7 +8,7 @@
 import SwiftUI
 import UIKit
 
-struct ContentView: View {
+struct CropTestView: View {
     @State private var blocks: [[(Image?)]] = []
     @State private var isHover = false
 
@@ -78,6 +78,6 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        CropTestView()
     }
 }
