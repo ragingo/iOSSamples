@@ -158,7 +158,7 @@ struct VideoControllerView: View {
                 Button(action: onFlipButtonCliecked, label: {
                     Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right")
                 })
-                .rotation3DEffect(.degrees(flipButtonRotationAngle), axis: (x: 0, y: 1, z:0))
+                .rotation3DEffect(.degrees(flipButtonRotationAngle), axis: (x: 0, y: 1, z: 0))
                 .animation(.easeIn, value: flipButtonRotationAngle)
                 .foregroundColor(.primary)
                 .disabled(isLocking)
