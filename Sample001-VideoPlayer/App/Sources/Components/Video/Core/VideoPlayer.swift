@@ -234,17 +234,17 @@ extension VideoPlayer {
         imageGenerator?.requestedTimeToleranceAfter = .zero
 
         // AVPlayerItem のプロパティの監視
-        keyValueObservations += [player.currentItem?.observe(\.status, changeHandler: onStatusChanged)]
-        keyValueObservations += [player.currentItem?.observe(\.duration, changeHandler: onDurationChanged)]
-        keyValueObservations += [player.currentItem?.observe(\.isPlaybackLikelyToKeepUp, changeHandler: onPlaybackLikelyToKeepUpChanged)]
-        keyValueObservations += [player.currentItem?.observe(\.loadedTimeRanges, changeHandler: onLoadedTimeRangesChanged)]
+        keyValueObservations += [player.currentItem?.observe(\.status, changeHandler: { [weak self] in self?.onStatusChanged(item: $0, value: $1) })]
+        keyValueObservations += [player.currentItem?.observe(\.duration, changeHandler: { [weak self] in self?.onDurationChanged(item: $0, value: $1) })]
+        keyValueObservations += [player.currentItem?.observe(\.isPlaybackLikelyToKeepUp, changeHandler: { [weak self] in self?.onPlaybackLikelyToKeepUpChanged(item: $0, value: $1) })]
+        keyValueObservations += [player.currentItem?.observe(\.loadedTimeRanges, changeHandler: { [weak self] in self?.onLoadedTimeRangesChanged(item: $0, value: $1) })]
 
         // AVPlayer のプロパティの監視
-        keyValueObservations += [player.observe(\.timeControlStatus, changeHandler: onTimeControlStatusChanged)]
+        keyValueObservations += [player.observe(\.timeControlStatus, changeHandler: { [weak self] in self?.onTimeControlStatusChanged(player: $0, value: $1)})]
 
         // 指定秒数の間隔で再生位置を通知
         let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-        timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main, using: onTimeObserverCall)
+        timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main, using: { [weak self] in self?.onTimeObserverCall(time: $0) })
     }
 
     // AVPlayerItem.status 変更時
