@@ -1,0 +1,5 @@
+
+module Cpp {
+    header "Cpp.hpp"
+    requires cplusplus
+}
