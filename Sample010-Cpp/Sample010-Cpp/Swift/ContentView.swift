@@ -16,6 +16,8 @@ struct ContentView: View {
         URL(string: "https://picsum.photos/300/300.webp")!
     ]
     @State private var imageInfos: [(image: Image, type: CppMedia.MediaType)] = []
+    @State private var imagesDownloadTask: Task<(), Never>?
+    @State private var showAlert: Bool = false
 
     var body: some View {
         VStack(alignment: .leading) {
@@ -31,31 +33,39 @@ struct ContentView: View {
                     Spacer()
                 }
             }
+
+            Button("cancel") {
+                imagesDownloadTask?.cancel()
+            }
             Spacer()
         }
         .frame(maxWidth: .infinity)
         .padding()
         .onAppear {
-            Task {
-                let rgImage = RgImage()
+            imagesDownloadTask = Task {
                 do {
-                    let results = try await rgImage.fetchAll(mode: .parallel, urls: Self.imageURLs)
+                    //try? await Task.sleep(for: .seconds(1000)) // キャンセル確認用
+
+                    let results = try await RgImageLoader.shared.fetchAll(
+                        mode: .parallel,
+                        urls: Self.imageURLs,
+                        cancellationBehavior: .throwError
+                    )
                     let infos: [(image: Image, type: CppMedia.MediaType)] = results.compactMap {
                         guard let fetchResult = $0.value else {
                             return nil
                         }
-                        guard let uiImage = UIImage(data: fetchResult.data) else {
-                            return nil
-                        }
-                        let image = Image(uiImage: uiImage)
+                        let image = Image(uiImage: fetchResult.uiImage)
                         return (image, fetchResult.type)
                     }
                     self.imageInfos = infos
                 } catch {
                     print(error)
+                    showAlert = true
                 }
             }
         }
+        .alert("error!", isPresented: $showAlert, actions: {})
     }
 }
 

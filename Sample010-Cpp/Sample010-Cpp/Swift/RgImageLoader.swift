@@ -1,5 +1,5 @@
 //
-//  RgImage.swift
+//  RgImageLoader.swift
 //  Sample010-Cpp
 //
 //  Created by ragingo on 2022/09/24.
@@ -12,9 +12,9 @@ import Cpp
 // https://developer.apple.com/videos/play/wwdc2021/10132/
 // https://www.donnywals.com/running-tasks-in-parallel-with-swift-concurrencys-task-groups/
 // https://zenn.dev/akkyie/articles/swift-concurrency
-struct RgImage {
+struct RgImageLoader {
     struct FetchResult {
-        let data: Data
+        let uiImage: UIImage
         let type: CppMedia.MediaType
     }
 
@@ -27,6 +27,10 @@ struct RgImage {
         case silent
         case throwError
     }
+
+    private init() {}
+
+    static let shared = RgImageLoader()
 
     func fetch(url: URL) async throws -> FetchResult? {
         let request = URLRequest(url: url)
@@ -47,7 +51,11 @@ struct RgImage {
             return nil
         }
 
-        return .init(data: data, type: type)
+        guard let uiImage = UIImage(data: data) else {
+            return nil
+        }
+
+        return .init(uiImage: uiImage, type: type)
     }
 
     func fetchAll(
