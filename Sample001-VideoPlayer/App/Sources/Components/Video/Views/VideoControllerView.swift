@@ -140,7 +140,7 @@ struct VideoControllerView: View {
                 // 画質(bandwidth)
                 if !bandwidths.isEmpty {
                     Menu {
-                        ForEach(bandwidths.indices) { i in
+                        ForEach(bandwidths.indices, id: \.self) { i in
                             Button(action: {
                                 onBandwidthChanged(value: bandwidths.wrappedValue[i])
                             }, label: {
