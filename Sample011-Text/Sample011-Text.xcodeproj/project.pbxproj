@@ -12,6 +12,8 @@
 		52E47AC028E9723E00305350 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52E47ABF28E9723E00305350 /* Assets.xcassets */; };
 		52E47AC328E9723E00305350 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52E47AC228E9723E00305350 /* Preview Assets.xcassets */; };
 		52E47ACA28E97AE000305350 /* KerningTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E47AC928E97AE000305350 /* KerningTestView.swift */; };
+		52E47ACC28EAD33400305350 /* FontFeatureTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E47ACB28EAD33400305350 /* FontFeatureTestView.swift */; };
+		52E47ACE28EAD9BD00305350 /* FontFeatureTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E47ACD28EAD9BD00305350 /* FontFeatureTypes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +23,8 @@
 		52E47ABF28E9723E00305350 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		52E47AC228E9723E00305350 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		52E47AC928E97AE000305350 /* KerningTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KerningTestView.swift; sourceTree = "<group>"; };
+		52E47ACB28EAD33400305350 /* FontFeatureTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontFeatureTestView.swift; sourceTree = "<group>"; };
+		52E47ACD28EAD9BD00305350 /* FontFeatureTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontFeatureTypes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +60,8 @@
 				52E47ABB28E9723D00305350 /* Sample011_TextApp.swift */,
 				52E47ABD28E9723D00305350 /* ContentView.swift */,
 				52E47AC928E97AE000305350 /* KerningTestView.swift */,
+				52E47ACB28EAD33400305350 /* FontFeatureTestView.swift */,
+				52E47ACD28EAD9BD00305350 /* FontFeatureTypes.swift */,
 				52E47ABF28E9723E00305350 /* Assets.xcassets */,
 				52E47AC128E9723E00305350 /* Preview Content */,
 			);
@@ -142,6 +148,8 @@
 			files = (
 				52E47ACA28E97AE000305350 /* KerningTestView.swift in Sources */,
 				52E47ABE28E9723D00305350 /* ContentView.swift in Sources */,
+				52E47ACC28EAD33400305350 /* FontFeatureTestView.swift in Sources */,
+				52E47ACE28EAD9BD00305350 /* FontFeatureTypes.swift in Sources */,
 				52E47ABC28E9723D00305350 /* Sample011_TextApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -278,6 +286,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -306,6 +315,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
