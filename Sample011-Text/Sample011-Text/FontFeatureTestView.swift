@@ -25,6 +25,7 @@ import SwiftUI
 ///
 struct FontFeatureTestView: View {
     @State private var kerning: CGFloat = 0.0
+    @State private var selectorsFilter = ""
 
     @State private var AllTypographicFeatures: FontAllTypographicFeaturesTypeSelectors?
     @State private var AlternateKana: FontAlternateKanaTypeSelectors?
@@ -160,6 +161,10 @@ struct FontFeatureTestView: View {
                 .background(Color.black)
 
             ScrollView {
+                TextField("filter", text: $selectorsFilter)
+                    .border(.black)
+                    .padding(4)
+
                 makeSelectorSelectionViews()
             }
         }
@@ -195,41 +200,47 @@ struct FontFeatureTestView: View {
     }
 
     @ViewBuilder
-    private func makeSelectorSelectionView<T: RawRepresentable & CaseIterable>(_ type: T.Type, selectedSelector: Binding<T?>) -> some View where T.RawValue == Int {
-        VStack(spacing: 0) {
-            HStack {
-                let typeName = "\(type)".replacingOccurrences(of: "Font", with: "").replacingOccurrences(of: "TypeSelectors", with: "")
-                Menu(typeName) {
-                    let items = enumToMenuItems(type: type)
-                    ForEach(items) { item in
+    private func makeSelectorSelectionView<T: RawRepresentable & CaseIterable>(
+        _ type: T.Type,
+        selectedSelector: Binding<T?>
+    ) -> some View where T.RawValue == Int {
+        let typeName = "\(type)".replacingOccurrences(of: "Font", with: "").replacingOccurrences(of: "TypeSelectors", with: "")
+
+        if typeName.contains(selectorsFilter) || selectorsFilter.isEmpty {
+            VStack(spacing: 0) {
+                HStack {
+                    Menu(typeName) {
+                        let items = enumToMenuItems(type: type)
+                        ForEach(items) { item in
+                            Button {
+                                selectedSelector.wrappedValue = T(rawValue: item.value)
+                            } label: {
+                                Text("\(item.name): \(item.value)")
+                            }
+                        }
+
                         Button {
-                            selectedSelector.wrappedValue = T(rawValue: item.value)
+                            selectedSelector.wrappedValue = nil
                         } label: {
-                            Text("\(item.name): \(item.value)")
+                            Text("disable")
                         }
                     }
 
-                    Button {
-                        selectedSelector.wrappedValue = nil
-                    } label: {
-                        Text("disable")
+                    Spacer()
+
+                    if let selectedSelector = selectedSelector.wrappedValue {
+                        let name = "\(selectedSelector)"
+                        Text(name)
+                    } else {
+                        Text("nil")
                     }
                 }
-
-                Spacer()
-
-                if let selectedSelector = selectedSelector.wrappedValue {
-                    let name = "\(selectedSelector)"
-                    Text(name)
-                } else {
-                    Text("nil")
-                }
             }
+            .padding(.horizontal, 8)
+            .background(Color(white: 0.95))
+            .cornerRadius(4)
+            .font(.system(size: 14))
         }
-        .padding(.horizontal, 8)
-        .background(Color(white: 0.95))
-        .cornerRadius(4)
-        .font(.system(size: 14))
     }
 
     private func createFont(size: CGFloat) -> CTFont? {
