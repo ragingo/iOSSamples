@@ -17,6 +17,9 @@ struct ContentView: View {
                 NavigationLink("Font Features") {
                     FontFeatureTestView()
                 }
+                NavigationLink("Core Text") {
+                    CoreTextTestView()
+                }
             }
         }
     }

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		52D21B3C28FC34440058898C /* CoreTextTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D21B3B28FC34440058898C /* CoreTextTestView.swift */; };
 		52E47ABC28E9723D00305350 /* Sample011_TextApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E47ABB28E9723D00305350 /* Sample011_TextApp.swift */; };
 		52E47ABE28E9723D00305350 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E47ABD28E9723D00305350 /* ContentView.swift */; };
 		52E47AC028E9723E00305350 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52E47ABF28E9723E00305350 /* Assets.xcassets */; };
@@ -17,6 +18,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		52D21B3B28FC34440058898C /* CoreTextTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTextTestView.swift; sourceTree = "<group>"; };
 		52E47AB828E9723D00305350 /* Sample011-Text.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sample011-Text.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		52E47ABB28E9723D00305350 /* Sample011_TextApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sample011_TextApp.swift; sourceTree = "<group>"; };
 		52E47ABD28E9723D00305350 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -64,6 +66,7 @@
 				52E47ACD28EAD9BD00305350 /* FontFeatureTypes.swift */,
 				52E47ABF28E9723E00305350 /* Assets.xcassets */,
 				52E47AC128E9723E00305350 /* Preview Content */,
+				52D21B3B28FC34440058898C /* CoreTextTestView.swift */,
 			);
 			path = "Sample011-Text";
 			sourceTree = "<group>";
@@ -148,6 +151,7 @@
 			files = (
 				52E47ACA28E97AE000305350 /* KerningTestView.swift in Sources */,
 				52E47ABE28E9723D00305350 /* ContentView.swift in Sources */,
+				52D21B3C28FC34440058898C /* CoreTextTestView.swift in Sources */,
 				52E47ACC28EAD33400305350 /* FontFeatureTestView.swift in Sources */,
 				52E47ACE28EAD9BD00305350 /* FontFeatureTypes.swift in Sources */,
 				52E47ABC28E9723D00305350 /* Sample011_TextApp.swift in Sources */,
