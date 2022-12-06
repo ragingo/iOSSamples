@@ -10,7 +10,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var employees: [Employee] = []
     @State private var sequence = (1...).lazy
-    @State private var offset = 0
+    @State private var offset = 1
     private let itemsPerPage = 50
 
     var body: some View {
@@ -33,7 +33,7 @@ struct ContentView: View {
         try? await Task.sleep(nanoseconds: 1_000_000_000)
 
         if isRefresh {
-            offset = 0
+            offset = 1
             employees.removeAll(keepingCapacity: true)
         }
 
