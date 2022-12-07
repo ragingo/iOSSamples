@@ -18,6 +18,8 @@
 		52D01DE3293F787C00103B11 /* TableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D01DE2293F787C00103B11 /* TableView.swift */; };
 		52D01DE529404E5900103B11 /* TableViewTextCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D01DE429404E5900103B11 /* TableViewTextCell.swift */; };
 		52D01DE729404E8100103B11 /* TableViewButtonCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D01DE629404E8100103B11 /* TableViewButtonCell.swift */; };
+		52D01DEC294077EA00103B11 /* TableViewSampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D01DEB294077EA00103B11 /* TableViewSampleView.swift */; };
+		52D01DEE29407C3900103B11 /* SampleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D01DED29407C3900103B11 /* SampleViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +34,8 @@
 		52D01DE2293F787C00103B11 /* TableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableView.swift; sourceTree = "<group>"; };
 		52D01DE429404E5900103B11 /* TableViewTextCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewTextCell.swift; sourceTree = "<group>"; };
 		52D01DE629404E8100103B11 /* TableViewButtonCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewButtonCell.swift; sourceTree = "<group>"; };
+		52D01DEB294077EA00103B11 /* TableViewSampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableViewSampleView.swift; sourceTree = "<group>"; };
+		52D01DED29407C3900103B11 /* SampleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SampleViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,13 +69,12 @@
 		52D01DC8293DF00000103B11 /* Sample013-List */ = {
 			isa = PBXGroup;
 			children = (
-				52D01DE1293F783D00103B11 /* TableView */,
-				52D01DD7293DF05800103B11 /* StandardList */,
+				52D01DE82940769900103B11 /* Components */,
+				52D01DEA294076D300103B11 /* Models */,
+				52D01DE9294076BA00103B11 /* Views */,
 				52D01DC9293DF00000103B11 /* Sample013_ListApp.swift */,
-				52D01DCB293DF00000103B11 /* ContentView.swift */,
 				52D01DCD293DF00200103B11 /* Assets.xcassets */,
 				52D01DCF293DF00200103B11 /* Preview Content */,
-				52D01DDA293DF10500103B11 /* Employee.swift */,
 			);
 			path = "Sample013-List";
 			sourceTree = "<group>";
@@ -101,6 +104,33 @@
 				52D01DE629404E8100103B11 /* TableViewButtonCell.swift */,
 			);
 			path = TableView;
+			sourceTree = "<group>";
+		};
+		52D01DE82940769900103B11 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				52D01DD7293DF05800103B11 /* StandardList */,
+				52D01DE1293F783D00103B11 /* TableView */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		52D01DE9294076BA00103B11 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				52D01DCB293DF00000103B11 /* ContentView.swift */,
+				52D01DEB294077EA00103B11 /* TableViewSampleView.swift */,
+				52D01DED29407C3900103B11 /* SampleViewModel.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		52D01DEA294076D300103B11 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				52D01DDA293DF10500103B11 /* Employee.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -183,7 +213,9 @@
 				52D01DCC293DF00000103B11 /* ContentView.swift in Sources */,
 				52D01DE3293F787C00103B11 /* TableView.swift in Sources */,
 				52D01DE729404E8100103B11 /* TableViewButtonCell.swift in Sources */,
+				52D01DEE29407C3900103B11 /* SampleViewModel.swift in Sources */,
 				52D01DDB293DF10500103B11 /* Employee.swift in Sources */,
+				52D01DEC294077EA00103B11 /* TableViewSampleView.swift in Sources */,
 				52D01DCA293DF00000103B11 /* Sample013_ListApp.swift in Sources */,
 				52D01DE0293DF74B00103B11 /* StandardListRow.swift in Sources */,
 				52D01DD9293DF06900103B11 /* StandardList.swift in Sources */,
