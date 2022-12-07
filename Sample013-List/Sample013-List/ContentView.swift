@@ -14,8 +14,12 @@ struct ContentView: View {
     private let itemsPerPage = 50
 
     var body: some View {
-        StandardList(
-            employees: $employees,
+        TableView(
+            data: $employees,
+            cellContent: { index, employee in
+                TableViewButtonCell(label: { Text("\(employee.name)") }) {}
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            },
             onLoadMore: {
                 Task {
                     await loadMore()
@@ -27,6 +31,25 @@ struct ContentView: View {
                 }
             }
         )
+        .onAppear {
+            Task {
+                await loadMore()
+            }
+        }
+
+//        StandardList(
+//            employees: $employees,
+//            onLoadMore: {
+//                Task {
+//                    await loadMore()
+//                }
+//            },
+//            onRefresh: {
+//                Task {
+//                    await loadMore(isRefresh: true)
+//                }
+//            }
+//        )
     }
 
     private func loadMore(isRefresh: Bool = false) async {
