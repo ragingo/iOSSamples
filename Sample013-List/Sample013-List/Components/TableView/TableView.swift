@@ -6,21 +6,30 @@
 //
 
 import SwiftUI
+import Differentiator
+
+struct TableViewSectionModel: IdentifiableType, Equatable {
+    typealias Identity = UUID
+
+    let identity = UUID()
+}
 
 struct TableView<
-    Data: RandomAccessCollection,
+    ItemType: Hashable & IdentifiableType,
     Cell: View
->: View where Data: Equatable, Data.Element: Hashable, Data.Index == Int {
+>: View
+{
+    typealias TableDataType = [AnimatableSectionModel<TableViewSectionModel, ItemType>]
 
-    @Binding private var data: Data
-    private let cellContent: (Data.Index, Data.Element) -> Cell
+    @Binding private var data: TableDataType
+    private let cellContent: (ItemType) -> Cell
     @State private var needsRefresh = false
     private let onLoadMore: (() -> Void)?
     private let onRefresh: (() -> Void)?
 
     init(
-        data: Binding<Data>,
-        @ViewBuilder cellContent: @escaping (Data.Index, Data.Element) -> Cell,
+        data: Binding<TableDataType>,
+        @ViewBuilder cellContent: @escaping (ItemType) -> Cell,
         onLoadMore: (() -> Void)? = nil,
         onRefresh: (() -> Void)? = nil
     ) {
@@ -42,31 +51,37 @@ struct TableView<
                 onRefresh?()
             }
         )
-        .onChange(of: data) { _ in
-            // 差分更新にはこれがよさそう
-            // https://github.com/RxSwiftCommunity/RxDataSources/blob/90c29b48b628479097fe775ed1966d75ac374518/Package.swift#L12
+        .onChange(of: data) { newData in
+            // 参考の実装
+            // https://github.com/RxSwiftCommunity/RxDataSources/blob/e4627ac4f5/Sources/RxDataSources/RxTableViewSectionedAnimatedDataSource.swift#L97
+            let diff = try? Diff.differencesForSectionedView(
+                initialSections: data,
+                finalSections: newData
+            )
             needsRefresh = true
         }
     }
 }
 
 private final class InnerTableView<
-    Data: RandomAccessCollection,
+    ItemType: Hashable & IdentifiableType,
     Cell: View
->: UIViewControllerRepresentable where Data.Element: Hashable, Data.Index == Int {
+>: UIViewControllerRepresentable
+{
+    typealias TableDataType = [AnimatableSectionModel<TableViewSectionModel, ItemType>]
     typealias UIViewControllerType = UIViewController
 
-    @Binding private var data: Data
+    @Binding private var data: TableDataType
     private let cellID = UUID().uuidString
-    private let cellContent: (Data.Index, Data.Element) -> Cell
+    private let cellContent: (ItemType) -> Cell
     private var innerViewController: UIViewControllerType?
     @Binding private var needsRefresh: Bool
     private let onLoadMore: () -> Void
     private let onRefresh: () -> Void
 
     init(
-        data: Binding<Data>,
-        @ViewBuilder cellContent: @escaping (Data.Index, Data.Element) -> Cell,
+        data: Binding<TableDataType>,
+        @ViewBuilder cellContent: @escaping (ItemType) -> Cell,
         needsRefresh: Binding<Bool>,
         onLoadMore: @escaping () -> Void,
         onRefresh: @escaping () -> Void
@@ -101,7 +116,8 @@ private final class InnerTableView<
         if needsRefresh {
             if let innerViewController = context.coordinator.innerViewController {
                 Task {
-                    (innerViewController.view as! UITableView).reloadData()
+                    let tableView = (innerViewController.view as! UITableView)
+                    tableView.reloadData()
                     needsRefresh = false
                 }
             }
@@ -134,8 +150,8 @@ private final class InnerTableView<
             guard let cell = tableView.dequeueReusableCell(withIdentifier: parent.cellID) as? HostingCell<Cell> else {
                 return UITableViewCell()
             }
-            let element = parent.data[indexPath.row]
-            let content = parent.cellContent(indexPath.row, element)
+            let element = parent.data[0].items[indexPath.row]
+            let content = parent.cellContent(element)
             cell.set(rootView: content, parentController: innerViewController)
             return cell
         }
@@ -184,34 +200,34 @@ private final class HostingCell<Content: View>: UITableViewCell {
         }
     }
 }
-
-struct TableView_Previews: PreviewProvider {
-    struct DebugCell: View {
-        let element: Int
-        var body: some View {
-            Text("\(element)")
-        }
-    }
-
-    struct DebugView: View {
-        @State private var data: [Int] = []
-
-        var body: some View {
-            TableView(
-                data: $data,
-                cellContent: { index, element in
-                    TableViewTextCell(text: "\(element)")
-                }
-            )
-            .onAppear {
-                Task {
-                    data.append(contentsOf: [1, 2, 3])
-                }
-            }
-        }
-    }
-
-    static var previews: some View {
-        DebugView()
-    }
-}
+//
+//struct TableView_Previews: PreviewProvider {
+//    struct DebugCell: View {
+//        let element: Int
+//        var body: some View {
+//            Text("\(element)")
+//        }
+//    }
+//
+//    struct DebugView: View {
+//        @State private var data: [Int] = []
+//
+//        var body: some View {
+//            TableView(
+//                data: $data,
+//                cellContent: { index, element in
+//                    TableViewTextCell(text: "\(element)")
+//                }
+//            )
+//            .onAppear {
+//                Task {
+//                    data.append(contentsOf: [1, 2, 3])
+//                }
+//            }
+//        }
+//    }
+//
+//    static var previews: some View {
+//        DebugView()
+//    }
+//}
