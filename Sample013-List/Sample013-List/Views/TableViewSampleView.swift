@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct TableViewSampleView: View {
-    @State private var employees: [Employee] = []
+    @State private var employees: [SampleViewModel.SectionModelType] = []
     @State private var isLoading = false
     @State private var isFirstLoadFailed = false
     @State private var isMoreLoadFailed = false
@@ -33,7 +33,7 @@ struct TableViewSampleView: View {
 
                 TableView(
                     data: $employees,
-                    cellContent: { index, employee in
+                    cellContent: { employee in
                         TableViewButtonCell(label: { Text("\(employee.name)") }) {}
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .frame(height: 50)

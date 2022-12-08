@@ -6,12 +6,19 @@
 //
 
 import Foundation
+import Differentiator
 
 final class SampleViewModel: ObservableObject {
+    struct SectionType: Identifiable, Hashable {
+        let id: Int
+    }
+
+    typealias SectionModelType = AnimatableSectionModel<TableViewSectionType<SectionType>, TableViewSectionItemType<Employee>>
+
     enum State: Equatable {
         case initial
         case loading
-        case loaded(employees: [Employee])
+        case loaded(employees: [SectionModelType])
         case unchanged
         case firstLoadFailed
         case moreLoadFailed
@@ -57,7 +64,7 @@ final class SampleViewModel: ObservableObject {
         self.employees.append(contentsOf: employees)
         offset += Self.itemsPerPage
 
-        state = .loaded(employees: self.employees)
+        state = .loaded(employees: sections())
     }
 
     func refresh(forceFirstLoadError: Bool = false) async {
@@ -77,5 +84,13 @@ final class SampleViewModel: ObservableObject {
             .map { Employee(id: $0, name: "emp \($0)") }
 
         return employees
+    }
+
+    private func sections() -> [SectionModelType] {
+        var sections: [SectionModelType] = []
+        let section = TableViewSectionType(value: SectionType(id: 0))
+        let items: [TableViewSectionItemType<Employee>] = employees.map { TableViewSectionItemType(value: $0) }
+        sections.append(.init(model: section, items: items))
+        return sections
     }
 }

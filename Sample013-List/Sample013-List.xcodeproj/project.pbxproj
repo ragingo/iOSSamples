@@ -20,6 +20,7 @@
 		52D01DE729404E8100103B11 /* TableViewButtonCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D01DE629404E8100103B11 /* TableViewButtonCell.swift */; };
 		52D01DEC294077EA00103B11 /* TableViewSampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D01DEB294077EA00103B11 /* TableViewSampleView.swift */; };
 		52D01DEE29407C3900103B11 /* SampleViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D01DED29407C3900103B11 /* SampleViewModel.swift */; };
+		52D01DF12940D88A00103B11 /* Differentiator in Frameworks */ = {isa = PBXBuildFile; productRef = 52D01DF02940D88A00103B11 /* Differentiator */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +44,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52D01DF12940D88A00103B11 /* Differentiator in Frameworks */,
 				52D01DDE293DF69000103B11 /* Introspect in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -151,6 +153,7 @@
 			name = "Sample013-List";
 			packageProductDependencies = (
 				52D01DDD293DF69000103B11 /* Introspect */,
+				52D01DF02940D88A00103B11 /* Differentiator */,
 			);
 			productName = "Sample013-List";
 			productReference = 52D01DC6293DF00000103B11 /* Sample013-List.app */;
@@ -182,6 +185,7 @@
 			mainGroup = 52D01DBD293DF00000103B11;
 			packageReferences = (
 				52D01DDC293DF69000103B11 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */,
+				52D01DEF2940D88A00103B11 /* XCRemoteSwiftPackageReference "RxDataSources" */,
 			);
 			productRefGroup = 52D01DC7293DF00000103B11 /* Products */;
 			projectDirPath = "";
@@ -429,6 +433,14 @@
 				minimumVersion = 0.1.4;
 			};
 		};
+		52D01DEF2940D88A00103B11 /* XCRemoteSwiftPackageReference "RxDataSources" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RxSwiftCommunity/RxDataSources";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -436,6 +448,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 52D01DDC293DF69000103B11 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */;
 			productName = Introspect;
+		};
+		52D01DF02940D88A00103B11 /* Differentiator */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52D01DEF2940D88A00103B11 /* XCRemoteSwiftPackageReference "RxDataSources" */;
+			productName = Differentiator;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
