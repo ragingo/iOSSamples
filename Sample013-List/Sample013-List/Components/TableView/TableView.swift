@@ -8,22 +8,34 @@
 import SwiftUI
 import Differentiator
 
-struct TableViewSectionModel: IdentifiableType, Equatable {
-    typealias Identity = UUID
+struct TableViewSectionType<T: Identifiable & Hashable>: IdentifiableType, Equatable {
+    typealias Identity = T
+    let value: T
+    var id: T.ID { value.id }
+    var identity: T { value }
+}
 
-    let identity = UUID()
+struct TableViewSectionItemType<T: Identifiable & Hashable>: IdentifiableType, Equatable {
+    typealias Identity = T
+    let value: T
+    var id: T.ID { value.id }
+    var identity: T { value }
 }
 
 struct TableView<
-    ItemType: Hashable & IdentifiableType,
+    SectionType: Identifiable & Hashable,
+    ItemType: Identifiable & Hashable,
     Cell: View
 >: View
 {
-    typealias TableDataType = [AnimatableSectionModel<TableViewSectionModel, ItemType>]
+    typealias TableSectionModelType = AnimatableSectionModel<TableViewSectionType<SectionType>, TableViewSectionItemType<ItemType>>
+    typealias TableDataType = [TableSectionModelType]
+    typealias DiffDataType = [Changeset<TableSectionModelType>]
 
     @Binding private var data: TableDataType
     private let cellContent: (ItemType) -> Cell
     @State private var needsRefresh = false
+    @State private var diffData: DiffDataType = []
     private let onLoadMore: (() -> Void)?
     private let onRefresh: (() -> Void)?
 
@@ -41,7 +53,7 @@ struct TableView<
 
     var body: some View {
         InnerTableView(
-            data: $data,
+            diffData: $diffData,
             cellContent: cellContent,
             needsRefresh: $needsRefresh,
             onLoadMore: {
@@ -52,26 +64,33 @@ struct TableView<
             }
         )
         .onChange(of: data) { newData in
+            // let diff: [Changeset<AnimatableSectionModel<TableViewSectionType<SectionType>, TableViewSectionItemType<ItemType>>>]?
             // 参考の実装
             // https://github.com/RxSwiftCommunity/RxDataSources/blob/e4627ac4f5/Sources/RxDataSources/RxTableViewSectionedAnimatedDataSource.swift#L97
-            let diff = try? Diff.differencesForSectionedView(
+            let diffData = try? Diff.differencesForSectionedView(
                 initialSections: data,
                 finalSections: newData
             )
+            self.diffData = diffData ?? []
             needsRefresh = true
         }
     }
 }
 
 private final class InnerTableView<
-    ItemType: Hashable & IdentifiableType,
+    SectionType: Identifiable & Hashable,
+    ItemType: Identifiable & Hashable,
     Cell: View
 >: UIViewControllerRepresentable
 {
-    typealias TableDataType = [AnimatableSectionModel<TableViewSectionModel, ItemType>]
+    typealias TableSectionModelType = AnimatableSectionModel<TableViewSectionType<SectionType>, TableViewSectionItemType<ItemType>>
+    typealias TableDataType = [TableSectionModelType]
+    typealias DiffDataType = [Changeset<TableSectionModelType>]
     typealias UIViewControllerType = UIViewController
 
-    @Binding private var data: TableDataType
+    private var data: TableDataType = []
+
+    @Binding private var diffData: DiffDataType
     private let cellID = UUID().uuidString
     private let cellContent: (ItemType) -> Cell
     private var innerViewController: UIViewControllerType?
@@ -79,14 +98,18 @@ private final class InnerTableView<
     private let onLoadMore: () -> Void
     private let onRefresh: () -> Void
 
+    private var uiTableView: UITableView? {
+        innerViewController?.view as? UITableView
+    }
+
     init(
-        data: Binding<TableDataType>,
+        diffData: Binding<DiffDataType>,
         @ViewBuilder cellContent: @escaping (ItemType) -> Cell,
         needsRefresh: Binding<Bool>,
         onLoadMore: @escaping () -> Void,
         onRefresh: @escaping () -> Void
     ) {
-        self._data = data
+        self._diffData = diffData
         self.cellContent = cellContent
         self._needsRefresh = needsRefresh
         self.onLoadMore = onLoadMore
@@ -110,16 +133,28 @@ private final class InnerTableView<
     }
 
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
-        if context.coordinator.innerViewController != uiViewController {
-            context.coordinator.innerViewController = uiViewController
-        }
-        if needsRefresh {
-            if let innerViewController = context.coordinator.innerViewController {
-                Task {
-                    let tableView = (innerViewController.view as! UITableView)
-                    tableView.reloadData()
-                    needsRefresh = false
+        if needsRefresh, let uiTableView {
+            Task {
+                diffData.forEach { changeset in
+                    uiTableView.performBatchUpdates {
+                        data = changeset.finalSections
+                        // RxDataSource モジュールを使ってないから tableView.batchUpdates() が使えない。
+                        // 以下のリンク先の本家実装を参考に、最低限のコードで更新処理を実行
+                        // https://github.com/RxSwiftCommunity/RxDataSources/blob/5.0.2/Sources/RxDataSources/UI+SectionedViewType.swift
+                        uiTableView.deleteSections(.init(changeset.deletedSections), with: .automatic)
+                        uiTableView.insertSections(.init(changeset.insertedSections), with: .automatic)
+                        changeset.movedSections.forEach {
+                            uiTableView.moveSection($0.from, toSection: $0.to)
+                        }
+                        uiTableView.deleteRows(at: .init(changeset.deletedItems.map { IndexPath(item: $0.itemIndex, section: $0.sectionIndex) }), with: .automatic)
+                        uiTableView.insertRows(at: .init(changeset.insertedItems.map { IndexPath(item: $0.itemIndex, section: $0.sectionIndex) }), with: .automatic)
+                        uiTableView.reloadRows(at: .init(changeset.updatedItems.map { IndexPath(item: $0.itemIndex, section: $0.sectionIndex) }), with: .automatic)
+                        changeset.movedItems.forEach {
+                            uiTableView.moveRow(at: IndexPath(item: $0.from.itemIndex, section: $0.from.sectionIndex), to: IndexPath(item: $0.to.itemIndex, section: $0.to.sectionIndex))
+                        }
+                    }
                 }
+                needsRefresh = false
             }
         }
     }
@@ -130,7 +165,6 @@ private final class InnerTableView<
 
     final class Coordinator: NSObject, UITableViewDataSource {
         private let parent: InnerTableView
-        var innerViewController: UIViewControllerType?
 
         init(parent: InnerTableView) {
             self.parent = parent
@@ -150,9 +184,9 @@ private final class InnerTableView<
             guard let cell = tableView.dequeueReusableCell(withIdentifier: parent.cellID) as? HostingCell<Cell> else {
                 return UITableViewCell()
             }
-            let element = parent.data[0].items[indexPath.row]
-            let content = parent.cellContent(element)
-            cell.set(rootView: content, parentController: innerViewController)
+            let element = parent.data[indexPath.section].items[indexPath.row]
+            let content = parent.cellContent(element.value)
+            cell.set(rootView: content, parentController: parent.innerViewController)
             return cell
         }
     }
