@@ -63,12 +63,11 @@ struct TableView<
                 onRefresh?()
             }
         )
-        .onChange(of: data) { newData in
-            // let diff: [Changeset<AnimatableSectionModel<TableViewSectionType<SectionType>, TableViewSectionItemType<ItemType>>>]?
+        .onChange(of: data) { [oldData = data] newData in
             // 参考の実装
-            // https://github.com/RxSwiftCommunity/RxDataSources/blob/e4627ac4f5/Sources/RxDataSources/RxTableViewSectionedAnimatedDataSource.swift#L97
+            // https://github.com/RxSwiftCommunity/RxDataSources/blob/5.0.2/Sources/RxDataSources/RxTableViewSectionedAnimatedDataSource.swift#L97
             let diffData = try? Diff.differencesForSectionedView(
-                initialSections: data,
+                initialSections: oldData,
                 finalSections: newData
             )
             self.diffData = diffData ?? []
@@ -118,7 +117,6 @@ private final class InnerTableView<
 
     func makeUIViewController(context: Context) -> UIViewControllerType {
         let viewController = UIViewControllerType()
-        innerViewController = viewController
 
         let tableView = UITableView()
         tableView.dataSource = context.coordinator
@@ -129,31 +127,35 @@ private final class InnerTableView<
         refreshControl.addTarget(self, action: #selector(onRefreshControlValueChanged(sender:)), for: .valueChanged)
         tableView.refreshControl = refreshControl
 
+        innerViewController = viewController
+
         return viewController
     }
 
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
-        if needsRefresh, let uiTableView {
-            Task {
-                diffData.forEach { changeset in
-                    uiTableView.performBatchUpdates {
-                        data = changeset.finalSections
-                        // RxDataSource モジュールを使ってないから tableView.batchUpdates() が使えない。
-                        // 以下のリンク先の本家実装を参考に、最低限のコードで更新処理を実行
-                        // https://github.com/RxSwiftCommunity/RxDataSources/blob/5.0.2/Sources/RxDataSources/UI+SectionedViewType.swift
-                        uiTableView.deleteSections(.init(changeset.deletedSections), with: .automatic)
-                        uiTableView.insertSections(.init(changeset.insertedSections), with: .automatic)
-                        changeset.movedSections.forEach {
-                            uiTableView.moveSection($0.from, toSection: $0.to)
-                        }
-                        uiTableView.deleteRows(at: .init(changeset.deletedItems.map { IndexPath(item: $0.itemIndex, section: $0.sectionIndex) }), with: .automatic)
-                        uiTableView.insertRows(at: .init(changeset.insertedItems.map { IndexPath(item: $0.itemIndex, section: $0.sectionIndex) }), with: .automatic)
-                        uiTableView.reloadRows(at: .init(changeset.updatedItems.map { IndexPath(item: $0.itemIndex, section: $0.sectionIndex) }), with: .automatic)
-                        changeset.movedItems.forEach {
-                            uiTableView.moveRow(at: IndexPath(item: $0.from.itemIndex, section: $0.from.sectionIndex), to: IndexPath(item: $0.to.itemIndex, section: $0.to.sectionIndex))
-                        }
+        if needsRefresh, let uiTableView = uiViewController.view as? UITableView {
+            diffData.forEach { changeset in
+                uiTableView.performBatchUpdates {
+                    context.coordinator.parent.data = changeset.finalSections
+
+                    // RxDataSource モジュールを使ってないから tableView.batchUpdates() が使えない。
+                    // 以下のリンク先の本家実装を参考に、最低限のコードで更新処理を実行
+                    // https://github.com/RxSwiftCommunity/RxDataSources/blob/5.0.2/Sources/RxDataSources/UI+SectionedViewType.swift
+                    uiTableView.deleteSections(.init(changeset.deletedSections), with: .automatic)
+                    uiTableView.insertSections(.init(changeset.insertedSections), with: .automatic)
+                    changeset.movedSections.forEach {
+                        uiTableView.moveSection($0.from, toSection: $0.to)
+                    }
+                    uiTableView.deleteRows(at: .init(changeset.deletedItems.map { IndexPath(row: $0.itemIndex, section: $0.sectionIndex) }), with: .automatic)
+                    uiTableView.insertRows(at: .init(changeset.insertedItems.map { IndexPath(row: $0.itemIndex, section: $0.sectionIndex) }), with: .automatic)
+                    uiTableView.reloadRows(at: .init(changeset.updatedItems.map { IndexPath(row: $0.itemIndex, section: $0.sectionIndex) }), with: .automatic)
+                    changeset.movedItems.forEach {
+                        uiTableView.moveRow(at: IndexPath(row: $0.from.itemIndex, section: $0.from.sectionIndex), to: IndexPath(row: $0.to.itemIndex, section: $0.to.sectionIndex))
                     }
                 }
+            }
+
+            Task {
                 needsRefresh = false
             }
         }
@@ -163,21 +165,27 @@ private final class InnerTableView<
         return Coordinator(parent: self)
     }
 
-    final class Coordinator: NSObject, UITableViewDataSource {
-        private let parent: InnerTableView
+    final class Coordinator: NSObject, UITableViewDataSource, UITableViewDelegate {
+        let parent: InnerTableView
 
         init(parent: InnerTableView) {
             self.parent = parent
         }
 
         // MARK: - UITableViewDataSource
-        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        func numberOfSections(in tableView: UITableView) -> Int {
             return parent.data.count
+        }
+
+        func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+            return parent.data[section].items.count
         }
 
         func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             defer {
-                if parent.data.last == parent.data[indexPath.row] {
+                let isLastSection = parent.data.last == parent.data[indexPath.section]
+                let isLastItem = parent.data[indexPath.section].items.last == parent.data[indexPath.section].items[indexPath.row]
+                if isLastSection && isLastItem {
                     parent.onLoadMore()
                 }
             }
@@ -189,6 +197,8 @@ private final class InnerTableView<
             cell.set(rootView: content, parentController: parent.innerViewController)
             return cell
         }
+
+        // MARK: - UITableViewDelegate
     }
 
     @objc private func onRefreshControlValueChanged(sender: UIRefreshControl) {
