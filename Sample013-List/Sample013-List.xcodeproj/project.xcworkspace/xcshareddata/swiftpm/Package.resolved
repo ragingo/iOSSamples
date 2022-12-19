@@ -1,6 +1,15 @@
 {
   "pins" : [
     {
+      "identity" : "ragismoothlist",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ragingo/RagiSmoothList",
+      "state" : {
+        "branch" : "main",
+        "revision" : "c1a38fa97613222b9d43338e89e2334d01cd69c9"
+      }
+    },
+    {
       "identity" : "rxdatasources",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/RxSwiftCommunity/RxDataSources",

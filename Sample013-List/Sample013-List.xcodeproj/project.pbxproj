@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		52A8FBF429510A4100F9C851 /* RagiSmoothList in Frameworks */ = {isa = PBXBuildFile; productRef = 52A8FBF329510A4100F9C851 /* RagiSmoothList */; };
 		52D01DCA293DF00000103B11 /* Sample013_ListApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D01DC9293DF00000103B11 /* Sample013_ListApp.swift */; };
 		52D01DCC293DF00000103B11 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D01DCB293DF00000103B11 /* ContentView.swift */; };
 		52D01DCE293DF00200103B11 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52D01DCD293DF00200103B11 /* Assets.xcassets */; };
@@ -46,6 +47,7 @@
 			files = (
 				52D01DF12940D88A00103B11 /* Differentiator in Frameworks */,
 				52D01DDE293DF69000103B11 /* Introspect in Frameworks */,
+				52A8FBF429510A4100F9C851 /* RagiSmoothList in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -154,6 +156,7 @@
 			packageProductDependencies = (
 				52D01DDD293DF69000103B11 /* Introspect */,
 				52D01DF02940D88A00103B11 /* Differentiator */,
+				52A8FBF329510A4100F9C851 /* RagiSmoothList */,
 			);
 			productName = "Sample013-List";
 			productReference = 52D01DC6293DF00000103B11 /* Sample013-List.app */;
@@ -186,6 +189,7 @@
 			packageReferences = (
 				52D01DDC293DF69000103B11 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */,
 				52D01DEF2940D88A00103B11 /* XCRemoteSwiftPackageReference "RxDataSources" */,
+				52A8FBF229510A4100F9C851 /* XCRemoteSwiftPackageReference "RagiSmoothList" */,
 			);
 			productRefGroup = 52D01DC7293DF00000103B11 /* Products */;
 			projectDirPath = "";
@@ -425,6 +429,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		52A8FBF229510A4100F9C851 /* XCRemoteSwiftPackageReference "RagiSmoothList" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ragingo/RagiSmoothList";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 		52D01DDC293DF69000103B11 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/siteline/SwiftUI-Introspect";
@@ -444,6 +456,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		52A8FBF329510A4100F9C851 /* RagiSmoothList */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 52A8FBF229510A4100F9C851 /* XCRemoteSwiftPackageReference "RagiSmoothList" */;
+			productName = RagiSmoothList;
+		};
 		52D01DDD293DF69000103B11 /* Introspect */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 52D01DDC293DF69000103B11 /* XCRemoteSwiftPackageReference "SwiftUI-Introspect" */;
