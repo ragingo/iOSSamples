@@ -76,6 +76,8 @@ struct TableView<
     }
 }
 
+// UIViewControllerRepresentable の実装は struct でないといけない
+// iOS 14 では動作するが、 iOS 16 ではクラッシュする。
 private final class InnerTableView<
     SectionType: Identifiable & Hashable,
     ItemType: Identifiable & Hashable,
