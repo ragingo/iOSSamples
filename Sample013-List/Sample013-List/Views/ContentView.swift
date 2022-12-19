@@ -18,7 +18,7 @@ struct ContentView: View {
                     label: {
                         Image(systemName: "tablecells")
                             .resizable()
-                            .frame(width: 50)
+                            .frame(width: 50, height: 50)
                             .foregroundColor(.green)
                         VStack(alignment: .leading) {
                             Text("TableViewSampleView")
