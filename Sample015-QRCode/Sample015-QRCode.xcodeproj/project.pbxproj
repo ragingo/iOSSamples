@@ -13,6 +13,7 @@
 		5203089E29816D1200C0CC5F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5203089C29816D1200C0CC5F /* Main.storyboard */; };
 		520308A029816D1600C0CC5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5203089F29816D1600C0CC5F /* Assets.xcassets */; };
 		520308A329816D1600C0CC5F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 520308A129816D1600C0CC5F /* LaunchScreen.storyboard */; };
+		520308AB29817C4100C0CC5F /* QRCodeReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520308AA29817C4100C0CC5F /* QRCodeReaderView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		5203089F29816D1600C0CC5F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		520308A229816D1600C0CC5F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		520308A429816D1600C0CC5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		520308AA29817C4100C0CC5F /* QRCodeReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeReaderView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,12 +59,13 @@
 			isa = PBXGroup;
 			children = (
 				5203089629816D1200C0CC5F /* AppDelegate.swift */,
+				5203089F29816D1600C0CC5F /* Assets.xcassets */,
+				520308A429816D1600C0CC5F /* Info.plist */,
+				520308A129816D1600C0CC5F /* LaunchScreen.storyboard */,
+				5203089C29816D1200C0CC5F /* Main.storyboard */,
+				520308AA29817C4100C0CC5F /* QRCodeReaderView.swift */,
 				5203089829816D1200C0CC5F /* SceneDelegate.swift */,
 				5203089A29816D1200C0CC5F /* ViewController.swift */,
-				5203089C29816D1200C0CC5F /* Main.storyboard */,
-				5203089F29816D1600C0CC5F /* Assets.xcassets */,
-				520308A129816D1600C0CC5F /* LaunchScreen.storyboard */,
-				520308A429816D1600C0CC5F /* Info.plist */,
 			);
 			path = "Sample015-QRCode";
 			sourceTree = "<group>";
@@ -139,6 +142,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5203089B29816D1200C0CC5F /* ViewController.swift in Sources */,
+				520308AB29817C4100C0CC5F /* QRCodeReaderView.swift in Sources */,
 				5203089729816D1200C0CC5F /* AppDelegate.swift in Sources */,
 				5203089929816D1200C0CC5F /* SceneDelegate.swift in Sources */,
 			);
@@ -287,8 +291,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W8439G23NQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Sample015-QRCode/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "QR Code Reader";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -314,8 +320,10 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = W8439G23NQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Sample015-QRCode/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "QR Code Reader";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
