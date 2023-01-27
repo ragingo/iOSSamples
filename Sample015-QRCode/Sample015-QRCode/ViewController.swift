@@ -13,8 +13,20 @@ class ViewController: UIViewController {
     private var cancellables: [AnyCancellable] = []
 
     override func viewDidLoad() {
-        qrCodeReaderView = QRCodeReaderView(frame: .init(origin: .zero, size: .init(width: 300, height: 300)))
+        view.translatesAutoresizingMaskIntoConstraints = false
+
+        qrCodeReaderView = QRCodeReaderView()
+        qrCodeReaderView.translatesAutoresizingMaskIntoConstraints = false
+        qrCodeReaderView.layer.borderWidth = 1
+        qrCodeReaderView.layer.borderColor = UIColor.white.cgColor
         view.addSubview(qrCodeReaderView)
+
+        NSLayoutConstraint.activate([
+            qrCodeReaderView.widthAnchor.constraint(equalToConstant: 300),
+            qrCodeReaderView.heightAnchor.constraint(equalToConstant: 300),
+            view.centerXAnchor.constraint(equalTo: qrCodeReaderView.centerXAnchor),
+            view.centerYAnchor.constraint(equalTo: qrCodeReaderView.centerYAnchor)
+        ])
 
         qrCodeReaderView.result
             .sink(receiveValue: { value in

@@ -13,6 +13,7 @@ class QRCodeReaderView: UIView {
     private let captureSession = AVCaptureSession()
     private var videoPreviewLayer: AVCaptureVideoPreviewLayer?
     private let metadataOutputQueue = DispatchQueue(label: "MetadataOutputQueue", qos: .default)
+    private let trackingFrame = UIView()
 
     private let _result = PassthroughSubject<String, Never>()
     let result: AnyPublisher<String, Never>
@@ -29,6 +30,11 @@ class QRCodeReaderView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        videoPreviewLayer?.frame = bounds
+    }
+
     func configure() -> Bool {
         guard let device = AVCaptureDevice.default(for: .video) else {
             return false
@@ -39,10 +45,15 @@ class QRCodeReaderView: UIView {
         }
 
         let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        videoPreviewLayer.videoGravity = .resizeAspect
+        videoPreviewLayer.videoGravity = .resizeAspectFill
         videoPreviewLayer.frame = bounds
         layer.addSublayer(videoPreviewLayer)
         self.videoPreviewLayer = videoPreviewLayer
+
+        trackingFrame.layer.borderWidth = 4
+        trackingFrame.layer.borderColor = UIColor.systemYellow.cgColor
+        trackingFrame.frame = .zero
+        addSubview(trackingFrame)
 
         captureSession.beginConfiguration()
         captureSession.addInput(deviceInput)
@@ -72,25 +83,37 @@ class QRCodeReaderView: UIView {
             self?.captureSession.stopRunning()
         }
     }
+
+    private func updateTrackingFrame(_ bounds: CGRect) {
+        DispatchQueue.main.async { [weak self] in
+            self?.trackingFrame.frame = bounds
+        }
+    }
 }
 
 extension QRCodeReaderView: AVCaptureMetadataOutputObjectsDelegate {
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-        metadataObjects
-            .compactMap {
-                videoPreviewLayer?.transformedMetadataObject(for: $0)
+
+        guard let videoPreviewLayer else { return }
+
+        for metadataObject in metadataObjects {
+            guard let transformedObject = videoPreviewLayer.transformedMetadataObject(for: metadataObject) else {
+                continue
             }
-            .compactMap {
-                $0 as? AVMetadataMachineReadableCodeObject
+
+            guard let readableCodeObject = transformedObject as? AVMetadataMachineReadableCodeObject else {
+                continue
             }
-            .filter {
-                $0.type == .qr
+
+            if readableCodeObject.type != .qr {
+                continue
             }
-            .compactMap {
-                $0.stringValue
+
+            if let value = readableCodeObject.stringValue {
+                _result.send(value)
             }
-            .forEach {
-                _result.send($0)
-            }
+
+            updateTrackingFrame(readableCodeObject.bounds)
+        }
     }
 }
