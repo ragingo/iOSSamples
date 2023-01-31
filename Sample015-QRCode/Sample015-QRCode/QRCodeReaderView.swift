@@ -10,11 +10,8 @@ import AVFoundation
 import Combine
 
 class QRCodeReaderView: UIView {
-    private let camera: Camera
-    private let metadataOutputQueue = DispatchQueue(label: "MetadataOutputQueue", qos: .default)
-    private let videoDataOutputQueue = DispatchQueue(label: "VideoDataOutputQueue", qos: .default)
+    private let camera: CodeReaderCamera
 
-    private var videoPreviewLayer: AVCaptureVideoPreviewLayer?
     private let trackingFrame = UIView()
 
     private let _result = PassthroughSubject<String, Never>()
@@ -33,33 +30,33 @@ class QRCodeReaderView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        stop()
+        camera.videoPreviewLayer?.removeFromSuperlayer()
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
-        videoPreviewLayer?.frame = bounds
+        camera.videoPreviewLayer?.frame = bounds
     }
 
     func configure() -> Bool {
+        camera.delegate = self
+
         guard camera.prepare() else {
             return false
         }
 
-        let videoPreviewLayer = AVCaptureVideoPreviewLayer(session: camera.captureSession)
-        videoPreviewLayer.videoGravity = .resizeAspectFill
+        guard let videoPreviewLayer = camera.videoPreviewLayer else {
+            return false
+        }
         videoPreviewLayer.frame = bounds
         layer.addSublayer(videoPreviewLayer)
-        self.videoPreviewLayer = videoPreviewLayer
 
         trackingFrame.layer.borderWidth = 4
         trackingFrame.layer.borderColor = UIColor.systemYellow.cgColor
         trackingFrame.frame = .zero
         addSubview(trackingFrame)
-
-        camera.metadataOutput.metadataObjectTypes = [.qr, .ean13, .ean8]
-        if #available(iOS 15.4, *) {
-            camera.metadataOutput.metadataObjectTypes += [.microQR]
-        }
-        camera.metadataOutput.setMetadataObjectsDelegate(self, queue: metadataOutputQueue)
-        camera.videoDataOutput.setSampleBufferDelegate(self, queue: videoDataOutputQueue)
 
         return true
     }
@@ -79,28 +76,12 @@ class QRCodeReaderView: UIView {
     }
 }
 
-extension QRCodeReaderView: AVCaptureMetadataOutputObjectsDelegate {
-    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-
-        guard let videoPreviewLayer else { return }
-
-        for metadataObject in metadataObjects {
-            guard let transformedObject = videoPreviewLayer.transformedMetadataObject(for: metadataObject) else {
-                continue
-            }
-
-            guard let readableCodeObject = transformedObject as? AVMetadataMachineReadableCodeObject else {
-                continue
-            }
-
-            if let value = readableCodeObject.stringValue {
-                _result.send(value)
-            }
-
-            updateTrackingFrame(readableCodeObject.bounds)
-        }
+extension QRCodeReaderView: CodeReaderCameraDelegate {
+    func codeReaderCamera(_ camera: CodeReaderCamera, didUpdateBounds: CGRect) {
+        updateTrackingFrame(didUpdateBounds)
     }
-}
 
-extension QRCodeReaderView: AVCaptureVideoDataOutputSampleBufferDelegate {
+    func codeReaderCamera(_ camera: CodeReaderCamera, didDetectCode: String) {
+        _result.send(didDetectCode)
+    }
 }
