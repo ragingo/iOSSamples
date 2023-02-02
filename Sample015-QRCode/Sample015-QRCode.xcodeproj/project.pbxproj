@@ -60,17 +60,25 @@
 		5203089529816D1200C0CC5F /* Sample015-QRCode */ = {
 			isa = PBXGroup;
 			children = (
-				5203089629816D1200C0CC5F /* AppDelegate.swift */,
-				5203089F29816D1600C0CC5F /* Assets.xcassets */,
-				520308A429816D1600C0CC5F /* Info.plist */,
+				526CBE4C298AA8FF009A317B /* Sources */,
 				520308A129816D1600C0CC5F /* LaunchScreen.storyboard */,
 				5203089C29816D1200C0CC5F /* Main.storyboard */,
+				5203089F29816D1600C0CC5F /* Assets.xcassets */,
+				520308A429816D1600C0CC5F /* Info.plist */,
+			);
+			path = "Sample015-QRCode";
+			sourceTree = "<group>";
+		};
+		526CBE4C298AA8FF009A317B /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				5203089629816D1200C0CC5F /* AppDelegate.swift */,
+				526CBE482986BA18009A317B /* CodeReaderCamera.swift */,
 				520308AA29817C4100C0CC5F /* QRCodeReaderView.swift */,
 				5203089829816D1200C0CC5F /* SceneDelegate.swift */,
 				5203089A29816D1200C0CC5F /* ViewController.swift */,
-				526CBE482986BA18009A317B /* CodeReaderCamera.swift */,
 			);
-			path = "Sample015-QRCode";
+			path = Sources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -295,7 +303,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = W8439G23NQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Sample015-QRCode/Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "QR Code Reader";
@@ -324,7 +332,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = W8439G23NQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Sample015-QRCode/Info.plist";
 				INFOPLIST_KEY_NSCameraUsageDescription = "QR Code Reader";

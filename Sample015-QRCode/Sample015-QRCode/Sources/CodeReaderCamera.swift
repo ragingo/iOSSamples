@@ -10,6 +10,7 @@ import AVFoundation
 protocol CodeReaderCameraDelegate: AnyObject {
     func codeReaderCamera(_ camera: CodeReaderCamera, didDetectCode code: String)
     func codeReaderCamera(_ camera: CodeReaderCamera, didUpdateBounds bounds: CGRect)
+    func codeReaderCamera(_ camera: CodeReaderCamera, pixelBuffer: CVPixelBuffer)
 }
 
 class CodeReaderCamera: NSObject {
@@ -96,4 +97,10 @@ extension CodeReaderCamera: AVCaptureMetadataOutputObjectsDelegate {
 }
 
 extension CodeReaderCamera: AVCaptureVideoDataOutputSampleBufferDelegate {
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            return
+        }
+        delegate?.codeReaderCamera(self, pixelBuffer: pixelBuffer)
+    }
 }

@@ -15,7 +15,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         view.translatesAutoresizingMaskIntoConstraints = false
 
-        qrCodeReaderView = QRCodeReaderView()
+        qrCodeReaderView = QRCodeReaderView(frame: .zero)
         qrCodeReaderView.translatesAutoresizingMaskIntoConstraints = false
         qrCodeReaderView.layer.borderWidth = 1
         qrCodeReaderView.layer.borderColor = UIColor.gray.cgColor
