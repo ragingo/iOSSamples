@@ -49,13 +49,17 @@ class CodeReaderCamera: NSObject {
         captureSession.commitConfiguration()
 
         videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        videoPreviewLayer?.videoGravity = .resizeAspectFill
+        videoPreviewLayer?.videoGravity = .resizeAspect
 
         metadataOutput.metadataObjectTypes = [.qr, .ean13, .ean8]
         if #available(iOS 15.4, *) {
             metadataOutput.metadataObjectTypes += [.microQR]
         }
         metadataOutput.setMetadataObjectsDelegate(self, queue: metadataOutputQueue)
+
+        videoDataOutput.videoSettings = [
+            kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA
+        ] as [String: Any]
         videoDataOutput.setSampleBufferDelegate(self, queue: videoDataOutputQueue)
 
         return true
@@ -101,6 +105,8 @@ extension CodeReaderCamera: AVCaptureVideoDataOutputSampleBufferDelegate {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             return
         }
+        // portrait 固定で実験
+        connection.videoOrientation = .portrait
         delegate?.codeReaderCamera(self, pixelBuffer: pixelBuffer)
     }
 }

@@ -9,6 +9,7 @@ import UIKit
 import AVFoundation
 import Combine
 import MetalKit
+import MetalPerformanceShaders
 
 class QRCodeReaderView: MTKView {
     private let camera: CodeReaderCamera
@@ -17,6 +18,8 @@ class QRCodeReaderView: MTKView {
     private let ciContext: CIContext
     private let commandQueue: MTLCommandQueue
     private let textureLoader : MTKTextureLoader
+    var textureCache : CVMetalTextureCache?
+    private let imageTranspose: MPSImageTranspose
 
     private let _result = PassthroughSubject<String, Never>()
     let result: AnyPublisher<String, Never>
@@ -35,7 +38,9 @@ class QRCodeReaderView: MTKView {
         }
         self.ciContext = CIContext(mtlDevice: device)
         self.textureLoader = MTKTextureLoader(device: device)
+        CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, device, nil, &textureCache)
         self.commandQueue = commandQueue
+        self.imageTranspose = MPSImageTranspose(device: device)
 
         super.init(frame: frame, device: device)
 
@@ -67,7 +72,7 @@ class QRCodeReaderView: MTKView {
             return false
         }
         videoPreviewLayer.frame = bounds
-        //layer.addSublayer(videoPreviewLayer)
+//        layer.addSublayer(videoPreviewLayer)
 
         trackingFrame.layer.borderWidth = 4
         trackingFrame.layer.borderColor = UIColor.systemYellow.cgColor
@@ -95,6 +100,7 @@ class QRCodeReaderView: MTKView {
         super.draw(rect)
 
         guard let pixelBuffer else { return }
+        guard let textureCache else { return }
         guard let currentDrawable else { return }
         guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
 
@@ -102,15 +108,21 @@ class QRCodeReaderView: MTKView {
             return
         }
 
-        let ciImage = CIImage(cvPixelBuffer: pixelBuffer)
-        guard let cgImage = ciContext.createCGImage(ciImage, from: ciImage.extent) else {
-            commandEncoder.endEncoding()
-            return
-        }
-        guard let texture = try? textureLoader.newTexture(cgImage: cgImage) else {
-            commandEncoder.endEncoding()
-            return
-        }
+        var imageTexture: CVMetalTexture?
+        let result = CVMetalTextureCacheCreateTextureFromImage(
+            kCFAllocatorDefault,
+            textureCache,
+            pixelBuffer,
+            nil,
+            .bgra8Unorm,
+            CVPixelBufferGetWidth(pixelBuffer),
+            CVPixelBufferGetHeight(pixelBuffer),
+            0,
+            &imageTexture
+        )
+        guard result == kCVReturnSuccess else { return }
+        guard let imageTexture else { return }
+        guard let texture = CVMetalTextureGetTexture(imageTexture) else { return }
 
         if colorPixelFormat != texture.pixelFormat {
             colorPixelFormat = texture.pixelFormat
@@ -126,12 +138,15 @@ class QRCodeReaderView: MTKView {
                             to: currentDrawable.texture,
                             destinationSlice: 0,
                             destinationLevel: 0,
-                            destinationOrigin: .init(x: 0, y: 0, z: 0))
-
+                            destinationOrigin: .init(x: abs(currentDrawable.texture.width - width) / 2, y: abs(currentDrawable.texture.height - height) / 2, z: 0))
         commandEncoder.endEncoding()
+
+        // 回転したい場合はこれ(BlitCommandEncoder 不要)
+        //imageTranspose.encode(commandBuffer: commandBuffer, sourceTexture: texture, destinationTexture: currentDrawable.texture)
 
         commandBuffer.present(currentDrawable)
         commandBuffer.commit()
+        commandBuffer.waitUntilCompleted()
     }
 
 }
