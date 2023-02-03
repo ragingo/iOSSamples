@@ -112,6 +112,10 @@ class QRCodeReaderView: MTKView {
             return
         }
 
+        if colorPixelFormat != texture.pixelFormat {
+            colorPixelFormat = texture.pixelFormat
+        }
+
         let width = min(texture.width, currentDrawable.texture.width)
         let height = min(texture.height, currentDrawable.texture.height)
         commandEncoder.copy(from: texture,
