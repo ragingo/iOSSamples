@@ -20,6 +20,7 @@ class QRCodeReaderView: MTKView {
     private let textureLoader : MTKTextureLoader
     var textureCache : CVMetalTextureCache?
     private let imageTranspose: MPSImageTranspose
+    private let lanczosScale: MPSImageLanczosScale
 
     private let _result = PassthroughSubject<String, Never>()
     let result: AnyPublisher<String, Never>
@@ -41,10 +42,12 @@ class QRCodeReaderView: MTKView {
         CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, device, nil, &textureCache)
         self.commandQueue = commandQueue
         self.imageTranspose = MPSImageTranspose(device: device)
+        self.lanczosScale = MPSImageLanczosScale(device: device)
 
         super.init(frame: frame, device: device)
 
         framebufferOnly = false
+//        autoResizeDrawable = false
     }
 
     required init(coder: NSCoder) {
@@ -72,7 +75,9 @@ class QRCodeReaderView: MTKView {
             return false
         }
         videoPreviewLayer.frame = bounds
-//        layer.addSublayer(videoPreviewLayer)
+        videoPreviewLayer.opacity = 0.5
+        videoPreviewLayer.backgroundColor = .init(red: 1, green: 0, blue: 0, alpha: 0.5)
+        layer.addSublayer(videoPreviewLayer)
 
         trackingFrame.layer.borderWidth = 4
         trackingFrame.layer.borderColor = UIColor.systemYellow.cgColor
@@ -128,25 +133,59 @@ class QRCodeReaderView: MTKView {
             colorPixelFormat = texture.pixelFormat
         }
 
-        let width = min(texture.width, currentDrawable.texture.width)
-        let height = min(texture.height, currentDrawable.texture.height)
-        commandEncoder.copy(from: texture,
-                            sourceSlice: 0,
-                            sourceLevel: 0,
-                            sourceOrigin: .init(x: 0, y: 0, z: 0),
-                            sourceSize: .init(width: width, height: height, depth: texture.depth),
-                            to: currentDrawable.texture,
-                            destinationSlice: 0,
-                            destinationLevel: 0,
-                            destinationOrigin: .init(x: abs(currentDrawable.texture.width - width) / 2, y: abs(currentDrawable.texture.height - height) / 2, z: 0))
         commandEncoder.endEncoding()
 
-        // 回転したい場合はこれ(BlitCommandEncoder 不要)
-        //imageTranspose.encode(commandBuffer: commandBuffer, sourceTexture: texture, destinationTexture: currentDrawable.texture)
+        // キャンバスよりもテクスチャが小さいなら、短い方をいっぱいまで引き伸ばす
+        if currentDrawable.texture.width > texture.width {
+            let ratioW = Double(currentDrawable.texture.width) / Double(texture.width)
+            let ratioH = Double(currentDrawable.texture.height) / Double(texture.height)
+            let ratio = texture.width < texture.height ? ratioH : ratioW
+
+            var scale = MPSScaleTransform(
+                scaleX: ratio,
+                scaleY: ratio,
+                translateX: -((Double(texture.width) * ratio - Double(texture.width)) / 2),
+                translateY: 0
+            )
+            withUnsafePointer(to: &scale) { ptr in
+                lanczosScale.scaleTransform = ptr
+            }
+
+            lanczosScale.encode(commandBuffer: commandBuffer, sourceTexture: texture, destinationTexture: currentDrawable.texture)
+        } else {
+            // まだ未チェック
+            let w = min(texture.width, currentDrawable.texture.width)
+            let h = min(texture.height, currentDrawable.texture.height)
+            let ratioW = Double(w) / Double(texture.width)
+            let ratioH = Double(h) / Double(texture.height)
+            let ratio = ratioW
+
+            var offset = MPSOffset()
+
+            var scale = MPSScaleTransform(
+                scaleX: ratio,
+                scaleY: ratio,
+                translateX: Double(offset.x),
+                translateY: Double(offset.y)
+            )
+            withUnsafePointer(to: &scale) { ptr in
+                lanczosScale.scaleTransform = ptr
+            }
+
+            lanczosScale.encode(commandBuffer: commandBuffer, sourceTexture: texture, destinationTexture: currentDrawable.texture)
+        }
 
         commandBuffer.present(currentDrawable)
         commandBuffer.commit()
         commandBuffer.waitUntilCompleted()
+    }
+
+    private func makeTexture2D(pixelFormat: MTLPixelFormat, width: Int, height: Int) -> MTLTexture? {
+        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat, width: width, height: height, mipmapped: false)
+        descriptor.resourceOptions = .storageModeShared
+        descriptor.storageMode = .shared
+        descriptor.usage = [.renderTarget, .shaderRead, .shaderWrite]
+        return device?.makeTexture(descriptor: descriptor)
     }
 
 }

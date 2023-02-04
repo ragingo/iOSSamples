@@ -49,7 +49,7 @@ class CodeReaderCamera: NSObject {
         captureSession.commitConfiguration()
 
         videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        videoPreviewLayer?.videoGravity = .resizeAspect
+        videoPreviewLayer?.videoGravity = .resizeAspectFill
 
         metadataOutput.metadataObjectTypes = [.qr, .ean13, .ean8]
         if #available(iOS 15.4, *) {
