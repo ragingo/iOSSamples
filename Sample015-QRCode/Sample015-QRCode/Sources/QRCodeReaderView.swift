@@ -11,6 +11,13 @@ import Combine
 import MetalKit
 import MetalPerformanceShaders
 
+struct Rect {
+    var x: Float = 0
+    var y: Float = 0
+    var w: Float = 0
+    var h: Float = 0
+}
+
 class QRCodeReaderView: MTKView {
     private let camera: CodeReaderCamera
     private let trackingFrame = UIView()
@@ -21,6 +28,35 @@ class QRCodeReaderView: MTKView {
     var textureCache : CVMetalTextureCache?
     private let imageTranspose: MPSImageTranspose
     private let lanczosScale: MPSImageLanczosScale
+    private let vertices: [Float] = [
+        -1, -1, +0, +1,
+        +1, -1, +0, +1,
+        -1, +1, +0, +1,
+        +1, +1, +0, +1
+    ]
+    private let texCoords: [Float] = [
+        0, 1,
+        1, 1,
+        0, 0,
+        1, 0
+    ]
+    private var vertexBuffer: MTLBuffer?
+    private var texCoordsBuffer: MTLBuffer?
+    private var boundingBoxRect: CGRect = .init()
+    private var frameBufferData: [Rect] = [.init()]
+    private var fragmentBuffer: MTLBuffer?
+
+    private var vertexBufferSize: Int {
+        vertices.count * MemoryLayout<Float>.size
+    }
+
+    private var texCoordsBufferSize: Int {
+        texCoords.count * MemoryLayout<Float>.size
+    }
+
+    private var fragmentBufferSize: Int {
+        frameBufferData.count * MemoryLayout<Rect>.size
+    }
 
     private let _result = PassthroughSubject<String, Never>()
     let result: AnyPublisher<String, Never>
@@ -47,7 +83,11 @@ class QRCodeReaderView: MTKView {
         super.init(frame: frame, device: device)
 
         framebufferOnly = false
-//        autoResizeDrawable = false
+        autoResizeDrawable = false
+
+        vertexBuffer = device.makeBuffer(bytes: vertices, length: vertexBufferSize)
+        texCoordsBuffer = device.makeBuffer(bytes: texCoords, length: texCoordsBufferSize)
+        fragmentBuffer = device.makeBuffer(bytes: frameBufferData, length: fragmentBufferSize)
     }
 
     required init(coder: NSCoder) {
@@ -77,7 +117,7 @@ class QRCodeReaderView: MTKView {
         videoPreviewLayer.frame = bounds
         videoPreviewLayer.opacity = 0.5
         videoPreviewLayer.backgroundColor = .init(red: 1, green: 0, blue: 0, alpha: 0.5)
-        layer.addSublayer(videoPreviewLayer)
+//        layer.addSublayer(videoPreviewLayer)
 
         trackingFrame.layer.borderWidth = 4
         trackingFrame.layer.borderColor = UIColor.systemYellow.cgColor
@@ -97,23 +137,70 @@ class QRCodeReaderView: MTKView {
 
     private func updateTrackingFrame(_ bounds: CGRect) {
         DispatchQueue.main.async { [weak self] in
-            self?.trackingFrame.frame = bounds
+            guard let self else { return }
+            guard let currentDrawable = self.currentDrawable else { return }
+            let scale = self.window?.windowScene?.screen.nativeScale ?? 1.0
+            let tex_w = CGFloat(currentDrawable.texture.width) / scale
+            let tex_h = CGFloat(currentDrawable.texture.height) / scale
+            let rect = CGRect(
+                x: tex_w * bounds.origin.x,
+                y: tex_h * bounds.origin.x,
+                width: tex_w * bounds.width,
+                height: tex_h * bounds.height
+            )
+            self.trackingFrame.frame = rect
         }
     }
 
     override func draw(_ rect: CGRect) {
         super.draw(rect)
 
-        guard let pixelBuffer else { return }
-        guard let textureCache else { return }
-        guard let currentDrawable else { return }
-        guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
-
-        guard let commandEncoder = commandBuffer.makeBlitCommandEncoder() else {
+        guard let pixelBuffer, let texture = makeTexture(from: pixelBuffer) else {
             return
         }
 
+        if colorPixelFormat != texture.pixelFormat {
+            colorPixelFormat = texture.pixelFormat
+        }
+
+        guard let renderPipelineState = makeRenderPipelineState(pixelFormat: texture.pixelFormat) else {
+            return
+        }
+
+        guard let currentDrawable else { return }
+        guard let commandBuffer = commandQueue.makeCommandBuffer() else { return }
+        guard let commandEncoder = makeRenderCommandEncoder(drawable: currentDrawable, commandBuffer: commandBuffer) else {
+            return
+        }
+
+        frameBufferData[0] = .init(
+            x: Float(boundingBoxRect.origin.x),
+            y: Float(boundingBoxRect.origin.y),
+            w: Float(boundingBoxRect.width),
+            h: Float(boundingBoxRect.height)
+        )
+        // 毎回作り直さないようにしたい
+        // frameBufferData のデータの持ち方を直せばいけそうか？
+        fragmentBuffer = device!.makeBuffer(bytes: frameBufferData, length: fragmentBufferSize)
+
+        commandEncoder.setRenderPipelineState(renderPipelineState)
+        commandEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
+        commandEncoder.setVertexBuffer(texCoordsBuffer, offset: 0, index: 1)
+        commandEncoder.setFragmentTexture(texture, index: 0)
+        commandEncoder.setFragmentBuffer(fragmentBuffer, offset: 0, index: 1)
+        commandEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4)
+        commandEncoder.endEncoding()
+
+        commandBuffer.present(currentDrawable)
+        commandBuffer.commit()
+        commandBuffer.waitUntilCompleted()
+    }
+
+    private func makeTexture(from pixelBuffer: CVPixelBuffer) -> MTLTexture? {
+        guard let textureCache else { return nil }
+
         var imageTexture: CVMetalTexture?
+
         let result = CVMetalTextureCacheCreateTextureFromImage(
             kCFAllocatorDefault,
             textureCache,
@@ -125,16 +212,32 @@ class QRCodeReaderView: MTKView {
             0,
             &imageTexture
         )
-        guard result == kCVReturnSuccess else { return }
-        guard let imageTexture else { return }
-        guard let texture = CVMetalTextureGetTexture(imageTexture) else { return }
 
-        if colorPixelFormat != texture.pixelFormat {
-            colorPixelFormat = texture.pixelFormat
-        }
+        guard result == kCVReturnSuccess else { return nil }
+        guard let imageTexture else { return nil }
+        guard let texture = CVMetalTextureGetTexture(imageTexture) else { return nil }
+        return texture
+    }
 
-        commandEncoder.endEncoding()
+    private func makeRenderCommandEncoder(drawable: CAMetalDrawable, commandBuffer: MTLCommandBuffer) -> MTLRenderCommandEncoder? {
+        let desc = MTLRenderPassDescriptor()
+        desc.colorAttachments[0].texture = drawable.texture
+        desc.colorAttachments[0].loadAction = .clear
+        desc.colorAttachments[0].storeAction = .store
+        return commandBuffer.makeRenderCommandEncoder(descriptor: desc)
+    }
 
+    private func makeRenderPipelineState(pixelFormat: MTLPixelFormat) -> MTLRenderPipelineState? {
+        guard let device else { return nil }
+        guard let library = device.makeDefaultLibrary() else { return nil }
+        let renderDesc = MTLRenderPipelineDescriptor()
+        renderDesc.vertexFunction = library.makeFunction(name: "default_vs")
+        renderDesc.fragmentFunction = library.makeFunction(name: "default_fs")
+        renderDesc.colorAttachments[0].pixelFormat = pixelFormat
+        return try? device.makeRenderPipelineState(descriptor: renderDesc)
+    }
+
+    private func drawTextureTest(_ currentDrawable: CAMetalDrawable, _ texture: MTLTexture, _ commandBuffer: MTLCommandBuffer) {
         // キャンバスよりもテクスチャが小さいなら、短い方をいっぱいまで引き伸ばす
         if currentDrawable.texture.width > texture.width {
             let ratioW = Double(currentDrawable.texture.width) / Double(texture.width)
@@ -174,20 +277,7 @@ class QRCodeReaderView: MTKView {
 
             lanczosScale.encode(commandBuffer: commandBuffer, sourceTexture: texture, destinationTexture: currentDrawable.texture)
         }
-
-        commandBuffer.present(currentDrawable)
-        commandBuffer.commit()
-        commandBuffer.waitUntilCompleted()
     }
-
-    private func makeTexture2D(pixelFormat: MTLPixelFormat, width: Int, height: Int) -> MTLTexture? {
-        let descriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: pixelFormat, width: width, height: height, mipmapped: false)
-        descriptor.resourceOptions = .storageModeShared
-        descriptor.storageMode = .shared
-        descriptor.usage = [.renderTarget, .shaderRead, .shaderWrite]
-        return device?.makeTexture(descriptor: descriptor)
-    }
-
 }
 
 extension QRCodeReaderView: CodeReaderCameraDelegate {
@@ -196,7 +286,8 @@ extension QRCodeReaderView: CodeReaderCameraDelegate {
     }
 
     func codeReaderCamera(_ camera: CodeReaderCamera, didUpdateBounds: CGRect) {
-        updateTrackingFrame(didUpdateBounds)
+//        updateTrackingFrame(didUpdateBounds)
+        boundingBoxRect = didUpdateBounds
     }
 
     func codeReaderCamera(_ camera: CodeReaderCamera, didDetectCode: String) {

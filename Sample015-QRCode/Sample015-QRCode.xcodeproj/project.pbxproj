@@ -14,6 +14,7 @@
 		520308A029816D1600C0CC5F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5203089F29816D1600C0CC5F /* Assets.xcassets */; };
 		520308A329816D1600C0CC5F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 520308A129816D1600C0CC5F /* LaunchScreen.storyboard */; };
 		520308AB29817C4100C0CC5F /* QRCodeReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520308AA29817C4100C0CC5F /* QRCodeReaderView.swift */; };
+		52364916298FF3A7002B2DA6 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 52364915298FF3A7002B2DA6 /* Shaders.metal */; };
 		526CBE492986BA18009A317B /* CodeReaderCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526CBE482986BA18009A317B /* CodeReaderCamera.swift */; };
 /* End PBXBuildFile section */
 
@@ -27,6 +28,7 @@
 		520308A229816D1600C0CC5F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		520308A429816D1600C0CC5F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		520308AA29817C4100C0CC5F /* QRCodeReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeReaderView.swift; sourceTree = "<group>"; };
+		52364915298FF3A7002B2DA6 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		526CBE482986BA18009A317B /* CodeReaderCamera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeReaderCamera.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -77,6 +79,7 @@
 				520308AA29817C4100C0CC5F /* QRCodeReaderView.swift */,
 				5203089829816D1200C0CC5F /* SceneDelegate.swift */,
 				5203089A29816D1200C0CC5F /* ViewController.swift */,
+				52364915298FF3A7002B2DA6 /* Shaders.metal */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -152,6 +155,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52364916298FF3A7002B2DA6 /* Shaders.metal in Sources */,
 				5203089B29816D1200C0CC5F /* ViewController.swift in Sources */,
 				526CBE492986BA18009A317B /* CodeReaderCamera.swift in Sources */,
 				520308AB29817C4100C0CC5F /* QRCodeReaderView.swift in Sources */,

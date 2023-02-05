@@ -80,14 +80,8 @@ class CodeReaderCamera: NSObject {
 
 extension CodeReaderCamera: AVCaptureMetadataOutputObjectsDelegate {
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
-        guard let videoPreviewLayer else { return }
-
         for metadataObject in metadataObjects {
-            guard let transformedObject = videoPreviewLayer.transformedMetadataObject(for: metadataObject) else {
-                continue
-            }
-
-            guard let readableCodeObject = transformedObject as? AVMetadataMachineReadableCodeObject else {
+            guard let readableCodeObject = metadataObject as? AVMetadataMachineReadableCodeObject else {
                 continue
             }
 
