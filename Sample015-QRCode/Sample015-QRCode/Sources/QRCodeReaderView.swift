@@ -173,15 +173,15 @@ class QRCodeReaderView: MTKView {
             return
         }
 
-        frameBufferData[0] = .init(
+        var rect: Rect = .init(
             x: Float(boundingBoxRect.origin.x),
             y: Float(boundingBoxRect.origin.y),
             w: Float(boundingBoxRect.width),
             h: Float(boundingBoxRect.height)
         )
-        // 毎回作り直さないようにしたい
-        // frameBufferData のデータの持ち方を直せばいけそうか？
-        fragmentBuffer = device!.makeBuffer(bytes: frameBufferData, length: fragmentBufferSize)
+        guard let fragmentBuffer else { return }
+        let fragmentBufferPointer = fragmentBuffer.contents()
+        memccpy(fragmentBufferPointer, &rect, 1, fragmentBufferSize)
 
         commandEncoder.setRenderPipelineState(renderPipelineState)
         commandEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
