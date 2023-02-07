@@ -32,6 +32,10 @@ vertex ColorInOut default_vs(constant float4 *positions [[ buffer(0) ]],
     return out;
 }
 
+template<typename T> bool between(T value, T min, T max) {
+    return (min <= value) && (value <= max);
+}
+
 fragment float4 default_fs(ColorInOut in [[ stage_in ]],
                            texture2d<float> texture [[ texture(0) ]],
                            constant BoundingBox *boundingBox [[ buffer(1) ]])
@@ -39,14 +43,22 @@ fragment float4 default_fs(ColorInOut in [[ stage_in ]],
     constexpr sampler colorSampler;
     float4 color = texture.sample(colorSampler, in.texCoords);
 
-    if ((in.texCoords.x >= boundingBox->x && in.texCoords.x <= boundingBox->x + boundingBox->w) &&
-        (in.texCoords.y >= boundingBox->y && in.texCoords.y <= boundingBox->y + boundingBox->h)) {
-        color = float4(1, 0, 0, 1);
-    }
+    const auto borderWidth = (1.0 / texture.get_width()) * 4.0;
+    const auto pix_x = in.texCoords.x;
+    const auto pix_y = in.texCoords.y;
+    const auto box_l = boundingBox->x;
+    const auto box_r = boundingBox->x + boundingBox->w;
+    const auto box_t = boundingBox->y;
+    const auto box_b = boundingBox->y + boundingBox->h;
 
-//    if (in.texCoords.x >= 0.5 && in.texCoords.x <= 0.5 + boundingBox->w) {
-//        color = float4(1, 0, 0, 1);
-//    }
+    bool isLeftEdge   = between(pix_x, box_l - borderWidth, box_l) && between(pix_y, box_t, box_b);
+    bool isRightEdge  = between(pix_x, box_r, box_r + borderWidth) && between(pix_y, box_t, box_b);
+    bool isTopEdge    = between(pix_x, box_l - borderWidth, box_r + borderWidth) && between(pix_y, box_t - borderWidth, box_t);
+    bool isBottomEdge = between(pix_x, box_l - borderWidth, box_r + borderWidth) && between(pix_y, box_b, box_b + borderWidth);
+
+    if (isLeftEdge || isRightEdge || isTopEdge || isBottomEdge) {
+        color = float4(1, 1, 0, 1);
+    }
 
     return color;
 }
