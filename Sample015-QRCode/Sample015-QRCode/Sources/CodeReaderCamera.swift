@@ -9,7 +9,7 @@ import AVFoundation
 
 protocol CodeReaderCameraDelegate: AnyObject {
     func codeReaderCamera(_ camera: CodeReaderCamera, didDetectCode code: String)
-    func codeReaderCamera(_ camera: CodeReaderCamera, didUpdateBounds bounds: CGRect)
+    func codeReaderCamera(_ camera: CodeReaderCamera, didUpdateCorners corners: [CGPoint])
     func codeReaderCamera(_ camera: CodeReaderCamera, pixelBuffer: CVPixelBuffer)
 }
 
@@ -49,7 +49,7 @@ class CodeReaderCamera: NSObject {
         captureSession.commitConfiguration()
 
         videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
-        videoPreviewLayer?.videoGravity = .resizeAspectFill
+        videoPreviewLayer?.videoGravity = .resizeAspect
 
         metadataOutput.metadataObjectTypes = [.qr, .ean13, .ean8]
         if #available(iOS 15.4, *) {
@@ -89,7 +89,7 @@ extension CodeReaderCamera: AVCaptureMetadataOutputObjectsDelegate {
                 delegate?.codeReaderCamera(self, didDetectCode: value)
             }
 
-            delegate?.codeReaderCamera(self, didUpdateBounds: readableCodeObject.bounds)
+            delegate?.codeReaderCamera(self, didUpdateCorners: readableCodeObject.corners)
         }
     }
 }
@@ -100,7 +100,7 @@ extension CodeReaderCamera: AVCaptureVideoDataOutputSampleBufferDelegate {
             return
         }
         // portrait 固定で実験
-        connection.videoOrientation = .portrait
+//        connection.videoOrientation = .portrait
         delegate?.codeReaderCamera(self, pixelBuffer: pixelBuffer)
     }
 }

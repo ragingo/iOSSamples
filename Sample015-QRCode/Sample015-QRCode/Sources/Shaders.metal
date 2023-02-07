@@ -47,12 +47,12 @@ fragment float4 default_fs(ColorInOut in [[ stage_in ]],
     const auto pix_x = in.texCoords.x;
     const auto pix_y = in.texCoords.y;
     const auto box_l = boundingBox->x;
-    const auto box_r = boundingBox->x + boundingBox->w;
+    const auto box_r = boundingBox->w;
     const auto box_t = boundingBox->y;
-    const auto box_b = boundingBox->y + boundingBox->h;
+    const auto box_b = boundingBox->h;
 
-    bool isLeftEdge   = between(pix_x, box_l - borderWidth, box_l) && between(pix_y, box_t, box_b);
-    bool isRightEdge  = between(pix_x, box_r, box_r + borderWidth) && between(pix_y, box_t, box_b);
+    bool isLeftEdge   = between(pix_x, box_l - borderWidth, box_l) && between(pix_y, box_b, box_t);
+    bool isRightEdge  = between(pix_x, box_r, box_r + borderWidth) && between(pix_y, box_b, box_t);
     bool isTopEdge    = between(pix_x, box_l - borderWidth, box_r + borderWidth) && between(pix_y, box_t - borderWidth, box_t);
     bool isBottomEdge = between(pix_x, box_l - borderWidth, box_r + borderWidth) && between(pix_y, box_b, box_b + borderWidth);
 

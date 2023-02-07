@@ -42,7 +42,7 @@ class QRCodeReaderView: MTKView {
     ]
     private var vertexBuffer: MTLBuffer?
     private var texCoordsBuffer: MTLBuffer?
-    private var boundingBoxRect: CGRect = .init()
+    private var boundingBoxRect: Rect = .init()
     private var frameBufferData: [Rect] = [.init()]
     private var fragmentBuffer: MTLBuffer?
 
@@ -173,15 +173,9 @@ class QRCodeReaderView: MTKView {
             return
         }
 
-        var rect: Rect = .init(
-            x: Float(boundingBoxRect.origin.x),
-            y: Float(boundingBoxRect.origin.y),
-            w: Float(boundingBoxRect.width),
-            h: Float(boundingBoxRect.height)
-        )
         guard let fragmentBuffer else { return }
         let fragmentBufferPointer = fragmentBuffer.contents()
-        memccpy(fragmentBufferPointer, &rect, 1, fragmentBufferSize)
+        memccpy(fragmentBufferPointer, &boundingBoxRect, 1, fragmentBufferSize)
 
         commandEncoder.setRenderPipelineState(renderPipelineState)
         commandEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
@@ -285,9 +279,14 @@ extension QRCodeReaderView: CodeReaderCameraDelegate {
         self.pixelBuffer = pixelBuffer
     }
 
-    func codeReaderCamera(_ camera: CodeReaderCamera, didUpdateBounds: CGRect) {
-//        updateTrackingFrame(didUpdateBounds)
-        boundingBoxRect = didUpdateBounds
+    func codeReaderCamera(_ camera: CodeReaderCamera, didUpdateCorners: [CGPoint]) {
+        let a = didUpdateCorners
+        boundingBoxRect = Rect(
+            x: Float(a[0].x),
+            y: Float(a[0].y),
+            w: Float(a[2].x),
+            h: Float(a[2].y)
+        )
     }
 
     func codeReaderCamera(_ camera: CodeReaderCamera, didDetectCode: String) {
