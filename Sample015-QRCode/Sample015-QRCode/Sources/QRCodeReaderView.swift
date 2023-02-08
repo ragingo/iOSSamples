@@ -93,6 +93,10 @@ class QRCodeReaderView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         metalView.metalLayer.frame = bounds
+        metalView.metalLayer.drawableSize = .init(
+            width: bounds.size.width * UIScreen.main.nativeScale,
+            height: bounds.size.height * UIScreen.main.nativeScale
+        )
         camera.videoPreviewLayer?.frame = bounds
     }
 
