@@ -16,6 +16,8 @@
 		520308AB29817C4100C0CC5F /* QRCodeReaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520308AA29817C4100C0CC5F /* QRCodeReaderView.swift */; };
 		52364916298FF3A7002B2DA6 /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = 52364915298FF3A7002B2DA6 /* Shaders.metal */; };
 		526CBE492986BA18009A317B /* CodeReaderCamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 526CBE482986BA18009A317B /* CodeReaderCamera.swift */; };
+		52FBAE7B2993C802006F69F1 /* MetalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52FBAE7A2993C802006F69F1 /* MetalView.swift */; };
+		52FBAE7D2993CB9E006F69F1 /* CVPixelBuffer+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52FBAE7C2993CB9E006F69F1 /* CVPixelBuffer+Extensions.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +32,8 @@
 		520308AA29817C4100C0CC5F /* QRCodeReaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeReaderView.swift; sourceTree = "<group>"; };
 		52364915298FF3A7002B2DA6 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		526CBE482986BA18009A317B /* CodeReaderCamera.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodeReaderCamera.swift; sourceTree = "<group>"; };
+		52FBAE7A2993C802006F69F1 /* MetalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalView.swift; sourceTree = "<group>"; };
+		52FBAE7C2993CB9E006F69F1 /* CVPixelBuffer+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CVPixelBuffer+Extensions.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +84,8 @@
 				5203089829816D1200C0CC5F /* SceneDelegate.swift */,
 				5203089A29816D1200C0CC5F /* ViewController.swift */,
 				52364915298FF3A7002B2DA6 /* Shaders.metal */,
+				52FBAE7A2993C802006F69F1 /* MetalView.swift */,
+				52FBAE7C2993CB9E006F69F1 /* CVPixelBuffer+Extensions.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -156,6 +162,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				52364916298FF3A7002B2DA6 /* Shaders.metal in Sources */,
+				52FBAE7D2993CB9E006F69F1 /* CVPixelBuffer+Extensions.swift in Sources */,
+				52FBAE7B2993C802006F69F1 /* MetalView.swift in Sources */,
 				5203089B29816D1200C0CC5F /* ViewController.swift in Sources */,
 				526CBE492986BA18009A317B /* CodeReaderCamera.swift in Sources */,
 				520308AB29817C4100C0CC5F /* QRCodeReaderView.swift in Sources */,
