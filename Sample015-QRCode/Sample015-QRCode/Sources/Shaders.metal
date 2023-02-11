@@ -5,7 +5,10 @@
 //  Created by ragingo on 2023/02/05.
 //
 
+// https://developer.apple.com/metal/Metal-Shading-Language-Specification.pdf
+
 #include <metal_stdlib>
+
 using namespace metal;
 
 struct ColorInOut
@@ -22,12 +25,38 @@ struct BoundingBox
     float h;
 };
 
+template <typename T> T deg2rad(T deg) {
+    return deg * (M_PI_F / 180.0);
+}
+
+// https://github.com/ragingo/WebGLTest/blob/master/src/glsl/default_vs.glsl
+float4x4 mat4_rotation_x(float rad) {
+    return float4x4(float4(1.0, 0.0, 0.0, 0.0),
+                    float4(0.0, cos(rad), -sin(rad), 0.0),
+                    float4(0.0, sin(rad), cos(rad), 0.0),
+                    float4(0.0, 0.0, 0.0, 1.0));
+}
+
+float4x4 mat4_rotation_y(float rad) {
+    return float4x4(float4(cos(rad), 0.0, -sin(rad), 0.0),
+                    float4(0.0, 1.0, 0.0, 0.0),
+                    float4(sin(rad), 0.0, cos(rad), 0.0),
+                    float4(0.0, 0.0, 0.0, 1.0));
+}
+
+float4x4 mat4_rotation_z(float rad) {
+    return float4x4(float4(cos(rad), sin(rad), 0.0, 0.0),
+                    float4(-sin(rad), cos(rad), 0.0, 0.0),
+                    float4(0.0, 0.0, 1.0, 0.0),
+                    float4(0.0, 0.0, 0.0, 1.0));
+}
+
 vertex ColorInOut default_vs(constant float4 *positions [[ buffer(0) ]],
                              constant float2 *texCoords [[ buffer(1) ]],
                              uint vid [[ vertex_id ]])
 {
     ColorInOut out;
-    out.position = positions[vid];
+    out.position = mat4_rotation_z(deg2rad(-90.0)) * positions[vid];
     out.texCoords = texCoords[vid];
     return out;
 }

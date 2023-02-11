@@ -7,6 +7,7 @@
 
 import Metal
 import UIKit
+import MetalPerformanceShaders
 
 protocol MetalViewDelegate: AnyObject {
     func onDraw(metalView: MetalView, drawable: CAMetalDrawable, commandBuffer: MTLCommandBuffer)
@@ -77,6 +78,10 @@ class MetalView: UIView {
             print(error)
             return nil
         }
+    }
+
+    func makeMPS<T: MPSKernel>(closure: (_ device: MTLDevice) -> T) -> T {
+        return closure(device)
     }
 
     @objc private func onDisplayLinkCallback() {

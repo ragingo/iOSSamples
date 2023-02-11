@@ -76,9 +76,18 @@ class QRCodeReaderView: UIView {
 
         super.init(frame: frame)
 
+        clipsToBounds = true
+        metalView.translatesAutoresizingMaskIntoConstraints = false
         metalView.delegate = self
         layer.addSublayer(metalView.layer)
         addSubview(metalView)
+
+        NSLayoutConstraint.activate([
+            metalView.centerXAnchor.constraint(equalTo: centerXAnchor),
+            metalView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            metalView.widthAnchor.constraint(equalTo: widthAnchor),
+            metalView.heightAnchor.constraint(equalTo: metalView.widthAnchor, multiplier: 9.0 / 16.0)
+        ])
     }
 
     required init(coder: NSCoder) {
@@ -92,10 +101,10 @@ class QRCodeReaderView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        metalView.metalLayer.frame = bounds
+        metalView.metalLayer.frame = metalView.bounds
         metalView.metalLayer.drawableSize = .init(
-            width: bounds.size.width * UIScreen.main.nativeScale,
-            height: bounds.size.height * UIScreen.main.nativeScale
+            width: metalView.bounds.size.width * UIScreen.main.nativeScale,
+            height: metalView.bounds.size.height * UIScreen.main.nativeScale
         )
         camera.videoPreviewLayer?.frame = bounds
     }
