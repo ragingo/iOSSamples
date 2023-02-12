@@ -16,7 +16,7 @@ protocol MetalViewDelegate: AnyObject {
 class MetalView: UIView {
     private let device: MTLDevice
     private let commandQueue: MTLCommandQueue
-    private(set) var textureCache : CVMetalTextureCache?
+    private var textureCache : CVMetalTextureCache?
     private(set) var metalLayer = CAMetalLayer()
     private var displayLink: CADisplayLink?
 
@@ -82,6 +82,11 @@ class MetalView: UIView {
 
     func makeMPS<T: MPSKernel>(closure: (_ device: MTLDevice) -> T) -> T {
         return closure(device)
+    }
+
+    func makeTexture(from pixelBuffer: CVPixelBuffer, pixelFormat: MTLPixelFormat) -> MTLTexture? {
+        guard let textureCache else { return nil }
+        return pixelBuffer.createMetalTexture(textureCache: textureCache, pixelFormat: pixelFormat)
     }
 
     @objc private func onDisplayLinkCallback() {

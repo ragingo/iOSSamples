@@ -11,7 +11,7 @@ import Metal
 
 extension CVPixelBuffer {
     func createMetalTexture(textureCache: CVMetalTextureCache, pixelFormat: MTLPixelFormat) -> MTLTexture? {
-        var imageTexture: CVMetalTexture?
+        var texture: CVMetalTexture?
 
         let result = CVMetalTextureCacheCreateTextureFromImage(
             kCFAllocatorDefault,
@@ -22,12 +22,12 @@ extension CVPixelBuffer {
             CVPixelBufferGetWidth(self),
             CVPixelBufferGetHeight(self),
             0,
-            &imageTexture
+            &texture
         )
 
         guard result == kCVReturnSuccess else { return nil }
-        guard let imageTexture else { return nil }
+        guard let texture else { return nil }
 
-        return CVMetalTextureGetTexture(imageTexture)
+        return CVMetalTextureGetTexture(texture)
     }
 }

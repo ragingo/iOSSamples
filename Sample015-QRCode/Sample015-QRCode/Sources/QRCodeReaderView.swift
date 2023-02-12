@@ -61,7 +61,7 @@ class QRCodeReaderView: UIView {
     private let metalView: MetalView
     private let buffers: Buffers
     private let camera: CodeReaderCamera
-    private var pixelBuffer: CVPixelBuffer?
+    private var texture: MTLTexture?
 
     private let _result = PassthroughSubject<String, Never>()
     let result: AnyPublisher<String, Never>
@@ -138,7 +138,7 @@ class QRCodeReaderView: UIView {
 
 extension QRCodeReaderView: CodeReaderCameraDelegate {
     func codeReaderCamera(_ camera: CodeReaderCamera, pixelBuffer: CVPixelBuffer) {
-        self.pixelBuffer = pixelBuffer
+        texture = metalView.makeTexture(from: pixelBuffer, pixelFormat: .bgra8Unorm)
     }
 
     func codeReaderCamera(_ camera: CodeReaderCamera, didUpdateCorners: [CGPoint]) {
@@ -158,10 +158,7 @@ extension QRCodeReaderView: CodeReaderCameraDelegate {
 
 extension QRCodeReaderView: MetalViewDelegate {
     func onDraw(metalView: MetalView, drawable: CAMetalDrawable, commandBuffer: MTLCommandBuffer) {
-        guard let textureCache = metalView.textureCache else { return }
-        guard let texture = pixelBuffer?.createMetalTexture(textureCache: textureCache, pixelFormat: .bgra8Unorm) else {
-            return
-        }
+        guard let texture else { return }
 
         if metalView.metalLayer.pixelFormat != texture.pixelFormat {
             metalView.metalLayer.pixelFormat = texture.pixelFormat
