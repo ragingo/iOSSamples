@@ -5,7 +5,7 @@ settings:
     # Deployment
     TARGETED_DEVICE_FAMILY: 1,2
     # Swift
-    SWIFT_VERSION: 5.3 # https://developer.apple.com/jp/support/xcode/
+    SWIFT_VERSION: 5.8 # https://developer.apple.com/jp/support/xcode/
 
   configs:
     Debug:
