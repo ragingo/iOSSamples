@@ -483,7 +483,7 @@ private class Tap {
         print("[VideoPlayer] [tap] unprepare")
     }
 
-    let process: MTAudioProcessingTapProcessCallback = { tap, numberFrames, flags, bufferListInOut, numberFramesOut, flagsOut in
+    let process: MTAudioProcessingTapProcessCallback = { tap, numberFrames, _, bufferListInOut, numberFramesOut, flagsOut in
         let instance = Unmanaged<Tap>.fromOpaque(MTAudioProcessingTapGetStorage(tap)).takeUnretainedValue()
         guard var audioProcessingFormat = instance.audioProcessingFormat else {
             return
