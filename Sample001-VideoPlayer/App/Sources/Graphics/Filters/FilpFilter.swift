@@ -34,13 +34,13 @@ class FlipFilter: CIFilter {
                 kCIAttributeClass: "CIImage",
                 kCIAttributeDisplayName: "Image",
                 kCIAttributeType: kCIAttributeTypeImage
-            ],
+            ] as [String: Any],
             Keys.isFlip: [
                 kCIAttributeIdentity: 1,
                 kCIAttributeClass: "Int",
                 kCIAttributeDisplayName: "Int",
                 kCIAttributeType: kCIAttributeTypeInteger
-            ]
+            ] as [String: Any]
         ]
     }
 
