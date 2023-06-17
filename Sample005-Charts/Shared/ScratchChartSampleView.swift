@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  ScratchChartSampleView.swift
 //  Shared
 //
 //  Created by ragingo on 2022/06/18.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ContentView: View {
+struct ScratchChartSampleView: View {
     var body: some View {
         GeometryReader { geo in
             ScrollView {
@@ -146,8 +146,8 @@ struct ContentView: View {
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
+struct ScratchChartSampleView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView()
+        ScratchChartSampleView()
     }
 }

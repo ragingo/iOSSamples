@@ -9,19 +9,25 @@
 /* Begin PBXBuildFile section */
 		450DDB81285CD9B4001B4897 /* Sample005_ChartsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450DDB71285CD9B1001B4897 /* Sample005_ChartsApp.swift */; };
 		450DDB82285CD9B4001B4897 /* Sample005_ChartsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450DDB71285CD9B1001B4897 /* Sample005_ChartsApp.swift */; };
-		450DDB83285CD9B4001B4897 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450DDB72285CD9B1001B4897 /* ContentView.swift */; };
-		450DDB84285CD9B4001B4897 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450DDB72285CD9B1001B4897 /* ContentView.swift */; };
+		450DDB83285CD9B4001B4897 /* ScratchChartSampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450DDB72285CD9B1001B4897 /* ScratchChartSampleView.swift */; };
+		450DDB84285CD9B4001B4897 /* ScratchChartSampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 450DDB72285CD9B1001B4897 /* ScratchChartSampleView.swift */; };
 		450DDB85285CD9B4001B4897 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 450DDB73285CD9B4001B4897 /* Assets.xcassets */; };
 		450DDB86285CD9B4001B4897 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 450DDB73285CD9B4001B4897 /* Assets.xcassets */; };
+		5279DD2C2A3DF5EC00A9F643 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5279DD2B2A3DF5EC00A9F643 /* RootView.swift */; };
+		5279DD2D2A3DF5EC00A9F643 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5279DD2B2A3DF5EC00A9F643 /* RootView.swift */; };
+		5279DD2F2A3DF6AB00A9F643 /* SwiftUIChartsSampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5279DD2E2A3DF6AB00A9F643 /* SwiftUIChartsSampleView.swift */; };
+		5279DD302A3DF6AB00A9F643 /* SwiftUIChartsSampleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5279DD2E2A3DF6AB00A9F643 /* SwiftUIChartsSampleView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		450DDB71285CD9B1001B4897 /* Sample005_ChartsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sample005_ChartsApp.swift; sourceTree = "<group>"; };
-		450DDB72285CD9B1001B4897 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		450DDB72285CD9B1001B4897 /* ScratchChartSampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScratchChartSampleView.swift; sourceTree = "<group>"; };
 		450DDB73285CD9B4001B4897 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		450DDB78285CD9B4001B4897 /* Sample005-Charts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sample005-Charts.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		450DDB7E285CD9B4001B4897 /* Sample005-Charts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sample005-Charts.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		450DDB80285CD9B4001B4897 /* macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = macOS.entitlements; sourceTree = "<group>"; };
+		5279DD2B2A3DF5EC00A9F643 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		5279DD2E2A3DF6AB00A9F643 /* SwiftUIChartsSampleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftUIChartsSampleView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,9 +60,11 @@
 		450DDB70285CD9B1001B4897 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				450DDB71285CD9B1001B4897 /* Sample005_ChartsApp.swift */,
-				450DDB72285CD9B1001B4897 /* ContentView.swift */,
 				450DDB73285CD9B4001B4897 /* Assets.xcassets */,
+				5279DD2B2A3DF5EC00A9F643 /* RootView.swift */,
+				450DDB71285CD9B1001B4897 /* Sample005_ChartsApp.swift */,
+				450DDB72285CD9B1001B4897 /* ScratchChartSampleView.swift */,
+				5279DD2E2A3DF6AB00A9F643 /* SwiftUIChartsSampleView.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -176,8 +184,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				450DDB83285CD9B4001B4897 /* ContentView.swift in Sources */,
+				450DDB83285CD9B4001B4897 /* ScratchChartSampleView.swift in Sources */,
+				5279DD2F2A3DF6AB00A9F643 /* SwiftUIChartsSampleView.swift in Sources */,
 				450DDB81285CD9B4001B4897 /* Sample005_ChartsApp.swift in Sources */,
+				5279DD2C2A3DF5EC00A9F643 /* RootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -185,8 +195,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				450DDB84285CD9B4001B4897 /* ContentView.swift in Sources */,
+				450DDB84285CD9B4001B4897 /* ScratchChartSampleView.swift in Sources */,
+				5279DD302A3DF6AB00A9F643 /* SwiftUIChartsSampleView.swift in Sources */,
 				450DDB82285CD9B4001B4897 /* Sample005_ChartsApp.swift in Sources */,
+				5279DD2D2A3DF5EC00A9F643 /* RootView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -243,6 +255,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -295,6 +309,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -316,7 +332,6 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -345,7 +360,6 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -377,7 +391,6 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.3;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.ragingo.ios-samples.Sample005-Charts";
 				PRODUCT_NAME = "Sample005-Charts";
@@ -403,7 +416,6 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 12.3;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.ragingo.ios-samples.Sample005-Charts";
 				PRODUCT_NAME = "Sample005-Charts";
