@@ -10,6 +10,8 @@ import SwiftUI
 
 struct SwiftUIChartsSampleView: View {
     @State private var weatherData: WeatherData?
+    @State private var selectedHour: Date?
+    @State private var balloonXPosition: CGFloat?
 
     var body: some View {
         Chart {
@@ -89,10 +91,62 @@ struct SwiftUIChartsSampleView: View {
                 AxisValueLabel()
             }
         }
+        .chartOverlay { chartProxy in
+            GeometryReader { _ in
+                Rectangle()
+                    .fill(.clear)
+                    .contentShape(Rectangle())
+                    .gesture(dragGesture(chartProxy: chartProxy))
+            }
+        }
         .onAppear {
             weatherData = fetchWeatherData()
         }
+        .overlay(alignment: .bottom) {
+            let temperature = weatherData?.hourly.first(where: { $0.date == selectedHour })?.temperature
+
+            GeometryReader { geo in
+                if let balloonXPosition, let temperature {
+                    Balloon {
+                        Text("\(Int(temperature))℃")
+                            .foregroundStyle(.black)
+                    }
+                    .frame(maxHeight: geo.size.height)
+                    .position(x: balloonXPosition, y: geo.size.height / 2)
+                }
+            }
+        }
         .padding(50)
+    }
+
+    private func dragGesture(chartProxy: ChartProxy) -> some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { value in
+                guard let xValue = chartProxy.value(atX: value.location.x, as: Date.self) else {
+                    selectedHour = nil
+                    balloonXPosition = nil
+                    return
+                }
+
+                // 前後 30m は hour を切り替えない
+                let minute = Calendar.current.dateComponents([.minute], from: xValue).minute ?? 0
+                let addindHour = minute > 30 ? 1 : 0
+
+                // X軸の余計な情報を捨てる
+                let components = Calendar.current.dateComponents([.year, .month, .day, .hour], from: xValue)
+                guard let date = Calendar.current.date(from: components) else {
+                    selectedHour = nil
+                    balloonXPosition = nil
+                    return
+                }
+
+                selectedHour = Calendar.current.date(byAdding: .hour, value: addindHour, to: date)
+                balloonXPosition = value.location.x
+            }
+            .onEnded { _ in
+                selectedHour = nil
+                balloonXPosition = nil
+            }
     }
 
     private var flameIcon: some View {
@@ -114,6 +168,23 @@ struct SwiftUIChartsSampleView: View {
             .resizable()
             .aspectRatio(contentMode: .fit)
             .foregroundStyle(.blue)
+    }
+}
+
+private struct Balloon<Content: View>: View {
+    let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .center, spacing: 0) {
+            content()
+                .padding(8)
+                .background {
+                    RoundedRectangle(cornerRadius: 4)
+                }
+            Rectangle()
+                .frame(width: 1)
+                .frame(maxHeight: .infinity)
+        }
     }
 }
 
