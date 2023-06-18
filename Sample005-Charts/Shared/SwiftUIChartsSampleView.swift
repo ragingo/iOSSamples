@@ -82,6 +82,13 @@ struct SwiftUIChartsSampleView: View {
                 }
             }
         }
+        .chartYAxis {
+            AxisMarks {
+                AxisGridLine()
+                    .foregroundStyle(.gray)
+                AxisValueLabel()
+            }
+        }
         .onAppear {
             weatherData = fetchWeatherData()
         }
