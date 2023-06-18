@@ -21,11 +21,8 @@ struct SwiftUIChartsSampleView: View {
                     )
                     .symbol {
                         if hour.temperature > 30 {
-                            Image(systemName: "flame.fill")
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
+                            flameIcon
                                 .frame(width: 16)
-                                .foregroundStyle(.red)
                                 .offset(y: -16)
                         }
                     }
@@ -55,25 +52,15 @@ struct SwiftUIChartsSampleView: View {
                     .lineStyle(.init(lineWidth: 1, dash: [4]))
                     .foregroundStyle(.orange)
                     .annotation {
-                        Image(systemName: "sunrise")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
+                        sunriseIcon
                             .frame(width: 20)
-                            .foregroundStyle(.orange)
-                            .padding(4)
-                            .background(.gray)
                     }
                 RuleMark(x: .value("Sunset", weatherData.daily.sunset))
                     .lineStyle(.init(lineWidth: 1, dash: [4]))
                     .foregroundStyle(.orange)
                     .annotation {
-                        Image(systemName: "sunset")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
+                        sunsetIcon
                             .frame(width: 20)
-                            .foregroundStyle(.blue)
-                            .padding(4)
-                            .background(.gray)
                     }
             }
         }
@@ -99,6 +86,27 @@ struct SwiftUIChartsSampleView: View {
             weatherData = fetchWeatherData()
         }
         .padding(50)
+    }
+
+    private var flameIcon: some View {
+        Image(systemName: "flame.fill")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .foregroundStyle(.red)
+    }
+
+    private var sunriseIcon: some View {
+        Image(systemName: "sunrise")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .foregroundStyle(.orange)
+    }
+
+    private var sunsetIcon: some View {
+        Image(systemName: "sunset")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .foregroundStyle(.blue)
     }
 }
 
