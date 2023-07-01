@@ -5,6 +5,7 @@
 //  Created by ragingo on 2023/07/01.
 //
 
+import MyMacro
 import SwiftUI
 
 struct ContentView: View {
@@ -19,6 +20,12 @@ struct ContentView: View {
             // Strings Catalog の実験
             // SwiftGen みたいにコード生成してくれないのか(T_T)
             Text("Hello, world!")
+
+            // マクロ呼び出し
+            let a = 1
+            let b = 2
+            let (result, code) = #stringify(a + b)
+            Text("\(result), \(code)")
         }
         .padding()
     }

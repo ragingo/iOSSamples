@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -12,6 +12,7 @@
 		5257ABF22A506328004AB45E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5257ABF12A506328004AB45E /* Assets.xcassets */; };
 		5257ABF52A506328004AB45E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5257ABF42A506328004AB45E /* Preview Assets.xcassets */; };
 		5257ABFC2A5064C6004AB45E /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 5257ABFB2A5064C6004AB45E /* Localizable.xcstrings */; };
+		52A2124C2A506DD100C04E7E /* MyMacro in Frameworks */ = {isa = PBXBuildFile; productRef = 52A2124B2A506DD100C04E7E /* MyMacro */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -21,6 +22,7 @@
 		5257ABF12A506328004AB45E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5257ABF42A506328004AB45E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		5257ABFB2A5064C6004AB45E /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
+		52A212492A506D1A00C04E7E /* MyMacro */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = MyMacro; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -28,6 +30,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52A2124C2A506DD100C04E7E /* MyMacro in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -37,6 +40,7 @@
 		5257ABE12A506324004AB45E = {
 			isa = PBXGroup;
 			children = (
+				52A212492A506D1A00C04E7E /* MyMacro */,
 				5257ABEC2A506324004AB45E /* Sample016-Xcode15-iOS17-Experimentation */,
 				5257ABEB2A506324004AB45E /* Products */,
 			);
@@ -86,6 +90,9 @@
 			dependencies = (
 			);
 			name = "Sample016-Xcode15-iOS17-Experimentation";
+			packageProductDependencies = (
+				52A2124B2A506DD100C04E7E /* MyMacro */,
+			);
 			productName = "Sample016-Xcode15-iOS17-Experimentation";
 			productReference = 5257ABEA2A506324004AB45E /* Sample016-Xcode15-iOS17-Experimentation.app */;
 			productType = "com.apple.product-type.application";
@@ -115,6 +122,9 @@
 				ja,
 			);
 			mainGroup = 5257ABE12A506324004AB45E;
+			packageReferences = (
+				52A2124A2A506DD100C04E7E /* XCLocalSwiftPackageReference "MyMacro" */,
+			);
 			productRefGroup = 5257ABEB2A506324004AB45E /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -351,6 +361,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		52A2124A2A506DD100C04E7E /* XCLocalSwiftPackageReference "MyMacro" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = MyMacro;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		52A2124B2A506DD100C04E7E /* MyMacro */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MyMacro;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 5257ABE22A506324004AB45E /* Project object */;
 }
