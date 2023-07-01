@@ -10,6 +10,13 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         VStack {
+            // “Generate Asset Symbols”
+            // (ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS)
+            // の実験
+            // 設定値を NO にしたらコンパイルエラーになる
+            Image(.catman)
+
+            // Strings Catalog の実験
             // SwiftGen みたいにコード生成してくれないのか(T_T)
             Text("Hello, world!")
         }
