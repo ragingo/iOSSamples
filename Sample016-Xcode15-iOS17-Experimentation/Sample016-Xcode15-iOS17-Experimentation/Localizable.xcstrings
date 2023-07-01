@@ -1,0 +1,40 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Hello" : {
+      "comment" : "挨拶",
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "こんにちは"
+          }
+        }
+      }
+    },
+    "Hello, world!" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "こんにちは、世界！"
+          }
+        }
+      }
+    },
+    "World" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "世界"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
