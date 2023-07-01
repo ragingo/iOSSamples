@@ -9,3 +9,6 @@
 /// produces a tuple `(x + y, "x + y")`.
 @freestanding(expression)
 public macro stringify<T>(_ value: T) -> (T, String) = #externalMacro(module: "MyMacroMacros", type: "StringifyMacro")
+
+@freestanding(expression)
+public macro upperCase(_ string: String) -> String = #externalMacro(module: "MyMacroMacros", type: "UpperCaseMacro")

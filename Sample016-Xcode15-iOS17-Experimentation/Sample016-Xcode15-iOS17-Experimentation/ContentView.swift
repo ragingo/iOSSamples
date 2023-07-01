@@ -22,10 +22,7 @@ struct ContentView: View {
             Text("Hello, world!")
 
             // マクロ呼び出し
-            let a = 1
-            let b = 2
-            let (result, code) = #stringify(a + b)
-            Text("\(result), \(code)")
+            Text("\(#upperCase("abcdefg"))")
         }
         .padding()
     }
