@@ -1,6 +1,9 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@" : {
+
+    },
     "Hello" : {
       "comment" : "挨拶",
       "extractionState" : "manual",
