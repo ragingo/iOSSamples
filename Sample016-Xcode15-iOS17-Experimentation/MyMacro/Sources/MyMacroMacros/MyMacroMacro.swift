@@ -5,6 +5,7 @@ import SwiftSyntaxMacros
 struct MyMacroPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         StringifyMacro.self,
-        UpperCaseMacro.self
+        UpperCaseMacro.self,
+        Base64StringToImageMacro.self
     ]
 }
