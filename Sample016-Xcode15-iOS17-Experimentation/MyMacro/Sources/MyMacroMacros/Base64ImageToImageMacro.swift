@@ -1,5 +1,5 @@
 //
-//  Base64StringToImageMacro.swift
+//  Base64ImageToImageMacro.swift
 //
 //
 //  Created by ragingo on 2023/07/02.
@@ -24,7 +24,7 @@ import SwiftSyntaxMacros
  ld: symbol(s) not found for architecture arm64
  clang: error: linker command failed with exit code 1 (use -v to see invocation)
  */
-public struct Base64StringToImageMacro: ExpressionMacro {
+public struct Base64ImageToImageMacro: ExpressionMacro {
     public struct InvalidArgumentError: Error {
         let message: String
     }

@@ -13,4 +13,7 @@ public macro stringify<T>(_ value: T) -> (T, String) = #externalMacro(module: "M
 public macro upperCase(_ string: String) -> String = #externalMacro(module: "MyMacroMacros", type: "UpperCaseMacro")
 
 @freestanding(expression)
-public macro base64StringToImage(_ string: String) -> Image = #externalMacro(module: "MyMacroMacros", type: "Base64StringToImageMacro")
+public macro base64ImageToImage(_ string: String) -> Image = #externalMacro(module: "MyMacroMacros", type: "Base64ImageToImageMacro")
+
+@freestanding(declaration, names: arbitrary)
+public macro base64ImageToAsciiArt(_ string: String) = #externalMacro(module: "MyMacroMacros", type: "Base64ImageToAsciiArtMacro")
