@@ -30,10 +30,14 @@ public struct Base64ImageToAsciiArtMacro: DeclarationMacro {
             throw InvalidArgumentError(message: "base64 decode error")
         }
 
-        let dataOffset = try Bitmap.load(data)
-        let w = 32
-        let h = 32
-        let bytesPerPixel = 3
+        // BitmapFileHeader(bfType: 16973, bfSize: 3126, bfReserved1: 0, bfReserved2: 0, bfOffBits: 54)
+        // BitmapInfoHeader(biSize: 40, biWidth: 32, biHeight: 32, biPlanes: 1, biBitCount: 24, biCompression: 0, biSizeImage: 3072, biXPelsPerMeter: 0, biYPelsPerMeter: 0, biClrUsed: 0, biClrImportant: 0)
+        let (fileHeader, infoHeader, _) = try Bitmap.load(data)
+
+        let dataOffset = Int(fileHeader.bfOffBits)
+        let w = Int(infoHeader.biWidth)
+        let h = Int(infoHeader.biHeight)
+        let bytesPerPixel = Int(infoHeader.biBitCount) / 8
         let bytesPerRow = w * bytesPerPixel
         let t = 140
 
@@ -58,20 +62,15 @@ public struct Base64ImageToAsciiArtMacro: DeclarationMacro {
 }
 
 struct Bitmap {
-    static func load(_ data: Data) throws -> Int {
-        let result = try data.withUnsafeBytes { (ptr: UnsafeRawBufferPointer) in
-            var offset = 0
+    static func load(_ data: Data) throws -> (BitmapFileHeader, BitmapInfoHeader, Int) {
+        return try data.withUnsafeBytes { (ptr: UnsafeRawBufferPointer) in
+            var dataOffset = 0
 
-            let fileHeader = try parseFileHeader(ptr: ptr, offset: &offset)
-            let infoHeader = try parseInfoHeader(ptr: ptr, offset: &offset)
+            let fileHeader = try parseFileHeader(ptr: ptr, offset: &dataOffset)
+            let infoHeader = try parseInfoHeader(ptr: ptr, offset: &dataOffset)
 
-//            throw Base64ImageToImageMacro.InvalidArgumentError(message: "\(fileHeader)")
-//            throw Base64ImageToImageMacro.InvalidArgumentError(message: "\(infoHeader)")
-
-            return offset
+            return (fileHeader, infoHeader, dataOffset)
         }
-
-        return result
     }
 
     private static func parseFileHeader(ptr: UnsafeRawBufferPointer, offset: inout Int) throws -> BitmapFileHeader {
@@ -85,18 +84,16 @@ struct Bitmap {
             throw Base64ImageToImageMacro.InvalidArgumentError(message: "invalid bfType")
         }
 
-        // 壊れてるっぽい。間違えてるかも。
-        fileHeader.bfSize = CFSwapInt32BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
+        fileHeader.bfSize = ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self)
         offset += 4
 
-        fileHeader.bfReserved1 = CFSwapInt16BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt16.self))
+        fileHeader.bfReserved1 = ptr.loadUnaligned(fromByteOffset: offset, as: UInt16.self)
         offset += 2
 
-        fileHeader.bfReserved2 = CFSwapInt16BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt16.self))
+        fileHeader.bfReserved2 = ptr.loadUnaligned(fromByteOffset: offset, as: UInt16.self)
         offset += 2
 
-        // 壊れてるっぽい。間違えてるかも。
-        fileHeader.bfOffBits = CFSwapInt32BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
+        fileHeader.bfOffBits = ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self)
         offset += 4
 
         return fileHeader
@@ -105,37 +102,37 @@ struct Bitmap {
     private static func parseInfoHeader(ptr: UnsafeRawBufferPointer, offset: inout Int) throws -> BitmapInfoHeader {
         var infoHeader = BitmapInfoHeader()
 
-        infoHeader.biSize = CFSwapInt32BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
+        infoHeader.biSize = ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self)
         offset += 4
 
-        infoHeader.biWidth = Int32(CFSwapInt32BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self)))
+        infoHeader.biWidth = ptr.loadUnaligned(fromByteOffset: offset, as: Int32.self)
         offset += 4
 
-        infoHeader.biHeight = Int32(CFSwapInt32BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self)))
+        infoHeader.biHeight = ptr.loadUnaligned(fromByteOffset: offset, as: Int32.self)
         offset += 4
 
-        infoHeader.biPlanes = Int16(CFSwapInt16BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt16.self)))
+        infoHeader.biPlanes = ptr.loadUnaligned(fromByteOffset: offset, as: Int16.self)
         offset += 2
 
-        infoHeader.biBitCount = Int16(CFSwapInt16BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt16.self)))
+        infoHeader.biBitCount = ptr.loadUnaligned(fromByteOffset: offset, as: Int16.self)
         offset += 2
 
-        infoHeader.biCompression = CFSwapInt32BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
+        infoHeader.biCompression = ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self)
         offset += 4
 
-        infoHeader.biSizeImage = CFSwapInt32BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
+        infoHeader.biSizeImage = ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self)
         offset += 4
 
-        infoHeader.biXPelsPerMeter = Int32(CFSwapInt32BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self)))
+        infoHeader.biXPelsPerMeter = ptr.loadUnaligned(fromByteOffset: offset, as: Int32.self)
         offset += 4
 
-        infoHeader.biYPelsPerMeter = Int32(CFSwapInt32BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self)))
+        infoHeader.biYPelsPerMeter = ptr.loadUnaligned(fromByteOffset: offset, as: Int32.self)
         offset += 4
 
-        infoHeader.biClrUsed = CFSwapInt32BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
+        infoHeader.biClrUsed = ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self)
         offset += 4
 
-        infoHeader.biClrImportant = CFSwapInt32BigToHost(ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self))
+        infoHeader.biClrImportant = ptr.loadUnaligned(fromByteOffset: offset, as: UInt32.self)
         offset += 4
 
         return infoHeader
