@@ -44,6 +44,8 @@ public struct Base64ImageToAsciiArtMacro: DeclarationMacro {
         var pixels = ""
 
         (0..<h).forEach { row in
+            let row = infoHeader.biHeight >= 0 ? (h-1) - row : row
+
             (0..<w).forEach { col in
                 let offset = dataOffset + row * bytesPerRow + col * bytesPerPixel
                 let r = data[offset + 0]
