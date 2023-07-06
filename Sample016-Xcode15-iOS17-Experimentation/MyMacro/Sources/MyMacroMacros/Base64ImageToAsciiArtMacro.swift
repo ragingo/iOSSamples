@@ -39,7 +39,7 @@ public struct Base64ImageToAsciiArtMacro: DeclarationMacro {
         let h = Int(infoHeader.biHeight)
         let bytesPerPixel = Int(infoHeader.biBitCount) / 8
         let bytesPerRow = w * bytesPerPixel
-        let t = 140
+        let threshold = 0x20
 
         var pixels = ""
 
@@ -48,11 +48,36 @@ public struct Base64ImageToAsciiArtMacro: DeclarationMacro {
 
             (0..<w).forEach { col in
                 let offset = dataOffset + row * bytesPerRow + col * bytesPerPixel
-                let r = data[offset + 0]
-                let g = data[offset + 1]
-                let b = data[offset + 2]
-                let isBlack = t < r && t < g && t < b
-                pixels += (isBlack ? "■" : "□")
+                var r = data[offset + 0]
+                var g = data[offset + 1]
+                var b = data[offset + 2]
+
+                if r < threshold {
+                    r = 0
+                }
+                if g < threshold {
+                    g = 0
+                }
+                if b < threshold {
+                    b = 0
+                }
+
+                let isBlack = r == 0 && g == 0 && b == 0
+                let isRed = r >= max(g, b)
+                let isGreen = g >= max(r, b)
+                let isBlue = b >= max(r, g)
+
+                if isBlack {
+                    pixels += "⬛"
+                } else if isRed {
+                    pixels += "🟥"
+                } else if isGreen {
+                    pixels += "🟩"
+                } else if isBlue {
+                    pixels += "🟦"
+                } else {
+                    pixels += "⬜"
+                }
             }
             pixels += "\n"
         }
