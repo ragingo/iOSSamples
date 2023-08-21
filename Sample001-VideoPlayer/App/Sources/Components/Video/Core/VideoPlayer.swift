@@ -12,10 +12,6 @@ import CoreImage
 import CoreVideo
 
 class VideoPlayer: VideoPlayerProtocol {
-    private static let assetLoadKeys = [
-        #keyPath(AVAsset.isPlayable)
-    ]
-
     private let playerLayer = AVPlayerLayer()
     private let player = AVPlayer()
     private var imageGenerator: AVAssetImageGenerator?
@@ -115,10 +111,15 @@ class VideoPlayer: VideoPlayerProtocol {
         }
         // 非同期でロード開始
         let asset = AVURLAsset(url: url)
-        asset.loadValuesAsynchronously(forKeys: Self.assetLoadKeys) { [weak self] in
-            guard let self = self else { return }
-            self.onAssetLoaded(asset)
-            self.tap.setup()
+        do {
+            let isPlayable = try await asset.load(.isPlayable)
+            guard isPlayable else {
+                return
+            }
+            await onAssetLoaded(asset)
+            tap.setup()
+        } catch {
+            print(error)
         }
     }
 
@@ -206,25 +207,13 @@ class VideoPlayer: VideoPlayerProtocol {
 // MARK: - Callbacks
 extension VideoPlayer {
     // AVURLAsset.loadValuesAsynchronously 完了時
-    private func onAssetLoaded(_ asset: AVURLAsset) {
-        for key in Self.assetLoadKeys {
-            var error: NSError?
-            let status = asset.statusOfValue(forKey: key, error: &error)
-            if status != .loaded {
-                return
-            }
-        }
-
-        var error: NSError?
-        let status = asset.statusOfValue(forKey: #keyPath(AVAsset.isPlayable), error: &error)
-        assert(status == .loaded)
-
+    private func onAssetLoaded(_ asset: AVURLAsset) async {
         if isLiveStreaming {
             let playerItem = AVPlayerItem(asset: asset)
             player.replaceCurrentItem(with: playerItem)
         } else {
             let composition = AVMutableComposition()
-            let playerItem = Self.createVideoPlayerItem(asset: asset, composition: composition)
+            let playerItem = await Self.createVideoPlayerItem(asset: asset, composition: composition)
             player.replaceCurrentItem(with: playerItem)
             playerItem.videoComposition = createVideoComposition(composition: composition)
         }
@@ -356,19 +345,21 @@ extension VideoPlayer {
         return bandwidths
     }
 
-    private static func createVideoPlayerItem(asset: AVAsset, composition: AVMutableComposition) -> AVPlayerItem {
-        let videoTrack = asset.tracks.first { track in track.mediaType == .video }
-        let audioTrack = asset.tracks.first { track in track.mediaType == .audio }
-        let range = CMTimeRange(start: .zero, duration: asset.duration)
+    private static func createVideoPlayerItem(asset: AVAsset, composition: AVMutableComposition) async -> AVPlayerItem {
+        let videoTrack = try? await asset.loadTracks(withMediaType: .video).first
+        let audioTrack = try? await asset.loadTracks(withMediaType: .audio).first
+        let duration = try? await asset.load(.duration)
 
-        if let track = videoTrack {
+        if let videoTrack, let duration {
             let addedVideoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)
-            try? addedVideoTrack?.insertTimeRange(range, of: track, at: .zero)
+            let range = CMTimeRange(start: .zero, duration: duration)
+            try? addedVideoTrack?.insertTimeRange(range, of: videoTrack, at: .zero)
         }
 
-        if let track = audioTrack {
+        if let audioTrack, let duration {
             let addedAudioTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)
-            try? addedAudioTrack?.insertTimeRange(range, of: track, at: .zero)
+            let range = CMTimeRange(start: .zero, duration: duration)
+            try? addedAudioTrack?.insertTimeRange(range, of: audioTrack, at: .zero)
         }
 
         return AVPlayerItem(asset: composition)
