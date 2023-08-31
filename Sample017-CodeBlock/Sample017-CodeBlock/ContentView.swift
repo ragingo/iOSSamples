@@ -34,11 +34,11 @@ struct ContentView: View {
             async let task1 = try await loadSourceCode()
             async let task2 = try await loadSyntaxHighlight()
             let (sourceCode, syntaxHighlight) = await (try task1, try task2)
-            return try processSourceCode(
+            return try await processSourceCode(
                 sourceCode.content,
                 fileExtension: sourceCode.extension,
                 syntaxHighlight: syntaxHighlight,
-                removeComments: true
+                removeComments: false
             )
         } catch {
             return AttributedString(String(describing: error))
@@ -51,7 +51,7 @@ func processSourceCode(
     fileExtension: String,
     syntaxHighlight: SyntaxHighlight,
     removeComments: Bool = false
-) throws -> AttributedString {
+) async throws -> AttributedString {
     let lines = sourceCode
         .replacingOccurrences(of: "\r\n", with: "\n")
         .split(separator: "\n")
@@ -65,51 +65,74 @@ func processSourceCode(
         output += line + "\n"
     }
 
-    let attributedString = NSMutableAttributedString(string: output)
-
     let language = syntaxHighlight
         .languages
         .first {
             $0.extension.lowercased() == fileExtension.lowercased()
         }
 
-    if let language {
-        for style in language.defaultStyles {
-            switch style.key {
-            case "keywords":
-                let keywords = language.keywords.joined(separator: "|")
-                let pattern = "([ ]|\t)+(\(keywords))([ ]|\t)+"
-                applyColor(attributedString, pattern: pattern, color: style.legacyColor)
-            default:
-                break
+    var targets: [ColorTarget] = []
+
+    await withTaskGroup(of: [ColorTarget].self) { [output] group in
+        if let language {
+            for style in language.defaultStyles {
+                switch style.key {
+                case "keywords":
+                    let keywords = language.keywords.joined(separator: "|")
+                    let pattern = "([ ]|\t)+(\(keywords))([ ]|\t)+"
+                    group.addTask(priority: .high) {
+                        detectChangeColorTargets(output, pattern: pattern, color: style.legacyColor)
+                    }
+                default:
+                    break
+                }
+            }
+
+            for style in language.customStyles {
+                group.addTask(priority: .high) {
+                    detectChangeColorTargets(output, pattern: style.pattern, color: style.legacyColor)
+                }
             }
         }
 
-        for style in language.customStyles {
-            applyColor(attributedString, pattern: style.pattern, color: style.legacyColor)
+        for await result in group {
+            targets += result
         }
+    }
+
+    let attributedString = NSMutableAttributedString(string: output)
+
+    // NOTE: 実行時間のほとんどはここ。めちゃくちゃ重たい。
+    for target in targets {
+        attributedString.addAttribute(
+            .foregroundColor,
+            value: target.color,
+            range: target.range
+        )
     }
 
     return AttributedString(attributedString)
 }
 
-func applyColor(
-    _ attributedString: NSMutableAttributedString,
+struct ColorTarget {
+    let range: NSRange
+    let color: LegacyColor
+}
+func detectChangeColorTargets(
+    _ string: String,
     pattern: String,
     color: LegacyColor
-) {
-    if let regex = try? NSRegularExpression(pattern: pattern) {
-        regex.matches(
-            in: attributedString.string,
-            options: [],
-            range: .init(location: 0, length: attributedString.length)
-        )
-        .forEach {
-            attributedString.setAttributes(
-                [.foregroundColor: color],
-                range: $0.range
-            )
-        }
+) -> [ColorTarget] {
+    guard let regex = try? NSRegularExpression(pattern: pattern) else {
+        return []
+    }
+    return regex.matches(
+        in: string,
+        options: [],
+        range: .init(location: 0, length: string.count)
+    )
+    .map {
+        .init(range: $0.range, color: color)
     }
 }
 
@@ -165,11 +188,11 @@ struct Language: Decodable {
 }
 
 func convertLegacyColor(from color: String) -> LegacyColor? {
-    let colorCodeRef = Reference(LegacyColor.self)
+    let colorRef = Reference(LegacyColor.self)
     let regex = Regex {
         Anchor.startOfLine
         "#"
-        Capture(as: colorCodeRef) {
+        Capture(as: colorRef) {
             Repeat(.hexDigit, count: 6)
         } transform: { subString in
             let hex = Int(subString, radix: 16)!
@@ -182,7 +205,7 @@ func convertLegacyColor(from color: String) -> LegacyColor? {
     }
 
     if let match = try? regex.firstMatch(in: color) {
-        return match[colorCodeRef]
+        return match[colorRef]
     }
     return nil
 }
