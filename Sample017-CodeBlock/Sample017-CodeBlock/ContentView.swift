@@ -20,7 +20,7 @@ struct ContentView: View {
 
     var body: some View {
         ScrollView {
-            Text(sourceCode)
+            Text(sourceCode) // <- 巨大テキスト + AttributedString(属性約2000個) で描画にすごく時間が掛かる
                 .font(.system(size: 12))
                 .padding()
                 .task {
@@ -102,7 +102,6 @@ func processSourceCode(
 
     let attributedString = NSMutableAttributedString(string: output)
 
-    // NOTE: 実行時間のほとんどはここ。めちゃくちゃ重たい。
     for target in targets {
         attributedString.addAttribute(
             .foregroundColor,
