@@ -19,14 +19,17 @@ struct ContentView: View {
     @State private var sourceCode: AttributedString = ""
 
     var body: some View {
-        ScrollView {
+        ScrollView([.horizontal, .vertical]) {
             // apple/swift/main/stdlib/public/core/Array.swift のテキスト量で描画が完了するのに数秒掛かる
             Text(sourceCode)
                 .font(.system(size: 12))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .border(.gray)
                 .padding()
-                .task {
-                    sourceCode = await load()
-                }
+                .border(.black)
+        }
+        .task {
+            sourceCode.append(await load())
         }
     }
 
@@ -53,18 +56,17 @@ func processSourceCode(
     syntaxHighlight: SyntaxHighlight,
     removeComments: Bool = false
 ) async throws -> AttributedString {
-    let lines = sourceCode
+    let output = sourceCode
         .replacingOccurrences(of: "\r\n", with: "\n")
         .split(separator: "\n")
-
-    var output = ""
-
-    for line in lines {
-        if removeComments && line.trimmingPrefix(/( |\t)*/).starts(with: /\/\//) {
-            continue
+        .filter { line in
+            if removeComments && line.trimmingPrefix(/( |\t)*/).starts(with: /\/\//) {
+                return false
+            }
+            return true
         }
-        output += line + "\n"
-    }
+        .map { String($0) }
+        .joined(separator: "\n")
 
     let language = syntaxHighlight
         .languages
@@ -72,27 +74,29 @@ func processSourceCode(
             $0.extension.lowercased() == fileExtension.lowercased()
         }
 
+    guard let language else {
+        return AttributedString("")
+    }
+
     var targets: [ColorTarget] = []
 
     await withTaskGroup(of: [ColorTarget].self) { [output] group in
-        if let language {
-            for style in language.defaultStyles {
-                switch style.key {
-                case "keywords":
-                    let keywords = language.keywords.joined(separator: "|")
-                    let pattern = "([ ]|\t)+(\(keywords))([ ]|\t)+"
-                    group.addTask(priority: .high) {
-                        detectChangeColorTargets(output, pattern: pattern, color: style.legacyColor)
-                    }
-                default:
-                    break
+        for style in language.defaultStyles {
+            switch style.key {
+            case "keywords":
+                let keywords = language.keywords.joined(separator: "|")
+                let pattern = "([ ]|\t)+(\(keywords))([ ]|\t)+"
+                group.addTask {
+                    detectChangeColorTargets(output, pattern: pattern, color: style.legacyColor)
                 }
+            default:
+                break
             }
+        }
 
-            for style in language.customStyles {
-                group.addTask(priority: .high) {
-                    detectChangeColorTargets(output, pattern: style.pattern, color: style.legacyColor)
-                }
+        for style in language.customStyles {
+            group.addTask {
+                detectChangeColorTargets(output, pattern: style.pattern, color: style.legacyColor)
             }
         }
 
@@ -118,6 +122,7 @@ struct ColorTarget {
     let range: NSRange
     let color: LegacyColor
 }
+
 func detectChangeColorTargets(
     _ string: String,
     pattern: String,
