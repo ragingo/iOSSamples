@@ -20,7 +20,8 @@ struct ContentView: View {
 
     var body: some View {
         ScrollView {
-            Text(sourceCode) // <- 巨大テキスト + AttributedString(属性約2000個) で描画にすごく時間が掛かる
+            // apple/swift/main/stdlib/public/core/Array.swift のテキスト量で描画が完了するのに数秒掛かる
+            Text(sourceCode)
                 .font(.system(size: 12))
                 .padding()
                 .task {
