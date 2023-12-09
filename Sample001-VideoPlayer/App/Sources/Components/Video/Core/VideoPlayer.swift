@@ -19,16 +19,8 @@ class VideoPlayer: VideoPlayerProtocol {
     private var timeObserver: Any?
     private var generatedImageCache: [Double: CGImage] = [:]
     private var filters: [CIFilter] = []
-    private let tap: Tap
 
-    var onAudioSampleBufferUpdate: ((CMSampleBuffer) -> Void)? {
-        get {
-            tap.onUpdate
-        }
-        set {
-            tap.onUpdate = newValue
-        }
-    }
+    var onAudioSampleBufferUpdate: ((CMSampleBuffer) -> Void)?
 
     var layer: CALayer {
         playerLayer
@@ -66,7 +58,6 @@ class VideoPlayer: VideoPlayerProtocol {
 
     init() {
         playerLayer.player = player
-        tap = Tap(player: player)
     }
 
     deinit {
@@ -94,8 +85,6 @@ class VideoPlayer: VideoPlayerProtocol {
         playerLayer.player = nil
 
         generatedImageCache.removeAll()
-
-        tap.invalidate()
     }
 
     func open(urlString: String) async {
@@ -117,7 +106,6 @@ class VideoPlayer: VideoPlayerProtocol {
                 return
             }
             await onAssetLoaded(asset)
-            tap.setup()
         } catch {
             print(error)
         }
@@ -387,156 +375,5 @@ extension VideoPlayer {
         videoComposition.renderSize = composition.naturalSize
 
         return videoComposition
-    }
-}
-
-// MARK: - Tap
-private class Tap {
-    private let player: AVPlayer
-    private var tap: Unmanaged<MTAudioProcessingTap>?
-
-    var onUpdate: ((CMSampleBuffer) -> Void)?
-
-    init(player: AVPlayer) {
-        self.player = player
-    }
-
-    deinit {
-        invalidate()
-    }
-
-    func invalidate() {
-        tap?.release()
-    }
-
-    func setup() {
-        guard let playerItem = player.currentItem else {
-            return
-        }
-
-        var callbacks = MTAudioProcessingTapCallbacks(version: kMTAudioProcessingTapCallbacksVersion_0,
-                                                      clientInfo: UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()),
-                                                      init: initialize,
-                                                      finalize: finalize,
-                                                      prepare: prepare,
-                                                      unprepare: unprepare,
-                                                      process: process)
-
-        var tap: Unmanaged<MTAudioProcessingTap>?
-        let status = MTAudioProcessingTapCreate(kCFAllocatorDefault, &callbacks, kMTAudioProcessingTapCreationFlag_PostEffects, &tap)
-        if status != noErr {
-            print("[VideoPlayer] [tap] Error! MTAudioProcessingTapCreate: \(status)")
-            return
-        }
-        self.tap = tap
-
-        guard let audioTrack = playerItem.asset.tracks(withMediaType: AVMediaType.audio).first else {
-            print("[VideoPlayer] [tap] audio track not found")
-            return
-        }
-
-        let inputParams = AVMutableAudioMixInputParameters(track: audioTrack)
-        inputParams.audioTapProcessor = tap?.takeRetainedValue()
-
-        let audioMix = AVMutableAudioMix()
-        audioMix.inputParameters = [inputParams]
-
-        playerItem.audioMix = audioMix
-    }
-
-    var audioProcessingFormat: AudioStreamBasicDescription?
-
-    let initialize: MTAudioProcessingTapInitCallback = { _, clientInfo, tapStorageOut in
-        print("[VideoPlayer] [tap] initialize")
-        tapStorageOut.pointee = clientInfo
-    }
-
-    let finalize: MTAudioProcessingTapFinalizeCallback = { _ in
-        print("[VideoPlayer] [tap] finalize")
-    }
-
-    let prepare: MTAudioProcessingTapPrepareCallback = { tap, _, basicDescription in
-        print("[VideoPlayer] [tap] prepare")
-        let instance = Unmanaged<Tap>.fromOpaque(MTAudioProcessingTapGetStorage(tap)).takeUnretainedValue()
-        let ptr = basicDescription.pointee
-        instance.audioProcessingFormat = AudioStreamBasicDescription(mSampleRate: ptr.mSampleRate,
-                                                                     mFormatID: ptr.mFormatID,
-                                                                     mFormatFlags: ptr.mFormatFlags,
-                                                                     mBytesPerPacket: ptr.mBytesPerPacket,
-                                                                     mFramesPerPacket: ptr.mFramesPerPacket,
-                                                                     mBytesPerFrame: ptr.mBytesPerFrame,
-                                                                     mChannelsPerFrame: ptr.mChannelsPerFrame,
-                                                                     mBitsPerChannel: ptr.mBitsPerChannel,
-                                                                     mReserved: ptr.mReserved)
-    }
-
-    let unprepare: MTAudioProcessingTapUnprepareCallback = { _ in
-        print("[VideoPlayer] [tap] unprepare")
-    }
-
-    let process: MTAudioProcessingTapProcessCallback = { tap, numberFrames, _, bufferListInOut, numberFramesOut, flagsOut in
-        let instance = Unmanaged<Tap>.fromOpaque(MTAudioProcessingTapGetStorage(tap)).takeUnretainedValue()
-        guard var audioProcessingFormat = instance.audioProcessingFormat else {
-            return
-        }
-
-        var status: OSStatus?
-
-        status = MTAudioProcessingTapGetSourceAudio(tap, numberFrames, bufferListInOut, flagsOut, nil, numberFramesOut)
-        if let status = status, status != noErr {
-            print("[VideoPlayer] [tap] Error! MTAudioProcessingTapGetSourceAudio: \(status)")
-            return
-        }
-
-        var format: CMFormatDescription?
-        status = CMAudioFormatDescriptionCreate(allocator: kCFAllocatorDefault,
-                                                asbd: &audioProcessingFormat,
-                                                layoutSize: 0,
-                                                layout: nil,
-                                                magicCookieSize: 0,
-                                                magicCookie: nil,
-                                                extensions: nil,
-                                                formatDescriptionOut: &format)
-        if let status = status, status != noErr {
-            print("[VideoPlayer] [tap] Error! CMAudioFormatDescriptionCreate: \(status)")
-            return
-        }
-
-        var sampleBuffer: CMSampleBuffer?
-        var timing = CMSampleTimingInfo(duration: CMTimeMake(value: 1, timescale: Int32(audioProcessingFormat.mSampleRate)),
-                                        presentationTimeStamp: instance.player.currentTime(),
-                                        decodeTimeStamp: CMTime.invalid)
-
-        status = CMSampleBufferCreate(allocator: kCFAllocatorDefault,
-                                      dataBuffer: nil,
-                                      dataReady: Bool(truncating: 0),
-                                      makeDataReadyCallback: nil,
-                                      refcon: nil,
-                                      formatDescription: format,
-                                      sampleCount: CMItemCount(numberFrames),
-                                      sampleTimingEntryCount: 1,
-                                      sampleTimingArray: &timing,
-                                      sampleSizeEntryCount: 0,
-                                      sampleSizeArray: nil,
-                                      sampleBufferOut: &sampleBuffer)
-        if let status = status, status != noErr {
-            print("[VideoPlayer] [tap] Error! CMSampleBufferCreate: \(status)")
-            return
-        }
-
-        guard let sampleBuffer = sampleBuffer else {
-            return
-        }
-        status = CMSampleBufferSetDataBufferFromAudioBufferList(sampleBuffer,
-                                                                blockBufferAllocator: kCFAllocatorDefault,
-                                                                blockBufferMemoryAllocator: kCFAllocatorDefault,
-                                                                flags: 0,
-                                                                bufferList: bufferListInOut)
-        if let status = status, status != noErr {
-            print("[VideoPlayer] [tap] Error! CMSampleBufferSetDataBufferFromAudioBufferList: \(status)")
-            return
-        }
-
-        instance.onUpdate?(sampleBuffer)
     }
 }
