@@ -9,17 +9,15 @@ import SwiftUI
 
 #if DEBUG
 
-private let videoURL = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
-private let playerView = VideoPlayerView()
+#Preview {
+    let videoURL = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
+    let playerView = VideoPlayerView()
 
-struct VideoPlayerView_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack {
-            playerView
-        }
-        .onAppear {
-            playerView.open(urlString: videoURL)
-        }
+    VStack {
+        playerView
+    }
+    .onAppear {
+        playerView.open(urlString: videoURL)
     }
 }
 

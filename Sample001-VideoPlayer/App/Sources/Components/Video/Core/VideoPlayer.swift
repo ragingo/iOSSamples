@@ -6,12 +6,12 @@
 //
 
 import Foundation
-import AVFoundation
+@preconcurrency import AVFoundation
 import Combine
 import CoreImage
 import CoreVideo
 
-class VideoPlayer: VideoPlayerProtocol {
+final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
     private let playerLayer = AVPlayerLayer()
     private let player = AVPlayer()
     private var imageGenerator: AVAssetImageGenerator?
@@ -195,6 +195,7 @@ class VideoPlayer: VideoPlayerProtocol {
 // MARK: - Callbacks
 extension VideoPlayer {
     // AVURLAsset.loadValuesAsynchronously 完了時
+    @MainActor
     private func onAssetLoaded(_ asset: AVURLAsset) async {
         if isLiveStreaming {
             let playerItem = AVPlayerItem(asset: asset)
@@ -350,7 +351,7 @@ extension VideoPlayer {
             try? addedAudioTrack?.insertTimeRange(range, of: audioTrack, at: .zero)
         }
 
-        return AVPlayerItem(asset: composition)
+        return await AVPlayerItem(asset: composition)
     }
 
     // AVVideoComposition を作って返す
