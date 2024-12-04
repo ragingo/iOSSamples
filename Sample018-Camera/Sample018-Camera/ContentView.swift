@@ -9,7 +9,7 @@ import AVFoundation
 import SwiftUI
 
 struct ContentView: View {
-    @State private var camera: Camera = .init()
+    @State private var camera: Camera?
     @State private var devices: [AVCaptureDevice] = []
     @State private var selectedDevice: AVCaptureDevice?
     @State private var selectedDevicePosition: AVCaptureDevice.Position = .unspecified
@@ -35,7 +35,7 @@ struct ContentView: View {
                 Button("Start") {
                     Task {
                         if await Camera.isAuthorized(for: .video) {
-                            await camera.startCapture()
+                            await camera?.startCapture()
                         } else {
                             showNotGrantedAlert = true
                         }
@@ -43,12 +43,12 @@ struct ContentView: View {
                 }
                 Button("Pause") {
                     Task {
-                        await camera.pauseCapture()
+                        await camera?.pauseCapture()
                     }
                 }
                 Button("Stop") {
                     Task {
-                        await camera.stopCapture()
+                        await camera?.stopCapture()
                     }
                 }
             }
@@ -61,10 +61,14 @@ struct ContentView: View {
                 .background(selectedDevice == device ? Color.blue : Color.gray)
             }
 
-            VideoSurfaceView(playerLayer: camera.previewLayer)
+            VideoSurfaceView(playerLayer: camera?.previewLayer)
                 .frame(width: 300, height: 300)
                 .clipped()
                 .border(.red)
+                .id(camera == nil ? 1 : 2)
+        }
+        .task {
+            camera = await Camera()
         }
         .onAppear {
             devices = Camera.detectDevices()
@@ -75,6 +79,9 @@ struct ContentView: View {
                 return
             }
             Task {
+                guard let camera else {
+                    return
+                }
                 guard await camera.initializeCamera(device: selectedDevice) else {
                     return
                 }

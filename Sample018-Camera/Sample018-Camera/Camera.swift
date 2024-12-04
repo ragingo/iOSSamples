@@ -11,33 +11,67 @@ struct UncheckedSendableValue<T>: @unchecked Sendable {
     var value: T
 }
 
-// TODO: これを消してもコンパイルが通るようにする
-extension AVCaptureSession: @retroactive @unchecked Sendable {}
-
 @globalActor
 actor CameraActor {
     static let shared = CameraActor()
 }
 
 @CameraActor
-class CameraCaptureSession {
-    var value: AVCaptureSession = .init()
+private final class CameraCaptureSession {
+    private(set) var session: AVCaptureSession = .init()
+
+    func configure(inputs: [AVCaptureDeviceInput] = []) {
+        session.beginConfiguration()
+        defer {
+            session.commitConfiguration()
+        }
+
+        inputs.forEach { input in
+            if session.canAddInput(input) {
+                session.addInput(input)
+            } else {
+                print("Failed to add input: \(input)")
+            }
+        }
+    }
+
+    func start() {
+        session.startRunning()
+    }
+
+    func pause() {
+        if session.isRunning {
+            session.stopRunning()
+        }
+    }
+
+    func stop() {
+        if session.isRunning {
+            session.stopRunning()
+            session.inputs.forEach { session.removeInput($0) }
+            session.outputs.forEach { session.removeOutput($0) }
+            session.connections.forEach { session.removeConnection($0) }
+            if #available(iOS 18.0, *) {
+                session.controls.forEach { session.removeControl($0) }
+            }
+        }
+    }
 }
 
 @CameraActor
-final class Camera {
-    private var captureSession: CameraCaptureSession = .init()
-//    private let captureSession: CameraCaptureSession = .init()
+final class CameraVideoPreviewLayer: AVCaptureVideoPreviewLayer {
+}
+extension CameraVideoPreviewLayer: @unchecked Sendable {}
 
-    @MainActor
-    private let cameraPreviewLayer: AVCaptureVideoPreviewLayer = .init()
+@CameraActor
+final class Camera {
+    private let videoPreviewLayer: CameraVideoPreviewLayer = .init()
+    private let captureSession: CameraCaptureSession = .init()
 
     @MainActor
     var previewLayer: CALayer {
-        cameraPreviewLayer
+        videoPreviewLayer
     }
-
-    nonisolated init() {}
 
     static func isAuthorized(for mediaType: AVMediaType) async -> Bool {
         assert(mediaType == .video || mediaType == .audio)
@@ -78,10 +112,7 @@ final class Camera {
         return devices
     }
 
-    @MainActor
     func initializeCamera(device: AVCaptureDevice) async -> Bool {
-        await captureSession.value.beginConfiguration()
-
         if device.isFocusModeSupported(.continuousAutoFocus) {
             try? device.lockForConfiguration()
             device.focusMode = .continuousAutoFocus
@@ -94,40 +125,26 @@ final class Camera {
             videoInput = try AVCaptureDeviceInput(device: device)
         } catch {
             print("Failed to create video input: \(error)")
-            await captureSession.value.commitConfiguration()
             return false
         }
 
-        if await captureSession.value.canAddInput(videoInput) {
-            await captureSession.value.addInput(videoInput)
-        } else {
-            print("Failed to add video input")
-            await captureSession.value.commitConfiguration()
-            return false
-        }
+        captureSession.configure(inputs: [videoInput])
 
-        await captureSession.value.commitConfiguration()
-
-        cameraPreviewLayer.session = await captureSession.value
-        cameraPreviewLayer.videoGravity = .resizeAspectFill
+        videoPreviewLayer.session = captureSession.session
+        videoPreviewLayer.videoGravity = .resizeAspectFill
 
         return true
     }
 
     func startCapture() {
-        captureSession.value.startRunning()
+        captureSession.start()
     }
 
     func pauseCapture() {
-        if captureSession.value.isRunning {
-            captureSession.value.stopRunning()
-        }
+        captureSession.pause()
     }
 
     func stopCapture() {
-        if captureSession.value.isRunning {
-            captureSession.value.stopRunning()
-            captureSession = .init()
-        }
+        captureSession.stop()
     }
 }
