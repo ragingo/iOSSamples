@@ -11,41 +11,51 @@ struct UncheckedSendableValue<T>: @unchecked Sendable {
     var value: T
 }
 
-@MainActor
+// TODO: これを消してもコンパイルが通るようにする
+extension AVCaptureSession: @retroactive @unchecked Sendable {}
+
+@globalActor
+actor CameraActor {
+    static let shared = CameraActor()
+}
+
+@CameraActor
+class CameraCaptureSession {
+    var value: AVCaptureSession = .init()
+}
+
+@CameraActor
 final class Camera {
-    private let captureSession: UncheckedSendableValue<AVCaptureSession> = .init(value: .init())
+    private var captureSession: CameraCaptureSession = .init()
+//    private let captureSession: CameraCaptureSession = .init()
+
+    @MainActor
     private let cameraPreviewLayer: AVCaptureVideoPreviewLayer = .init()
 
+    @MainActor
     var previewLayer: CALayer {
         cameraPreviewLayer
     }
 
-    init() {}
+    nonisolated init() {}
 
-    var isAuthorized: Bool {
-        get async {
-            let status = AVCaptureDevice.authorizationStatus(for: .video)
-
-            switch status {
-            case .authorized:
-                return true
-            case .notDetermined:
-                return await AVCaptureDevice.requestAccess(for: .video)
-            default:
-                return false
-            }
+    static func isAuthorized(for mediaType: AVMediaType) async -> Bool {
+        assert(mediaType == .video || mediaType == .audio)
+        let status = AVCaptureDevice.authorizationStatus(for: mediaType)
+        switch status {
+        case .authorized:
+            return true
+        case .notDetermined:
+            return await AVCaptureDevice.requestAccess(for: mediaType)
+        default:
+            return false
         }
     }
 
-    func initializeCamera() -> Bool {
-        captureSession.value.beginConfiguration()
-        defer {
-            captureSession.value.commitConfiguration()
-        }
-
+    nonisolated static func detectDevices(position: AVCaptureDevice.Position = .unspecified) -> sending [AVCaptureDevice] {
         let deviceTypes: [AVCaptureDevice.DeviceType]
 #if os(macOS)
-            deviceTypes = [.builtInWideAngleCamera, .continuityCamera, .deskViewCamera, .external]
+        deviceTypes = [.builtInWideAngleCamera, .continuityCamera, .deskViewCamera, .external]
 #elseif os(iOS)
         if #available(iOS 17.0, *) {
             deviceTypes = [.builtInWideAngleCamera, .builtInDualCamera, .builtInDualWideCamera, .builtInUltraWideCamera, .continuityCamera, .external]
@@ -53,52 +63,71 @@ final class Camera {
             deviceTypes = [.builtInWideAngleCamera, .builtInDualCamera, .builtInDualWideCamera, .builtInUltraWideCamera]
         }
 #else
-            deviceTypes = [.builtInWideAngleCamera]
+        deviceTypes = [.builtInWideAngleCamera]
 #endif
-        let devices = AVCaptureDevice.DiscoverySession(deviceTypes: deviceTypes, mediaType: .video, position: .unspecified)
+        let devices = AVCaptureDevice.DiscoverySession(deviceTypes: deviceTypes, mediaType: .video, position: position)
             .devices
 
         devices
             .forEach { print($0) }
 
-        guard let videoCaptureDevice = devices.first else {
-            print("Failed to get video capture device")
-            return false
+        if devices.isEmpty {
+            print("No camera devices found")
         }
+
+        return devices
+    }
+
+    @MainActor
+    func initializeCamera(device: AVCaptureDevice) async -> Bool {
+        await captureSession.value.beginConfiguration()
+
+        if device.isFocusModeSupported(.continuousAutoFocus) {
+            try? device.lockForConfiguration()
+            device.focusMode = .continuousAutoFocus
+            device.unlockForConfiguration()
+        }
+
         let videoInput: AVCaptureDeviceInput
 
         do {
-            videoInput = try AVCaptureDeviceInput(device: videoCaptureDevice)
+            videoInput = try AVCaptureDeviceInput(device: device)
         } catch {
             print("Failed to create video input: \(error)")
+            await captureSession.value.commitConfiguration()
             return false
         }
 
-        if captureSession.value.canAddInput(videoInput) {
-            captureSession.value.addInput(videoInput)
+        if await captureSession.value.canAddInput(videoInput) {
+            await captureSession.value.addInput(videoInput)
         } else {
             print("Failed to add video input")
+            await captureSession.value.commitConfiguration()
             return false
         }
 
-        cameraPreviewLayer.session = captureSession.value
+        await captureSession.value.commitConfiguration()
+
+        cameraPreviewLayer.session = await captureSession.value
         cameraPreviewLayer.videoGravity = .resizeAspectFill
 
         return true
     }
 
-    func startPreview() async {
-        guard await isAuthorized else { return }
-        Task.detached {
-            self.captureSession.value.startRunning()
+    func startCapture() {
+        captureSession.value.startRunning()
+    }
+
+    func pauseCapture() {
+        if captureSession.value.isRunning {
+            captureSession.value.stopRunning()
         }
     }
 
-    func pausePreview() {
-        captureSession.value.stopRunning()
-    }
-
-    func stopPreview() {
-        captureSession.value.stopRunning()
+    func stopCapture() {
+        if captureSession.value.isRunning {
+            captureSession.value.stopRunning()
+            captureSession = .init()
+        }
     }
 }

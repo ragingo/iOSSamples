@@ -19,19 +19,40 @@ typealias ViewControllerRepresentable = NSViewControllerRepresentable
 final class VideoSurfaceUIView: UIView {
     private let playerLayer: CALayer
 
-    required init?(coder: NSCoder) {
-        fatalError("not implemented")
-    }
-
     init(playerLayer: CALayer, frame: CGRect) {
         self.playerLayer = playerLayer
         super.init(frame: frame)
         layer.addSublayer(playerLayer)
     }
 
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func layoutSubviews() {
         super.layoutSubviews()
         playerLayer.frame = bounds
+    }
+}
+#elseif os(macOS)
+final class VideoSurfaceUIView: NSView {
+    private let playerLayer: CALayer
+
+    init(playerLayer: CALayer) {
+        self.playerLayer = playerLayer
+        super.init(frame: .zero)
+        self.layer = playerLayer
+        self.wantsLayer = true
+        self.translatesAutoresizingMaskIntoConstraints = false
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layout() {
+        super.layout()
+        playerLayer.frame = self.bounds
     }
 }
 #endif
@@ -51,10 +72,7 @@ struct VideoSurfaceView: ViewRepresentable {
     typealias NSViewType = NSView
 
     func makeNSView(context: Context) -> NSView {
-        let view = NSView()
-        view.layer = playerLayer
-        view.wantsLayer = true
-        return view
+        VideoSurfaceUIView(playerLayer: playerLayer)
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
