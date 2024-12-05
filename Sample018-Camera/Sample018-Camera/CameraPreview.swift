@@ -1,0 +1,119 @@
+//
+//  CameraPreview.swift
+//  Sample018-Camera
+//
+//  Created by ragingo on 2024/12/05.
+//
+
+import AVFoundation
+import Combine
+import SwiftUI
+
+@MainActor
+struct CameraPreview: View {
+    @State private var camera: Camera?
+    @State private var layer: CALayer = .init()
+    @State private var showNotGrantedAlert = false
+    @State private var devices: [AVCaptureDevice] = []
+    private var onDeviceListLoaded: (([AVCaptureDevice]) -> Void)?
+
+    var commands: AnyPublisher<Command, Never>
+
+    // SwiftUI で async init を使ってはいけない
+    // async init 呼び出し側でコンパイルエラー
+    init(commands: AnyPublisher<Command, Never>) {
+        self.commands = commands
+    }
+
+    var body: some View {
+        VStack {
+            if camera != nil {
+                VideoSurfaceView(playerLayer: layer)
+            } else {
+                ProgressView()
+            }
+        }
+        .task {
+            let camera = await Camera()
+            self.camera = camera
+            layer = camera.previewLayer
+        }
+        .onReceive(commands) { command in
+            guard let camera = camera else { return }
+
+            switch command {
+            case .empty:
+                break
+            case .loadDevices(let position):
+                devices = Camera.detectDevices(position: position)
+                onDeviceListLoaded?(devices)
+            case .selectDevice(let device):
+                Task {
+                    await camera.initializeCamera(device: device)
+                }
+            case .startCapture:
+                Task {
+                    await camera.startCapture()
+                }
+            case .pauseCapture:
+                Task {
+                    await camera.pauseCapture()
+                }
+            case .stopCapture:
+                Task {
+                    await camera.stopCapture()
+                }
+            }
+        }
+        .alert("カメラが許可されていません", isPresented: $showNotGrantedAlert) {
+            Button("OSの設定画面を開く") {
+                openSystemSettings()
+            }
+        }
+    }
+}
+
+extension CameraPreview {
+//    func notGrantedAlert(isPresent: Binding<Bool>) -> Self {
+//        self.showNotGrantedAlert = isPresent.wrappedValue
+//        isPresent.wrappedValue.toggle()
+//        self.showNotGrantedAlert = isPresent.wrappedValue
+//        return self
+//    }
+
+    @discardableResult
+    func onDeviceListLoaded(perform: @Sendable @escaping @MainActor ([AVCaptureDevice]) -> Void = { _ in }) -> Self {
+        var newSelf = self
+        newSelf.onDeviceListLoaded = perform
+        return newSelf
+    }
+}
+
+extension CameraPreview {
+    enum Command: @unchecked Sendable {
+        case empty
+        case loadDevices(position: AVCaptureDevice.Position = .unspecified)
+        case selectDevice(device: AVCaptureDevice)
+        case startCapture
+        case pauseCapture
+        case stopCapture
+    }
+}
+
+@MainActor
+private func openSystemSettings() {
+#if os(iOS)
+    if let url = URL(string: UIApplication.openSettingsURLString) {
+        UIApplication.shared.open(url)
+    }
+#elseif os(macOS)
+    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") {
+        NSWorkspace.shared.open(url)
+    }
+#endif
+}
+
+// async init を使うとプレビューマクロ生成コードでコンパイルエラー
+//#Preview {
+//    CameraPreview()
+//}

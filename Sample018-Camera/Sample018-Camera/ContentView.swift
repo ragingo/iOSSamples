@@ -6,52 +6,23 @@
 //
 
 import AVFoundation
+import Combine
 import SwiftUI
 
 struct ContentView: View {
-    @State private var camera: Camera?
     @State private var devices: [AVCaptureDevice] = []
     @State private var selectedDevice: AVCaptureDevice?
     @State private var selectedDevicePosition: AVCaptureDevice.Position = .unspecified
     @State private var showNotGrantedAlert = false
+
+    private let cameraCommands = PassthroughSubject<CameraPreview.Command, Never>()
 
     init() {
     }
 
     var body: some View {
         VStack {
-            HStack {
-                Menu("カメラデバイス位置") {
-                    Button("前面") {
-                        selectedDevicePosition = .front
-                    }
-                    Button("背面") {
-                        selectedDevicePosition = .back
-                    }
-                    Button("全て") {
-                        selectedDevicePosition = .unspecified
-                    }
-                }
-                Button("Start") {
-                    Task {
-                        if await Camera.isAuthorized(for: .video) {
-                            await camera?.startCapture()
-                        } else {
-                            showNotGrantedAlert = true
-                        }
-                    }
-                }
-                Button("Pause") {
-                    Task {
-                        await camera?.pauseCapture()
-                    }
-                }
-                Button("Stop") {
-                    Task {
-                        await camera?.stopCapture()
-                    }
-                }
-            }
+            cameraController
 
             List(devices, id: \.uniqueID) { device in
                 Button(device.description) {
@@ -61,35 +32,26 @@ struct ContentView: View {
                 .background(selectedDevice == device ? Color.blue : Color.gray)
             }
 
-            VideoSurfaceView(playerLayer: camera?.previewLayer)
+            CameraPreview(commands: cameraCommands.receive(on: RunLoop.main).eraseToAnyPublisher())
+                //.notGrantedAlert(isPresent: $showNotGrantedAlert)
+                .onDeviceListLoaded { devices in
+                    self.devices = devices.map { $0 }
+                }
                 .frame(width: 300, height: 300)
                 .clipped()
                 .border(.red)
-                .id(camera == nil ? 1 : 2)
-        }
-        .task {
-            camera = await Camera()
         }
         .onAppear {
-            devices = Camera.detectDevices()
-            selectedDevice = devices.first
+            cameraCommands.send(.loadDevices(position: selectedDevicePosition))
         }
         .onChange(of: selectedDevice) { _ in
             guard let selectedDevice else {
                 return
             }
-            Task {
-                guard let camera else {
-                    return
-                }
-                guard await camera.initializeCamera(device: selectedDevice) else {
-                    return
-                }
-                await camera.startCapture()
-            }
+            cameraCommands.send(.selectDevice(device: selectedDevice))
         }
         .onChange(of: selectedDevicePosition) { _ in
-            devices = Camera.detectDevices(position: selectedDevicePosition)
+            cameraCommands.send(.loadDevices(position: selectedDevicePosition))
         }
         .alert("カメラが許可されていません", isPresented: $showNotGrantedAlert) {
             Button("OSの設定画面を開く") {
@@ -102,6 +64,37 @@ struct ContentView: View {
                     NSWorkspace.shared.open(url)
                 }
 #endif
+            }
+        }
+    }
+
+    private var cameraController: some View {
+        HStack {
+            Menu("カメラデバイス位置") {
+                Button("前面") {
+                    selectedDevicePosition = .front
+                }
+                Button("背面") {
+                    selectedDevicePosition = .back
+                }
+                Button("全て") {
+                    selectedDevicePosition = .unspecified
+                }
+            }
+            Button("Start") {
+                Task {
+                    if await Camera.isAuthorized(for: .video) {
+                        cameraCommands.send(.startCapture)
+                    } else {
+                        showNotGrantedAlert = true
+                    }
+                }
+            }
+            Button("Pause") {
+                cameraCommands.send(.pauseCapture)
+            }
+            Button("Stop") {
+                cameraCommands.send(.stopCapture)
             }
         }
     }
