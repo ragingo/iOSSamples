@@ -13,12 +13,8 @@ struct ContentView: View {
     @State private var devices: [AVCaptureDevice] = []
     @State private var selectedDevice: AVCaptureDevice?
     @State private var selectedDevicePosition: AVCaptureDevice.Position = .unspecified
-    @State private var showNotGrantedAlert = false
 
     private let cameraCommands = PassthroughSubject<CameraPreview.Command, Never>()
-
-    init() {
-    }
 
     var body: some View {
         VStack {
@@ -53,19 +49,6 @@ struct ContentView: View {
         .onChange(of: selectedDevicePosition) { _ in
             cameraCommands.send(.loadDevices(position: selectedDevicePosition))
         }
-        .alert("カメラが許可されていません", isPresented: $showNotGrantedAlert) {
-            Button("OSの設定画面を開く") {
-#if os(iOS)
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
-                }
-#elseif os(macOS)
-                if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") {
-                    NSWorkspace.shared.open(url)
-                }
-#endif
-            }
-        }
     }
 
     private var cameraController: some View {
@@ -82,13 +65,7 @@ struct ContentView: View {
                 }
             }
             Button("Start") {
-                Task {
-                    if await Camera.isAuthorized(for: .video) {
-                        cameraCommands.send(.startCapture)
-                    } else {
-                        showNotGrantedAlert = true
-                    }
-                }
+                cameraCommands.send(.startCapture)
             }
             Button("Pause") {
                 cameraCommands.send(.pauseCapture)

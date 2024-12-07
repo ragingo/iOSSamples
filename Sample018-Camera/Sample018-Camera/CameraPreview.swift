@@ -53,7 +53,11 @@ struct CameraPreview: View {
                 }
             case .startCapture:
                 Task {
-                    await camera.startCapture()
+                    if await Camera.isAuthorized(for: .video) {
+                        await camera.startCapture()
+                    } else {
+                        showNotGrantedAlert = true
+                    }
                 }
             case .pauseCapture:
                 Task {
@@ -74,15 +78,8 @@ struct CameraPreview: View {
 }
 
 extension CameraPreview {
-//    func notGrantedAlert(isPresent: Binding<Bool>) -> Self {
-//        self.showNotGrantedAlert = isPresent.wrappedValue
-//        isPresent.wrappedValue.toggle()
-//        self.showNotGrantedAlert = isPresent.wrappedValue
-//        return self
-//    }
-
     @discardableResult
-    func onDeviceListLoaded(perform: @Sendable @escaping @MainActor ([AVCaptureDevice]) -> Void = { _ in }) -> Self {
+    func onDeviceListLoaded(perform: @Sendable @escaping @MainActor ([AVCaptureDevice]) -> Void) -> Self {
         var newSelf = self
         newSelf.onDeviceListLoaded = perform
         return newSelf
