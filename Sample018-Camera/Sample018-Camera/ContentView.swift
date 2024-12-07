@@ -14,7 +14,7 @@ struct ContentView: View {
     @State private var selectedDevice: AVCaptureDevice?
     @State private var selectedDevicePosition: AVCaptureDevice.Position = .unspecified
 
-    private let cameraCommands = PassthroughSubject<CameraPreview.Command, Never>()
+    private let cameraCommands = CurrentValueSubject<CameraPreview.Command, Never>(.empty)
 
     var body: some View {
         VStack {
@@ -28,17 +28,16 @@ struct ContentView: View {
                 .background(selectedDevice == device ? Color.blue : Color.gray)
             }
 
-            CameraPreview(commands: cameraCommands.receive(on: RunLoop.main).eraseToAnyPublisher())
-                //.notGrantedAlert(isPresent: $showNotGrantedAlert)
+            CameraPreview(commands: cameraCommands.eraseToAnyPublisher())
+                .onInitialized {
+                    cameraCommands.send(.loadDevices(position: selectedDevicePosition))
+                }
                 .onDeviceListLoaded { devices in
-                    self.devices = devices.map { $0 }
+                    self.devices = devices
                 }
                 .frame(width: 300, height: 300)
                 .clipped()
                 .border(.red)
-        }
-        .onAppear {
-            cameraCommands.send(.loadDevices(position: selectedDevicePosition))
         }
         .onChange(of: selectedDevice) { _ in
             guard let selectedDevice else {

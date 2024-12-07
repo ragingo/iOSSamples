@@ -9,15 +9,14 @@ import AVFoundation
 import Combine
 import SwiftUI
 
-@MainActor
 struct CameraPreview: View {
     @State private var camera: Camera?
     @State private var layer: CALayer = .init()
     @State private var showNotGrantedAlert = false
     @State private var devices: [AVCaptureDevice] = []
+    @State private var commands: AnyPublisher<Command, Never>
     private var onDeviceListLoaded: (([AVCaptureDevice]) -> Void)?
-
-    var commands: AnyPublisher<Command, Never>
+    private var onInitialized: (() -> Void)?
 
     // SwiftUI で async init を使ってはいけない
     // async init 呼び出し側でコンパイルエラー
@@ -27,19 +26,16 @@ struct CameraPreview: View {
 
     var body: some View {
         VStack {
-            if camera != nil {
-                VideoSurfaceView(playerLayer: layer)
-            } else {
-                ProgressView()
-            }
+            VideoSurfaceView(playerLayer: layer)
         }
         .task {
             let camera = await Camera()
             self.camera = camera
             layer = camera.previewLayer
+            onInitialized?()
         }
         .onReceive(commands) { command in
-            guard let camera = camera else { return }
+            guard let camera else { return }
 
             switch command {
             case .empty:
@@ -78,6 +74,13 @@ struct CameraPreview: View {
 }
 
 extension CameraPreview {
+    @discardableResult
+    func onInitialized(perform: @Sendable @escaping @MainActor () -> Void) -> Self {
+        var newSelf = self
+        newSelf.onInitialized = perform
+        return newSelf
+    }
+
     @discardableResult
     func onDeviceListLoaded(perform: @Sendable @escaping @MainActor ([AVCaptureDevice]) -> Void) -> Self {
         var newSelf = self
