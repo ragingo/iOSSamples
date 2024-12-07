@@ -11,7 +11,7 @@ import SwiftUI
 
 struct CameraPreview: View {
     @State private var camera: Camera?
-    @State private var layer: CALayer = .init()
+    @State private var layer: CALayer?
     @State private var showNotGrantedAlert = false
     @State private var devices: [AVCaptureDevice] = []
     @State private var commands: AnyPublisher<Command, Never>
@@ -26,7 +26,11 @@ struct CameraPreview: View {
 
     var body: some View {
         VStack {
-            VideoSurfaceView(playerLayer: layer)
+            if let layer {
+                VideoSurfaceView(playerLayer: layer)
+            } else {
+                Color.gray
+            }
         }
         .task {
             let camera = await Camera()
@@ -113,7 +117,6 @@ private func openSystemSettings() {
 #endif
 }
 
-// async init を使うとプレビューマクロ生成コードでコンパイルエラー
-//#Preview {
-//    CameraPreview()
-//}
+#Preview {
+    CameraPreview(commands: .init(Empty()))
+}

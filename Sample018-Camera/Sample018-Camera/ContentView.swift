@@ -19,6 +19,7 @@ struct ContentView: View {
     var body: some View {
         VStack {
             cameraController
+                .padding()
 
             List(devices, id: \.uniqueID) { device in
                 Button(device.description) {
@@ -78,5 +79,6 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
+        .frame(width: 400, height: 600)
 }
 

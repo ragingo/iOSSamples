@@ -7,10 +7,6 @@
 
 import AVFoundation
 
-struct UncheckedSendableValue<T>: @unchecked Sendable {
-    var value: T
-}
-
 @globalActor
 actor CameraActor {
     static let shared = CameraActor()
@@ -112,7 +108,7 @@ final class Camera {
         return devices
     }
 
-    func initializeCamera(device: AVCaptureDevice) async -> Bool {
+    func initializeCamera(device: AVCaptureDevice) -> Bool {
         if device.isFocusModeSupported(.continuousAutoFocus) {
             try? device.lockForConfiguration()
             device.focusMode = .continuousAutoFocus

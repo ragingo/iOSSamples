@@ -17,14 +17,12 @@ typealias ViewControllerRepresentable = NSViewControllerRepresentable
 
 #if os(iOS)
 final class VideoSurfaceUIView: UIView {
-    private let playerLayer: CALayer?
+    private let playerLayer: CALayer
 
-    init(playerLayer: CALayer?, frame: CGRect) {
+    init(playerLayer: CALayer, frame: CGRect) {
         self.playerLayer = playerLayer
         super.init(frame: frame)
-        if let playerLayer {
-            layer.addSublayer(playerLayer)
-        }
+        layer.addSublayer(playerLayer)
     }
 
     required init?(coder: NSCoder) {
@@ -33,14 +31,14 @@ final class VideoSurfaceUIView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        playerLayer?.frame = bounds
+        playerLayer.frame = bounds
     }
 }
 #elseif os(macOS)
 final class VideoSurfaceUIView: NSView {
-    private let playerLayer: CALayer?
+    private let playerLayer: CALayer
 
-    init(playerLayer: CALayer?) {
+    init(playerLayer: CALayer) {
         self.playerLayer = playerLayer
         super.init(frame: .zero)
         self.layer = playerLayer
@@ -54,30 +52,32 @@ final class VideoSurfaceUIView: NSView {
 
     override func layout() {
         super.layout()
-        playerLayer?.frame = self.bounds
+        playerLayer.frame = self.bounds
     }
 }
 #endif
 
 struct VideoSurfaceView: ViewRepresentable {
-    var playerLayer: CALayer?
+    var playerLayer: CALayer
 
 #if os(iOS)
-    func makeUIView(context: Context) -> UIView {
+    typealias UIViewType = VideoSurfaceUIView
+
+    func makeUIView(context: Context) -> UIViewType {
         VideoSurfaceUIView(playerLayer: playerLayer, frame: .zero)
     }
 
-    func updateUIView(_ uiView: UIView, context: Context) {
+    func updateUIView(_ uiView: UIViewType, context: Context) {
     }
 
 #elseif os(macOS)
-    typealias NSViewType = NSView
+    typealias NSViewType = VideoSurfaceUIView
 
-    func makeNSView(context: Context) -> NSView {
+    func makeNSView(context: Context) -> NSViewType {
         VideoSurfaceUIView(playerLayer: playerLayer)
     }
 
-    func updateNSView(_ nsView: NSView, context: Context) {
+    func updateNSView(_ nsView: NSViewType, context: Context) {
     }
 #endif
 }
