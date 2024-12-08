@@ -5,54 +5,57 @@
 //  Created by ragingo on 2024/11/30.
 //
 
-import AVFoundation
 import Combine
 import SwiftUI
 
 struct ContentView: View {
-    @State private var devices: [AVCaptureDevice] = []
-    @State private var selectedDevice: AVCaptureDevice?
-    @State private var selectedDevicePosition: AVCaptureDevice.Position = .unspecified
+    @State private var devices: [CameraDevice] = []
+    @State private var selectedDevice: CameraDevice?
+    @State private var selectedDevicePosition: CameraDevicePosition = .unspecified
+    @State private var isCameraCapturing = false
 
-    private let cameraCommands = CurrentValueSubject<CameraPreview.Command, Never>(.empty)
+    private let cameraCommands = PassthroughSubject<CameraPreview.Command, Never>()
 
     var body: some View {
         VStack {
             cameraController
-                .padding()
-
-            List(devices, id: \.uniqueID) { device in
-                Button(device.description) {
-                    selectedDevice = device
-                }
-                .foregroundStyle(Color.black)
-                .background(selectedDevice == device ? Color.blue : Color.gray)
-            }
 
             CameraPreview(commands: cameraCommands.eraseToAnyPublisher())
                 .onInitialized {
                     cameraCommands.send(.loadDevices(position: selectedDevicePosition))
                 }
                 .onDeviceListLoaded { devices in
-                    self.devices = devices
+                    self.devices = devices.sorted { $0.localizedName < $1.localizedName }
+                    selectedDevice = self.devices.first
                 }
                 .frame(width: 300, height: 300)
                 .clipped()
                 .border(.red)
         }
+        .padding()
         .onChange(of: selectedDevice) { _ in
             guard let selectedDevice else {
                 return
             }
-            cameraCommands.send(.selectDevice(device: selectedDevice))
+            // SwiftUI Preview 動作時はデバイスを選択しない
+            if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+                return
+            }
+            cameraCommands.send(.startCapture(device: selectedDevice))
+            isCameraCapturing = true
         }
         .onChange(of: selectedDevicePosition) { _ in
             cameraCommands.send(.loadDevices(position: selectedDevicePosition))
+        }
+        .onDisappear {
+            cameraCommands.send(.stopCapture)
         }
     }
 
     private var cameraController: some View {
         HStack {
+            cameraList
+
             Menu("カメラデバイス位置") {
                 Button("前面") {
                     selectedDevicePosition = .front
@@ -64,16 +67,47 @@ struct ContentView: View {
                     selectedDevicePosition = .unspecified
                 }
             }
-            Button("Start") {
-                cameraCommands.send(.startCapture)
-            }
-            Button("Pause") {
-                cameraCommands.send(.pauseCapture)
-            }
-            Button("Stop") {
-                cameraCommands.send(.stopCapture)
+
+            playButton
+        }
+    }
+
+    private var cameraList: some View {
+        Menu("カメラ一覧") {
+            ForEach(devices) { device in
+                Button(
+                    action: {
+                        selectedDevice = device
+                    },
+                    label: {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .symbolRenderingMode(.palette)
+                                .foregroundStyle(selectedDevice == device ? .green : .gray)
+                            Text("\(device.localizedName)")
+                        }
+                    }
+                )
             }
         }
+    }
+
+    private let playIcon = Image(systemName: "play.circle.fill")
+    private let pauseIcon = Image(systemName: "pause.circle.fill")
+
+    private var playButton: some View {
+        Button(
+            action: {
+                guard let selectedDevice else {
+                    return
+                }
+                cameraCommands.send(isCameraCapturing ? .pauseCapture : .startCapture(device: selectedDevice))
+                isCameraCapturing.toggle()
+            },
+            label: {
+                isCameraCapturing ? pauseIcon : playIcon
+            }
+        )
     }
 }
 

@@ -59,17 +59,46 @@ final class CameraVideoPreviewLayer: AVCaptureVideoPreviewLayer {
 }
 extension CameraVideoPreviewLayer: @unchecked Sendable {}
 
+struct CameraDevice: Identifiable, Hashable {
+    var id: String
+    var localizedName: String
+}
+
+enum CameraDevicePosition {
+    case front
+    case back
+    case unspecified
+}
+
+private extension AVCaptureDevice.Position {
+    init(_ position: CameraDevicePosition) {
+        switch position {
+        case .front:
+            self = .front
+        case .back:
+            self = .back
+        case .unspecified:
+            self = .unspecified
+        }
+    }
+}
+
 @CameraActor
 final class Camera {
     private let videoPreviewLayer: CameraVideoPreviewLayer = .init()
     private let captureSession: CameraCaptureSession = .init()
+    private var devices: [AVCaptureDevice] = []
 
     @MainActor
     var previewLayer: CALayer {
         videoPreviewLayer
     }
 
-    static func isAuthorized(for mediaType: AVMediaType) async -> Bool {
+    static func isAuthorized() async -> Bool {
+        await isAuthorized(for: .video)
+    }
+
+    private static func isAuthorized(for mediaType: AVMediaType) async -> Bool {
         assert(mediaType == .video || mediaType == .audio)
         let status = AVCaptureDevice.authorizationStatus(for: mediaType)
         switch status {
@@ -82,7 +111,7 @@ final class Camera {
         }
     }
 
-    nonisolated static func detectDevices(position: AVCaptureDevice.Position = .unspecified) -> sending [AVCaptureDevice] {
+    func detectDevices(position: CameraDevicePosition = .unspecified) -> [CameraDevice] {
         let deviceTypes: [AVCaptureDevice.DeviceType]
 #if os(macOS)
         deviceTypes = [.builtInWideAngleCamera, .continuityCamera, .deskViewCamera, .external]
@@ -95,34 +124,31 @@ final class Camera {
 #else
         deviceTypes = [.builtInWideAngleCamera]
 #endif
-        let devices = AVCaptureDevice.DiscoverySession(deviceTypes: deviceTypes, mediaType: .video, position: position)
+        let devices = AVCaptureDevice.DiscoverySession(deviceTypes: deviceTypes, mediaType: .video, position: .init(position))
             .devices
 
-        devices
-            .forEach { print($0) }
+        self.devices = devices
 
-        if devices.isEmpty {
-            print("No camera devices found")
+        return devices.map {
+            CameraDevice(id: $0.uniqueID, localizedName: $0.localizedName)
         }
-
-        return devices
     }
 
-    func initializeCamera(device: AVCaptureDevice) -> Bool {
+    private func initializeCamera(device: CameraDevice) throws -> Bool {
+        guard let device = devices.first(where: { $0.uniqueID == device.id }) else { return false }
+
         if device.isFocusModeSupported(.continuousAutoFocus) {
-            try? device.lockForConfiguration()
-            device.focusMode = .continuousAutoFocus
-            device.unlockForConfiguration()
+            do {
+                try device.lockForConfiguration()
+                device.focusMode = .continuousAutoFocus
+                device.unlockForConfiguration()
+            } catch {
+                // 重要ではないからログを残すのみとする
+                print("Failed to set focus mode: \(error)")
+            }
         }
 
-        let videoInput: AVCaptureDeviceInput
-
-        do {
-            videoInput = try AVCaptureDeviceInput(device: device)
-        } catch {
-            print("Failed to create video input: \(error)")
-            return false
-        }
+        let videoInput = try AVCaptureDeviceInput(device: device)
 
         captureSession.configure(inputs: [videoInput])
 
@@ -132,7 +158,13 @@ final class Camera {
         return true
     }
 
-    func startCapture() {
+    func startCapture(device: CameraDevice) throws {
+        if captureSession.session.isRunning {
+            stopCapture()
+        }
+        guard try initializeCamera(device: device) else {
+            return
+        }
         captureSession.start()
     }
 
