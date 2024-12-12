@@ -8,63 +8,66 @@
 import Combine
 import SwiftUI
 
-struct CameraPreview: View {
+public struct CameraPreview: View {
     @State private var camera: Camera?
     @State private var layer: CALayer?
     @State private var showNotGrantedAlert = false
     @State private var devices: [CameraDevice] = []
     @State private var commands: AnyPublisher<Command, Never>
+    @State private var lastCommand: Command?
+    @State private var snapshot: CGImage?
+
     private var onInitialized: (() -> Void)?
     private var onDeviceListLoaded: (([CameraDevice]) -> Void)?
 
-    init(commands: AnyPublisher<Command, Never>) {
+    public init(commands: AnyPublisher<Command, Never>) {
         self.commands = commands
     }
 
-    var body: some View {
+    public var body: some View {
         VStack {
             if let layer {
                 VideoSurfaceView(playerLayer: layer)
             } else {
                 Color.gray
             }
+            // キャプチャ画像表示例
+            //captureImage
         }
         .task {
-            let camera = await Camera()
+            let camera = await Camera(videoCaptureInterval: 3)
             self.camera = camera
             layer = camera.previewLayer
+            await Task { @CameraActor in
+                camera.onVideoFrameCaptured = onVideoFrameCaptured(_:)
+            }.value
             onInitialized?()
         }
-        .onReceive(commands) { command in
-            guard let camera else { return }
+        .task(id: lastCommand) {
+            guard let camera, let lastCommand else { return }
 
-            switch command {
+            switch lastCommand {
             case .loadDevices(let position):
-                Task {
-                    devices = await camera.detectDevices(position: position)
-                    onDeviceListLoaded?(devices)
-                }
+                devices = await camera.detectDevices(position: position)
+                onDeviceListLoaded?(devices)
             case .startCapture(let device):
-                Task {
-                    guard await Camera.isAuthorized() else {
-                        showNotGrantedAlert = true
-                        return
-                    }
-                    do {
-                        try await camera.startCapture(device: device)
-                    } catch {
-                        print(error)
-                    }
+                guard await Camera.isAuthorized() else {
+                    showNotGrantedAlert = true
+                    return
+                }
+                do {
+                    try await camera.startCapture(device: device)
+                } catch {
+                    print(error)
                 }
             case .pauseCapture:
-                Task {
-                    await camera.pauseCapture()
-                }
+                await camera.pauseCapture()
             case .stopCapture:
-                Task {
-                    await camera.stopCapture()
-                }
+                await camera.stopCapture()
             }
+        }
+        .onReceive(commands) { command in
+            lastCommand = command
         }
         .alert("カメラが許可されていません", isPresented: $showNotGrantedAlert) {
             Button("OSの設定画面を開く") {
@@ -72,18 +75,33 @@ struct CameraPreview: View {
             }
         }
     }
+
+    private func onVideoFrameCaptured(_ frame: CapturedVideoFrame) {
+        MainActor.assumeIsolated {
+            snapshot = frame.cgImage
+        }
+    }
+
+    @ViewBuilder
+    private var captureImage: some View {
+        if let snapshot {
+            Image(decorative: snapshot, scale: 1.0)
+                .resizable()
+                .scaledToFill()
+        }
+    }
 }
 
 extension CameraPreview {
     @discardableResult
-    func onInitialized(perform: @Sendable @escaping @MainActor () -> Void) -> Self {
+    public func onInitialized(perform: @Sendable @escaping @MainActor () -> Void) -> Self {
         var newSelf = self
         newSelf.onInitialized = perform
         return newSelf
     }
 
     @discardableResult
-    func onDeviceListLoaded(perform: @Sendable @escaping @MainActor ([CameraDevice]) -> Void) -> Self {
+    public func onDeviceListLoaded(perform: @Sendable @escaping @MainActor ([CameraDevice]) -> Void) -> Self {
         var newSelf = self
         newSelf.onDeviceListLoaded = perform
         return newSelf
@@ -91,7 +109,7 @@ extension CameraPreview {
 }
 
 extension CameraPreview {
-    enum Command: @unchecked Sendable {
+    public enum Command: Equatable, @unchecked Sendable {
         case loadDevices(position: CameraDevicePosition = .unspecified)
         case startCapture(device: CameraDevice)
         case pauseCapture

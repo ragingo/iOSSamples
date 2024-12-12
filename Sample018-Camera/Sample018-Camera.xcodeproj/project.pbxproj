@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		526C10582D092FC2002A51A6 /* RagiCameraKit in Frameworks */ = {isa = PBXBuildFile; productRef = 526C10572D092FC2002A51A6 /* RagiCameraKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		523EBD542CFB5F9F00365CD0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -45,6 +49,11 @@
 			path = "Sample018-CameraUITests";
 			sourceTree = "<group>";
 		};
+		526C105C2D09301E002A51A6 /* LocalPackages */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LocalPackages;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -52,6 +61,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				526C10582D092FC2002A51A6 /* RagiCameraKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,6 +85,7 @@
 		523EBD392CFB5F9D00365CD0 = {
 			isa = PBXGroup;
 			children = (
+				526C105C2D09301E002A51A6 /* LocalPackages */,
 				523EBD442CFB5F9D00365CD0 /* Sample018-Camera */,
 				523EBD562CFB5F9F00365CD0 /* Sample018-CameraTests */,
 				523EBD602CFB5F9F00365CD0 /* Sample018-CameraUITests */,
@@ -109,9 +120,11 @@
 			);
 			fileSystemSynchronizedGroups = (
 				523EBD442CFB5F9D00365CD0 /* Sample018-Camera */,
+				526C105C2D09301E002A51A6 /* LocalPackages */,
 			);
 			name = "Sample018-Camera";
 			packageProductDependencies = (
+				526C10572D092FC2002A51A6 /* RagiCameraKit */,
 			);
 			productName = "Sample018-Camera";
 			productReference = 523EBD422CFB5F9D00365CD0 /* Sample018-Camera.app */;
@@ -195,6 +208,9 @@
 			);
 			mainGroup = 523EBD392CFB5F9D00365CD0;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				526C10562D092FC2002A51A6 /* XCLocalSwiftPackageReference "LocalPackages/RagiCameraKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 523EBD432CFB5F9D00365CD0 /* Products */;
 			projectDirPath = "";
@@ -589,6 +605,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		526C10562D092FC2002A51A6 /* XCLocalSwiftPackageReference "LocalPackages/RagiCameraKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackages/RagiCameraKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		526C10572D092FC2002A51A6 /* RagiCameraKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RagiCameraKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 523EBD3A2CFB5F9D00365CD0 /* Project object */;
 }
