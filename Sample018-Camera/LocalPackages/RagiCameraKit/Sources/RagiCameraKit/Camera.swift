@@ -9,13 +9,12 @@ import AVFoundation
 import Combine
 import CoreImage
 
-@CameraActor
-public final class Camera {
+public actor Camera {
     private let videoPreviewLayer: CameraVideoPreviewLayer = .init()
     private let captureSession: CameraCaptureSession = .init()
     private var devices: [AVCaptureDevice] = []
     private let sampleBufferQueue = DispatchQueue(label: "sampleBufferQueue")
-    private var sampleBufferDelegate: SampleBufferDelegate?
+//    nonisolated private let sampleBufferDelegate: SampleBufferDelegate?
 
     @MainActor
     public var previewLayer: CALayer {
@@ -25,12 +24,6 @@ public final class Camera {
     public var onVideoFrameCaptured: (@Sendable @isolated(any) (CapturedVideoFrame) -> Void)?
 
     public init(videoCaptureInterval: TimeInterval = .zero) {
-        sampleBufferDelegate = SampleBufferDelegate(captureInterval: videoCaptureInterval) { [weak self] frame in
-            guard let self else { return }
-            Task {
-                await onVideoFrameCaptured?(frame)
-            }
-        }
     }
 
     public static func isAuthorized() async -> Bool {
@@ -100,7 +93,7 @@ public final class Camera {
         videoOutput.videoSettings = [
             kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA
         ] as [String: Any]
-        videoOutput.setSampleBufferDelegate(sampleBufferDelegate, queue: sampleBufferQueue)
+//        videoOutput.setSampleBufferDelegate(sampleBufferDelegate, queue: sampleBufferQueue)
 
         videoPreviewLayer.session = captureSession.session
         videoPreviewLayer.videoGravity = .resizeAspectFill

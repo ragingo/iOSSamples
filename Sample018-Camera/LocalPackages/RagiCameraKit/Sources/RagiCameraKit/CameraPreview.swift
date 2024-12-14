@@ -9,8 +9,7 @@ import Combine
 import SwiftUI
 
 public struct CameraPreview: View {
-    @State private var camera: Camera?
-    @State private var layer: CALayer?
+    @State private var camera = Camera(videoCaptureInterval: 3)
     @State private var showNotGrantedAlert = false
     @State private var devices: [CameraDevice] = []
     @State private var commands: AnyPublisher<Command, Never>
@@ -26,25 +25,15 @@ public struct CameraPreview: View {
 
     public var body: some View {
         VStack {
-            if let layer {
-                VideoSurfaceView(playerLayer: layer)
-            } else {
-                Color.gray
-            }
+            VideoSurfaceView(playerLayer: camera.previewLayer)
             // キャプチャ画像表示例
             //captureImage
         }
         .task {
-            let camera = await Camera(videoCaptureInterval: 3)
-            self.camera = camera
-            layer = camera.previewLayer
-            await Task { @CameraActor in
-                camera.onVideoFrameCaptured = onVideoFrameCaptured(_:)
-            }.value
             onInitialized?()
         }
         .task(id: lastCommand) {
-            guard let camera, let lastCommand else { return }
+            guard let lastCommand else { return }
 
             switch lastCommand {
             case .loadDevices(let position):
@@ -56,6 +45,9 @@ public struct CameraPreview: View {
                     return
                 }
                 do {
+                    // task は nonisolated だから actor 型のメソッドは協調スレッドプールで実行される
+                    // memo
+                    // Thread 2 Queue : com.apple.root.user-initiated-qos.cooperative (concurrent)
                     try await camera.startCapture(device: device)
                 } catch {
                     print(error)

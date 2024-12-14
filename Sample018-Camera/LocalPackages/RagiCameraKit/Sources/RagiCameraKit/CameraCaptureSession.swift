@@ -7,7 +7,6 @@
 
 import AVFoundation
 
-@CameraActor
 final class CameraCaptureSession {
     private(set) var session: AVCaptureSession = .init()
 

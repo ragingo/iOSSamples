@@ -7,7 +7,6 @@
 
 import AVFoundation
 
-@CameraActor
 final class CameraVideoPreviewLayer: AVCaptureVideoPreviewLayer {
 }
 extension CameraVideoPreviewLayer: @unchecked Sendable {}
