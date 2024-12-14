@@ -48,6 +48,9 @@ public struct CameraPreview: View {
                     // task は nonisolated だから actor 型のメソッドは協調スレッドプールで実行される
                     // memo
                     // Thread 2 Queue : com.apple.root.user-initiated-qos.cooperative (concurrent)
+                    //
+                    // その後 actor に unownedExecutor を用意することで、特定キュー(serialなら特定スレッド)で動作させることができる
+                    // Thread 9 Queue : CameraQueue (serial)
                     try await camera.startCapture(device: device)
                 } catch {
                     print(error)

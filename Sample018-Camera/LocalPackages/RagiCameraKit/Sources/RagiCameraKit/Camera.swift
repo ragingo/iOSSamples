@@ -16,6 +16,12 @@ public actor Camera {
     private let sampleBufferQueue = DispatchQueue(label: "sampleBufferQueue")
 //    nonisolated private let sampleBufferDelegate: SampleBufferDelegate?
 
+    private let cameraQueue = DispatchSerialQueue(label: "CameraQueue")
+
+    public nonisolated var unownedExecutor: UnownedSerialExecutor {
+        cameraQueue.asUnownedSerialExecutor()
+    }
+
     @MainActor
     public var previewLayer: CALayer {
         videoPreviewLayer
