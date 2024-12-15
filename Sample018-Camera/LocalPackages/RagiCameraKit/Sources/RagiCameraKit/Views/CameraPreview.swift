@@ -84,13 +84,11 @@ extension CameraPreview {
         var onDeviceListLoaded: (([CameraDevice]) -> Void)?
     }
 
-    @discardableResult
     public func onInitialized(perform: @Sendable @escaping @MainActor () -> Void) -> Self {
         handlers.onInitialized = perform
         return self
     }
 
-    @discardableResult
     public func onDeviceListLoaded(perform: @Sendable @escaping @MainActor ([CameraDevice]) -> Void) -> Self {
         handlers.onDeviceListLoaded = perform
         return self
