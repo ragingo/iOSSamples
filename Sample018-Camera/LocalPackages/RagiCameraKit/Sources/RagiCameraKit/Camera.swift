@@ -58,23 +58,6 @@ public actor Camera {
         sampleBufferDelegate = SampleBufferDelegate()
     }
 
-    public static func isAuthorized() async -> Bool {
-        await isAuthorized(for: .video)
-    }
-
-    private static func isAuthorized(for mediaType: AVMediaType) async -> Bool {
-        assert(mediaType == .video || mediaType == .audio)
-        let status = AVCaptureDevice.authorizationStatus(for: mediaType)
-        switch status {
-        case .authorized:
-            return true
-        case .notDetermined:
-            return await AVCaptureDevice.requestAccess(for: mediaType)
-        default:
-            return false
-        }
-    }
-
     public func detectDevices(position: CameraDevicePosition = .unspecified) -> [CameraDevice] {
         devices = CameraDevice.detectDevices(position: position)
         return devices

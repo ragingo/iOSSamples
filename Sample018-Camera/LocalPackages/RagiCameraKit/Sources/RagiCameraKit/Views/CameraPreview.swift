@@ -38,7 +38,7 @@ public struct CameraPreview: View {
                 devices = await camera.detectDevices(position: position)
                 handlers.onDeviceListLoaded?(devices)
             case .startCapture(let device):
-                guard await Camera.isAuthorized() else {
+                guard await Permissions.checkCamera() else {
                     showNotGrantedAlert = true
                     return
                 }
