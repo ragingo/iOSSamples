@@ -14,6 +14,7 @@ struct ContentView: View {
     @State private var selectedDevice: CameraDevice?
     @State private var selectedDevicePosition: CameraDevicePosition = .unspecified
     @State private var isCameraCapturing = false
+    @State private var snapshot: CGImage?
 
     private let cameraCommands = PassthroughSubject<CameraPreview.Command, Never>()
 
@@ -29,9 +30,17 @@ struct ContentView: View {
                     self.devices = devices.sorted { $0.localizedName < $1.localizedName }
                     selectedDevice = self.devices.first
                 }
+                .onCapturedFrameUpdated { frame in
+                    snapshot = frame.cgImage
+                }
                 .frame(width: 300, height: 300)
                 .clipped()
                 .border(.red)
+
+            captureImage
+                .frame(width: 300, height: 300)
+                .clipped()
+                .border(.blue)
         }
         .padding()
         .onChange(of: selectedDevice) { _ in
@@ -109,6 +118,15 @@ struct ContentView: View {
                 isCameraCapturing ? pauseIcon : playIcon
             }
         )
+    }
+
+    @ViewBuilder
+    private var captureImage: some View {
+        if let snapshot {
+            Image(decorative: snapshot, scale: 1.0)
+                .resizable()
+                .scaledToFill()
+        }
     }
 }
 

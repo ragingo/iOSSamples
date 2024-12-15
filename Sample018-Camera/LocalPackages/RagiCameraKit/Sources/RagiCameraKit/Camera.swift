@@ -13,12 +13,9 @@ public actor Camera {
     private let videoPreviewLayer: CameraVideoPreviewLayer = .init()
     private let captureSession: CameraCaptureSession = .init()
     private var devices: [CameraDevice] = []
+    // 注意: DispatchSerialQueue のイニシャライザは iOS17.0+ だから、DispatchQueue を使うしかない
     private let sampleBufferQueue = DispatchQueue(label: "sampleBufferQueue")
-    private let sampleBufferDelegate: SampleBufferDelegate
-
-    // 注意: DispatchSerialQueue のイニシャライザは iOS17.0+
-    private let videoOutputQueue = DispatchQueue(label: "VideoOutputQueue")
-
+    private let sampleBufferDelegate = SampleBufferDelegate()
     private let executor = DispatchQueueExecutor(label: "CameraQueue")
 
     public nonisolated var unownedExecutor: UnownedSerialExecutor {
@@ -30,12 +27,12 @@ public actor Camera {
         videoPreviewLayer
     }
 
+    @MainActor
     public var capturedFrameStream: AsyncStream<CapturedVideoFrame> {
         sampleBufferDelegate.capturedFrameStream
     }
 
     public init(videoCaptureInterval: TimeInterval = .zero) {
-        sampleBufferDelegate = SampleBufferDelegate()
     }
 
     public func detectDevices(position: CameraDevicePosition = .unspecified) -> [CameraDevice] {
