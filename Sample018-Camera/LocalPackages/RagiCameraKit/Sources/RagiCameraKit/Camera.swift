@@ -32,7 +32,7 @@ final class CameraExecutor: SerialExecutor {
 public actor Camera {
     private let videoPreviewLayer: CameraVideoPreviewLayer = .init()
     private let captureSession: CameraCaptureSession = .init()
-    private var devices: [AVCaptureDevice] = []
+    private var devices: [CameraDevice] = []
     private let sampleBufferQueue = DispatchQueue(label: "sampleBufferQueue")
     private let sampleBufferDelegate: SampleBufferDelegate
 
@@ -76,45 +76,15 @@ public actor Camera {
     }
 
     public func detectDevices(position: CameraDevicePosition = .unspecified) -> [CameraDevice] {
-        let deviceTypes: [AVCaptureDevice.DeviceType]
-#if os(macOS)
-        deviceTypes = [.builtInWideAngleCamera, .continuityCamera, .deskViewCamera, .external]
-#elseif os(iOS)
-        if #available(iOS 17.0, *) {
-            deviceTypes = [.builtInWideAngleCamera, .builtInDualCamera, .builtInDualWideCamera, .builtInUltraWideCamera, .continuityCamera, .external]
-        } else {
-            deviceTypes = [.builtInWideAngleCamera, .builtInDualCamera, .builtInDualWideCamera, .builtInUltraWideCamera]
-        }
-#else
-        deviceTypes = [.builtInWideAngleCamera]
-#endif
-        let session = AVCaptureDevice.DiscoverySession(deviceTypes: deviceTypes, mediaType: .video, position: .init(position))
-        let devices = session.devices
-            .filter { $0.isConnected }
-            .filter { !$0.isSuspended }
-
-        self.devices = devices
-
-        return devices.map {
-            CameraDevice(id: $0.uniqueID, localizedName: $0.localizedName)
-        }
+        devices = CameraDevice.detectDevices(position: position)
+        return devices
     }
 
     private func initializeCamera(device: CameraDevice) throws -> Bool {
-        guard let device = devices.first(where: { $0.uniqueID == device.id }) else { return false }
+        guard let device = devices.first(where: { $0 == device }) else { return false }
+        device.enableAutoFocus()
 
-        if device.isFocusModeSupported(.continuousAutoFocus) {
-            do {
-                try device.lockForConfiguration()
-                device.focusMode = .continuousAutoFocus
-                device.unlockForConfiguration()
-            } catch {
-                // 重要ではないからログを残すのみとする
-                print("Failed to set focus mode: \(error)")
-            }
-        }
-
-        let videoInput = try AVCaptureDeviceInput(device: device)
+        let videoInput = try AVCaptureDeviceInput(device: device.rawDevice)
         let videoOutput = AVCaptureVideoDataOutput()
 
         captureSession.configure(
@@ -157,23 +127,13 @@ public actor Camera {
     }
 }
 
-public struct CameraDevice: Identifiable, Hashable, Sendable {
-    public var id: String
-    public var localizedName: String
-
-    public init(id: String, localizedName: String) {
-        self.id = id
-        self.localizedName = localizedName
-    }
-}
-
 public enum CameraDevicePosition: Sendable {
     case front
     case back
     case unspecified
 }
 
-private extension AVCaptureDevice.Position {
+extension AVCaptureDevice.Position {
     init(_ position: CameraDevicePosition) {
         switch position {
         case .front:
