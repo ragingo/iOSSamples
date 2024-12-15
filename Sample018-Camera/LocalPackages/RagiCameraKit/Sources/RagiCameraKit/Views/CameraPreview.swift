@@ -15,9 +15,7 @@ public struct CameraPreview: View {
     @State private var commands: AnyPublisher<Command, Never>
     @State private var lastCommand: Command?
     @State private var snapshot: CGImage?
-
-    private var onInitialized: (() -> Void)?
-    private var onDeviceListLoaded: (([CameraDevice]) -> Void)?
+    private let handlers = Handlers()
 
     public init(commands: AnyPublisher<Command, Never>) {
         self.commands = commands
@@ -30,7 +28,7 @@ public struct CameraPreview: View {
             captureImage
         }
         .task {
-            onInitialized?()
+            handlers.onInitialized?()
         }
         .task(id: lastCommand) {
             guard let lastCommand else { return }
@@ -38,15 +36,14 @@ public struct CameraPreview: View {
             switch lastCommand {
             case .loadDevices(let position):
                 devices = await camera.detectDevices(position: position)
-                onDeviceListLoaded?(devices)
+                handlers.onDeviceListLoaded?(devices)
             case .startCapture(let device):
                 guard await Camera.isAuthorized() else {
                     showNotGrantedAlert = true
                     return
                 }
                 do {
-                    // task は nonisolated だから actor 型のメソッドは協調スレッドプールで実行される
-                    // memo
+                    // task は nonisolated だから actor 型のメソッドやアクター隔離されたクラスは協調スレッドプールで実行される
                     // Thread 2 Queue : com.apple.root.user-initiated-qos.cooperative (concurrent)
                     //
                     // その後 actor に unownedExecutor を用意することで、特定キュー(serialなら特定スレッド)で動作させることができる
@@ -82,18 +79,21 @@ public struct CameraPreview: View {
 }
 
 extension CameraPreview {
+    private final class Handlers {
+        var onInitialized: (() -> Void)?
+        var onDeviceListLoaded: (([CameraDevice]) -> Void)?
+    }
+
     @discardableResult
     public func onInitialized(perform: @Sendable @escaping @MainActor () -> Void) -> Self {
-        var newSelf = self
-        newSelf.onInitialized = perform
-        return newSelf
+        handlers.onInitialized = perform
+        return self
     }
 
     @discardableResult
     public func onDeviceListLoaded(perform: @Sendable @escaping @MainActor ([CameraDevice]) -> Void) -> Self {
-        var newSelf = self
-        newSelf.onDeviceListLoaded = perform
-        return newSelf
+        handlers.onDeviceListLoaded = perform
+        return self
     }
 }
 
