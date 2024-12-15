@@ -68,7 +68,9 @@ final class CameraCaptureSession {
 
 public enum CameraOrientation: Sendable {
     case portrait
-    case landscape
+    case portraitUpsideDown
+    case landscapeLeft
+    case landscapeRight
 }
 
 private extension AVCaptureVideoOrientation {
@@ -76,8 +78,12 @@ private extension AVCaptureVideoOrientation {
         switch orientation {
         case .portrait:
             self = .portrait
-        case .landscape:
+        case .portraitUpsideDown:
+            self = .portraitUpsideDown
+        case .landscapeLeft:
             self = .landscapeRight
+        case .landscapeRight:
+            self = .landscapeLeft
         }
     }
 }
