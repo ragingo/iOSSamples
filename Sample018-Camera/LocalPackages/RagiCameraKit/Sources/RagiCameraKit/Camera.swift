@@ -9,17 +9,40 @@ import AVFoundation
 import Combine
 import CoreImage
 
+// DispatchSerialQueue のイニシャライザは iOS17.0+
+// DispatchSerialQueue の asUnownedSerialExecutor() が使えないから、
+// 自分で SerialExecutor を実装する必要あり
+final class CameraExecutor: SerialExecutor {
+    private let cameraQueue = DispatchQueue(label: "CameraQueue")
+
+    func enqueue(_ job: UnownedJob) {
+        let executor = asUnownedSerialExecutor()
+        cameraQueue.async {
+            job.runSynchronously(on: executor)
+        }
+    }
+
+    // 注意: asUnownedSerialExecutor() のデフォルト実装が使えるのは iOS17.0+
+    // 参考: https://github.com/swiftlang/swift/blob/dda7c8139646395fa09b01fea4cefc65862b8cf8/stdlib/public/Concurrency/Executor.swift#L291-L296
+    func asUnownedSerialExecutor() -> UnownedSerialExecutor {
+        UnownedSerialExecutor(ordinary: self)
+    }
+}
+
 public actor Camera {
     private let videoPreviewLayer: CameraVideoPreviewLayer = .init()
     private let captureSession: CameraCaptureSession = .init()
     private var devices: [AVCaptureDevice] = []
     private let sampleBufferQueue = DispatchQueue(label: "sampleBufferQueue")
-//    nonisolated private let sampleBufferDelegate: SampleBufferDelegate?
+    private let sampleBufferDelegate: SampleBufferDelegate
 
-    private let cameraQueue = DispatchSerialQueue(label: "CameraQueue")
+    // 注意: DispatchSerialQueue のイニシャライザは iOS17.0+
+    private let videoOutputQueue = DispatchQueue(label: "VideoOutputQueue")
+
+    private let executor = CameraExecutor()
 
     public nonisolated var unownedExecutor: UnownedSerialExecutor {
-        cameraQueue.asUnownedSerialExecutor()
+        executor.asUnownedSerialExecutor()
     }
 
     @MainActor
@@ -27,9 +50,12 @@ public actor Camera {
         videoPreviewLayer
     }
 
-    public var onVideoFrameCaptured: (@Sendable @isolated(any) (CapturedVideoFrame) -> Void)?
+    public var capturedFrameStream: AsyncStream<CapturedVideoFrame> {
+        sampleBufferDelegate.capturedFrameStream
+    }
 
     public init(videoCaptureInterval: TimeInterval = .zero) {
+        sampleBufferDelegate = SampleBufferDelegate()
     }
 
     public static func isAuthorized() async -> Bool {
@@ -99,7 +125,7 @@ public actor Camera {
         videoOutput.videoSettings = [
             kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA
         ] as [String: Any]
-//        videoOutput.setSampleBufferDelegate(sampleBufferDelegate, queue: sampleBufferQueue)
+        videoOutput.setSampleBufferDelegate(sampleBufferDelegate, queue: sampleBufferQueue)
 
         videoPreviewLayer.session = captureSession.session
         videoPreviewLayer.videoGravity = .resizeAspectFill
@@ -160,28 +186,16 @@ private extension AVCaptureDevice.Position {
     }
 }
 
-private final class SampleBufferDelegate: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, @unchecked Sendable {
-    typealias Callback = @Sendable (CapturedVideoFrame) -> Void
-    private let captureInterval: TimeInterval
-    private let callback: Callback
-    private let ciContext = CIContext()
-    private var lastCaptureTime: Date?
-
-    init(captureInterval: TimeInterval, callback: @escaping Callback) {
-        self.captureInterval = captureInterval
-        self.callback = callback
-    }
-
-    nonisolated func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        if captureInterval > 0, let lastCaptureTime {
-            let interval = Date().timeIntervalSince(lastCaptureTime)
-            if interval < captureInterval {
-                return
-            }
+extension Camera {
+    private final class SampleBufferDelegate: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, @unchecked Sendable {
+        private let ciContext = CIContext()
+        private let stream = AsyncStream.makeStream(of: CapturedVideoFrame.self)
+        var capturedFrameStream: AsyncStream<CapturedVideoFrame> {
+            stream.stream
         }
 
-        lastCaptureTime = Date()
-
-        callback(CapturedVideoFrame(ciContext: ciContext, rawBuffer: sampleBuffer))
+        nonisolated func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+            stream.continuation.yield(CapturedVideoFrame(ciContext: ciContext, rawBuffer: sampleBuffer))
+        }
     }
 }

@@ -27,7 +27,7 @@ public struct CameraPreview: View {
         VStack {
             VideoSurfaceView(playerLayer: camera.previewLayer)
             // キャプチャ画像表示例
-            //captureImage
+            captureImage
         }
         .task {
             onInitialized?()
@@ -68,12 +68,6 @@ public struct CameraPreview: View {
             Button("OSの設定画面を開く") {
                 openSystemSettings()
             }
-        }
-    }
-
-    private func onVideoFrameCaptured(_ frame: CapturedVideoFrame) {
-        MainActor.assumeIsolated {
-            snapshot = frame.cgImage
         }
     }
 
