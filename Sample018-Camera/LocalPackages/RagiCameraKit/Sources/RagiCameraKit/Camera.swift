@@ -57,6 +57,12 @@ public actor Camera {
         ] as [String: Any]
         videoOutput.setSampleBufferDelegate(sampleBufferDelegate, queue: sampleBufferQueue)
 
+        if let videoConnection = videoOutput.connection(with: .video) {
+            if videoConnection.isVideoMirroringSupported {
+                videoConnection.isVideoMirrored = device.rawDevice.position == .front
+            }
+        }
+
         videoPreviewLayer.session = captureSession.session
         videoPreviewLayer.videoGravity = .resizeAspectFill
 
@@ -84,6 +90,8 @@ public actor Camera {
 
     public func changeOrientation(orientation: CameraOrientation) {
         captureSession.changeOrientation(orientation: orientation)
+
+        videoPreviewLayer.connection?.videoOrientation = orientation.videoLayerOrientation
     }
 }
 

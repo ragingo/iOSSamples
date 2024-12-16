@@ -65,25 +65,3 @@ final class CameraCaptureSession {
             .forEach { $0.videoOrientation = .init(orientation) }
     }
 }
-
-public enum CameraOrientation: Sendable {
-    case portrait
-    case portraitUpsideDown
-    case landscapeLeft
-    case landscapeRight
-}
-
-private extension AVCaptureVideoOrientation {
-    init(_ orientation: CameraOrientation) {
-        switch orientation {
-        case .portrait:
-            self = .portrait
-        case .portraitUpsideDown:
-            self = .portraitUpsideDown
-        case .landscapeLeft:
-            self = .landscapeRight
-        case .landscapeRight:
-            self = .landscapeLeft
-        }
-    }
-}

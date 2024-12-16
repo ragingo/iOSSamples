@@ -7,6 +7,7 @@
 
 import Combine
 import SwiftUI
+import UIKit
 
 public struct CameraPreview: View {
     @State private var camera = Camera(videoCaptureInterval: 3)
@@ -40,10 +41,16 @@ public struct CameraPreview: View {
                     await camera.pauseCapture()
                 case .stopCapture:
                     await camera.stopCapture()
+                case .changeOrientation(let orientation):
+                    await camera.changeOrientation(orientation: orientation)
                 }
             }
             .onReceive(commands) { command in
                 lastCommand = command
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { orientation in
+                guard let orientation = CameraOrientation(UIDevice.current.orientation) else { return }
+                lastCommand = .changeOrientation(orientation: orientation)
             }
             .alert("カメラが許可されていません", isPresented: $showNotGrantedAlert) {
                 Button("OSの設定画面を開く") {
@@ -70,6 +77,9 @@ public struct CameraPreview: View {
         } catch {
             print(error)
         }
+
+        guard let orientation = CameraOrientation(UIDevice.current.orientation) else { return }
+        lastCommand = .changeOrientation(orientation: orientation)
     }
 
     private func observeCapturedFrameStream() {
@@ -115,6 +125,7 @@ extension CameraPreview {
         case startCapture(device: CameraDevice)
         case pauseCapture
         case stopCapture
+        case changeOrientation(orientation: CameraOrientation)
     }
 }
 
