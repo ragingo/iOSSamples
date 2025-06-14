@@ -8,9 +8,6 @@
 import Combine
 import Foundation
 
-// swiftlint:disable:next line_length
-private let jsonFileURL = "https://raw.githubusercontent.com/ragingo/iOSSamples/main/Sample001-VideoPlayer/SampleData/videos.json"
-
 // VideoListView で使う ViewModel
 @Observable
 final class VideoListViewModel {

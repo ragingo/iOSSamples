@@ -7,22 +7,23 @@
 
 import Foundation
 
-nonisolated protocol VideoRepositoryProtocol {
+nonisolated protocol VideoRepositoryProtocol: HTTPRepositoryProtocol {
     func fetchVideos() async throws -> [Video]
 }
 
 nonisolated final class VideoRepository: VideoRepositoryProtocol {
+    let urlSession: URLSession
+
     // swiftlint:disable:next line_length
-    private static let apiURL = URL(string: "https://raw.githubusercontent.com/ragingo/iOSSamples/main/Sample001-VideoPlayer/SampleData/videos.json")!
+    private static let apiBaseURL = URL(string: "https://raw.githubusercontent.com/ragingo/iOSSamples/main/Sample001-VideoPlayer/SampleData/")!
+
+    init(urlSession: URLSession = detaultURLSession) {
+        self.urlSession = urlSession
+    }
 
     @concurrent func fetchVideos() async throws -> [Video] {
-        var request = URLRequest(url: Self.apiURL)
-        request.httpMethod = "GET"
-        request.setValue("sample_video_player", forHTTPHeaderField: "User-Agent")
-
-        let (data, _) = try await URLSession.shared.data(for: request)
-        let decoder = JSONDecoder()
-        let response = try decoder.decode(VideosResponse.self, from: data)
+        let request = makeURLRequest(for: Self.apiBaseURL.appendingPathComponent("videos.json"))
+        let response: VideosResponse = try await RestAPIClient(urlSession: urlSession).fetch(from: request)
         return response.videos
     }
 }
