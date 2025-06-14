@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct VideoView: View {
-    @ObservedObject private var viewModel: VideoViewModel
+    @State private var viewModel: VideoViewModel
     @State private var videoPlayerView: VideoPlayerView?
 
     init(video: Video) {

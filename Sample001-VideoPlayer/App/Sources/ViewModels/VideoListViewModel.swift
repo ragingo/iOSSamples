@@ -12,9 +12,10 @@ import Foundation
 private let jsonFileURL = "https://raw.githubusercontent.com/ragingo/iOSSamples/main/Sample001-VideoPlayer/SampleData/videos.json"
 
 // VideoListView で使う ViewModel
-final class VideoListViewModel: ObservableObject {
-    @Published private(set) var videos = [Video]()
-    @Published private(set) var isLoading = false
+@Observable
+final class VideoListViewModel {
+    private(set) var videos = [Video]()
+    private(set) var isLoading = false
 
     @MainActor
     func fetchItems() async {

@@ -8,7 +8,8 @@
 import Combine
 import Foundation
 
-final class VideoViewModel: ObservableObject {
+@Observable
+final class VideoViewModel {
     let video: Video
 
     init(video: Video) {

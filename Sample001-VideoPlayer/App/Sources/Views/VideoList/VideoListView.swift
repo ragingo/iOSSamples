@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct VideoListView: View {
-    @ObservedObject private var viewModel: VideoListViewModel
+    @State private var viewModel: VideoListViewModel
     @State private var searchText = ""
 
     private var filteredVideos: [Video] {
