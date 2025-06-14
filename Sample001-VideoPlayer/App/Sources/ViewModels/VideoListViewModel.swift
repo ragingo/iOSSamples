@@ -17,7 +17,6 @@ final class VideoListViewModel {
     private(set) var videos = [Video]()
     private(set) var isLoading = false
 
-    @MainActor
     func fetchItems() async {
         defer {
             isLoading = false
