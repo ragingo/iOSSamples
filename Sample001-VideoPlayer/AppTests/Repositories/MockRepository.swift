@@ -16,6 +16,9 @@ class MockRepository: URLProtocol {
         request
     }
 
+    override func stopLoading() {
+    }
+
     open var baseURL: URL {
         URL(string: "https://localhost")!
     }

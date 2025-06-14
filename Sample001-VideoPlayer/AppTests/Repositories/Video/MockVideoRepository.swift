@@ -29,8 +29,7 @@ final class MockVideoRepository: MockRepository {
         client?.urlProtocol(self, didReceive: urlResponse, cacheStoragePolicy: .notAllowed)
         client?.urlProtocol(self, didLoad: entry.response.data)
     }
-    override func stopLoading() {
-    }
+
     private func findEntry(for request: URLRequest) -> MockRepository.MockEntry? {
         return Self.entries.first { entry in
             entry.request.method.rawValue == request.httpMethod
