@@ -23,7 +23,7 @@ enum VideoPlayStatus {
     case playing
 }
 
-protocol VideoPlayerProtocol: AnyObject, Sendable {
+nonisolated protocol VideoPlayerProtocol: AnyObject, Sendable {
     var onAudioSampleBufferUpdate: ((CMSampleBuffer) -> Void)? { get set }
     var layer: CALayer { get }
     var isLiveStreaming: Bool { get }

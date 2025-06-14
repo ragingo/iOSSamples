@@ -13,7 +13,7 @@ import Combine
 import CoreImage
 import CoreVideo
 
-final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
+nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
     private let playerLayer = AVPlayerLayer()
     private let player = AVPlayer()
     private var imageGenerator: AVAssetImageGenerator?

@@ -8,12 +8,12 @@
 import Foundation
 import CoreImage
 
-class FlipFilter: CIFilter {
+nonisolated class FlipFilter: CIFilter {
     private let kernel: CIKernel?
     private var inputImage: CIImage?
     private var isFlip = false
 
-    struct Keys {
+    nonisolated struct Keys {
         static let isFlip = "isFlip"
     }
 
