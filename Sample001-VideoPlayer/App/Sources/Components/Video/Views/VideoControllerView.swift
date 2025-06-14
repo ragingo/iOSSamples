@@ -75,7 +75,7 @@ struct VideoControllerView: View {
     var body: some View {
         VStack {
             VideoSlider(position: $sliderValue, loadedRange: $loadedBufferRange, onThumbDragging: onSliderEditingChanged)
-                .onChange(of: $sliderValue.wrappedValue) { _ in
+                .onChange(of: $sliderValue.wrappedValue) { _, _ in
                     if !isSliderEditing {
                         return
                     }

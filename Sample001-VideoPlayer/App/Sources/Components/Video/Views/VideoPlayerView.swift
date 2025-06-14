@@ -38,12 +38,12 @@ struct VideoPlayerView: View {
                     .padding(.horizontal, 8)
                 VideoControllerView(player: player, thumbnailPreviewPosition: $thumbnailPreviewPosition, bandwidths: $bandwidths)
                     .padding(.horizontal, 24)
-                    .onChange(of: $thumbnailPreviewPosition.wrappedValue) { value in
-                        if value.isNaN {
+                    .onChange(of: $thumbnailPreviewPosition.wrappedValue) { _, newValue in
+                        if newValue.isNaN {
                             seekThumbnail = nil
                             return
                         }
-                        player.requestGenerateImage(time: floor(value), size: Self.thumbnailSize)
+                        player.requestGenerateImage(time: floor(newValue), size: Self.thumbnailSize)
                     }
             }
 

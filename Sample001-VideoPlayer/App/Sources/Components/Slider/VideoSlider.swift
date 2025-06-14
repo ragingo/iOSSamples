@@ -63,20 +63,20 @@ struct VideoSlider: View {
                 updateLoadedBarOffsetX(width: proxy.size.width)
                 updateLoadedBarWidth(width: proxy.size.width)
             }
-            .onChange(of: position.wrappedValue) { value in
-                if value.isNaN {
+            .onChange(of: position.wrappedValue) { _, newValue in
+                if newValue.isNaN {
                     return
                 }
-                updateBaseBarWidth(width: proxy.size.width, ratio: value)
+                updateBaseBarWidth(width: proxy.size.width, ratio: newValue)
             }
-            .onChange(of: loadedRange.0.wrappedValue) { value in
-                if value.isNaN {
+            .onChange(of: loadedRange.0.wrappedValue) { _, newValue in
+                if newValue.isNaN {
                     return
                 }
                 updateLoadedBarOffsetX(width: proxy.size.width)
             }
-            .onChange(of: loadedRange.1.wrappedValue) { value in
-                if value.isNaN {
+            .onChange(of: loadedRange.1.wrappedValue) { _, newValue in
+                if newValue.isNaN {
                     return
                 }
                 updateLoadedBarWidth(width: proxy.size.width)
