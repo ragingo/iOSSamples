@@ -36,15 +36,19 @@ struct VideoPlayerView: View {
             VStack {
                 VideoSurfaceView(playerLayer: player.layer)
                     .padding(.horizontal, 8)
-                VideoControllerView(player: player, thumbnailPreviewPosition: $thumbnailPreviewPosition, bandwidths: $bandwidths)
-                    .padding(.horizontal, 24)
-                    .onChange(of: $thumbnailPreviewPosition.wrappedValue) { _, newValue in
-                        if newValue.isNaN {
-                            seekThumbnail = nil
-                            return
-                        }
-                        player.requestGenerateImage(time: floor(newValue), size: Self.thumbnailSize)
+                VideoControllerView(
+                    player: player,
+                    thumbnailPreviewPosition: $thumbnailPreviewPosition,
+                    bandwidths: $bandwidths
+                )
+                .padding(.horizontal, 24)
+                .onChange(of: $thumbnailPreviewPosition.wrappedValue) { _, newValue in
+                    if newValue.isNaN {
+                        seekThumbnail = nil
+                        return
                     }
+                    player.requestGenerateImage(time: floor(newValue), size: Self.thumbnailSize)
+                }
             }
 
             Text(closedCaption)

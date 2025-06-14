@@ -11,18 +11,20 @@ let secondsPerHour = 3600
 let secondsPerMinute = 60
 
 private func formatTime(seconds: Int) -> String {
-    let h = seconds / secondsPerHour
-    let m = seconds % secondsPerHour / secondsPerMinute
-    let s = seconds % secondsPerHour % secondsPerMinute
-    return String(format: "%03d:%02d:%02d", h, m, s)
+    let hours = seconds / secondsPerHour
+    let minutes = seconds % secondsPerHour / secondsPerMinute
+    let seconds = seconds % secondsPerHour % secondsPerMinute
+    return String(format: "%03d:%02d:%02d", hours, minutes, seconds)
 }
 
 private enum RateSteps: String, CaseIterable, Identifiable {
     var id: RateSteps { self }
 
+    // swiftlint:disable identifier_name
     case x1_0 = "x 1.0"
     case x1_5 = "x 1.5"
     case x2_0 = "x 2.0"
+    // swiftlint:enable identifier_name
 }
 
 private enum Filter: String, CaseIterable, Identifiable {
@@ -74,14 +76,18 @@ struct VideoControllerView: View {
 
     var body: some View {
         VStack {
-            VideoSlider(position: $sliderValue, loadedRange: $loadedBufferRange, onThumbDragging: onSliderEditingChanged)
-                .onChange(of: $sliderValue.wrappedValue) { _, _ in
-                    if !isSliderEditing {
-                        return
-                    }
-                    thumbnailPreviewPosition.wrappedValue = duration * sliderValue
+            VideoSlider(
+                position: $sliderValue,
+                loadedRange: $loadedBufferRange,
+                onThumbDragging: onSliderEditingChanged
+            )
+            .onChange(of: $sliderValue.wrappedValue) { _, _ in
+                if !isSliderEditing {
+                    return
                 }
-                .disabled(isLocking)
+                thumbnailPreviewPosition.wrappedValue = duration * sliderValue
+            }
+            .disabled(isLocking)
             HStack {
                 positionLabel
                 Spacer()
@@ -90,8 +96,8 @@ struct VideoControllerView: View {
             HStack {
                 Button(action: onLockButtonClicked, label: {
                     isLocking
-                        ? Image(systemName: "lock.rotation")
-                        : Image(systemName: "lock.rotation.open")
+                    ? Image(systemName: "lock.rotation")
+                    : Image(systemName: "lock.rotation.open")
                 })
                 .rotationEffect(.degrees(lockingButtonRotationAngle))
                 .animation(.easeIn, value: lockingButtonRotationAngle)
@@ -140,11 +146,12 @@ struct VideoControllerView: View {
                 // 画質(bandwidth)
                 if !bandwidths.isEmpty {
                     Menu {
-                        ForEach(bandwidths.indices, id: \.self) { i in
+                        ForEach(bandwidths.indices, id: \.self) { index in
                             Button(action: {
-                                onBandwidthChanged(value: bandwidths.wrappedValue[i])
+                                onBandwidthChanged(value: bandwidths.wrappedValue[index])
                             }, label: {
-                                Text(Self.numberFormatter.string(from: NSNumber(value: bandwidths.wrappedValue[i])) ?? "0")
+                                let value = NSNumber(value: bandwidths.wrappedValue[index])
+                                Text(Self.numberFormatter.string(from: value) ?? "0")
                             })
                         }
                     } label: {
@@ -293,22 +300,22 @@ struct VideoControllerView: View {
     private func onFilterChanged(filter: Filter) {
         switch filter {
         case .invert:
-            if let f = CIFilter(name: "CIColorInvert") {
+            if let ciFilter = CIFilter(name: "CIColorInvert") {
                 player.clearFilters()
                 if let flipFilter = flipFilter {
                     flipFilter.setValue(isFlip, forKey: FlipFilter.Keys.isFlip)
                     player.addFilter(filter: flipFilter)
                 }
-                player.addFilter(filter: f)
+                player.addFilter(filter: ciFilter)
             }
         case .gaussianBlur:
-            if let f = CIFilter(name: "CIGaussianBlur") {
+            if let ciFilter = CIFilter(name: "CIGaussianBlur") {
                 player.clearFilters()
                 if let flipFilter = flipFilter {
                     flipFilter.setValue(isFlip, forKey: FlipFilter.Keys.isFlip)
                     player.addFilter(filter: flipFilter)
                 }
-                player.addFilter(filter: f)
+                player.addFilter(filter: ciFilter)
             }
         }
     }

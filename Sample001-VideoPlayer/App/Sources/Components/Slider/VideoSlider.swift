@@ -45,17 +45,19 @@ struct VideoSlider: View {
                 // thumb
                 VideoSliderThumb()
                     .foregroundColor(.white)
-                    .offset(x: baseBarWidth - 15.0) // TODO: 動的に thumb の width を取得して 1/2 にしたい
+                    // TODO: 動的に thumb の width を取得して 1/2 にしたい
+                    .offset(x: baseBarWidth - 15.0)
                     .gesture(DragGesture()
-                                .onChanged { value in
-                                    isDragging = true
-                                    position.wrappedValue = Double(min(max(value.location.x, 0), proxy.size.width) / proxy.size.width)
-                                    onThumbDragging(isDragging, Double(value.location.x / proxy.size.width))
-                                }
-                                .onEnded { value in
-                                    isDragging = false
-                                    onThumbDragging(isDragging, Double(value.location.x / proxy.size.width))
-                                }
+                        .onChanged { value in
+                            isDragging = true
+                            // swiftlint:disable:next line_length
+                            position.wrappedValue = Double(min(max(value.location.x, 0), proxy.size.width) / proxy.size.width)
+                            onThumbDragging(isDragging, Double(value.location.x / proxy.size.width))
+                        }
+                        .onEnded { value in
+                            isDragging = false
+                            onThumbDragging(isDragging, Double(value.location.x / proxy.size.width))
+                        }
                     )
             }
             .onAppear {

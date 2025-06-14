@@ -5,6 +5,8 @@
 //  Created by ragingo on 2021/06/04.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 @preconcurrency import AVFoundation
 import Combine
@@ -93,7 +95,7 @@ final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
         }
         if url.pathExtension == "m3u8" {
             isLiveStreaming = true
-            let bandwidths = await Self.parseMasterPlaylist(url: url)
+            let bandwidths = await Self.parseMultivariantPlaylist(url: url)
             DispatchQueue.main.async { [weak self] in
                 self?.bandwidthsSubject.send(bandwidths)
             }
@@ -121,7 +123,8 @@ final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
 
     func seek(seconds: Double) {
         isSeekingSubject.send(true)
-        player.seek(to: CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))) { [weak self] isFinished in
+        let position = CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        player.seek(to: position) { [weak self] isFinished in
             guard let self = self else { return }
             if !isFinished {
                 return
@@ -145,6 +148,7 @@ final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
         guard let imageGenerator = self.imageGenerator else { return }
         imageGenerator.maximumSize = size
 
+        // swiftlint:disable:next line_length
         imageGenerator.generateCGImagesAsynchronously(forTimes: times) { (requestedTime, image, actualTime, result, error) in
             guard error == nil else { return }
             guard result == .succeeded else { return }
@@ -212,17 +216,46 @@ extension VideoPlayer {
         imageGenerator?.requestedTimeToleranceAfter = .zero
 
         // AVPlayerItem のプロパティの監視
-        keyValueObservations += [player.currentItem?.observe(\.status, changeHandler: { [weak self] in self?.onStatusChanged(item: $0, value: $1) })]
-        keyValueObservations += [player.currentItem?.observe(\.duration, changeHandler: { [weak self] in self?.onDurationChanged(item: $0, value: $1) })]
-        keyValueObservations += [player.currentItem?.observe(\.isPlaybackLikelyToKeepUp, changeHandler: { [weak self] in self?.onPlaybackLikelyToKeepUpChanged(item: $0, value: $1) })]
-        keyValueObservations += [player.currentItem?.observe(\.loadedTimeRanges, changeHandler: { [weak self] in self?.onLoadedTimeRangesChanged(item: $0, value: $1) })]
+        keyValueObservations += [
+            player.currentItem?.observe(
+                \.status,
+                 changeHandler: { [weak self] in self?.onStatusChanged(item: $0, value: $1) }
+            )
+        ]
+        keyValueObservations += [
+            player.currentItem?.observe(
+                \.duration,
+                 changeHandler: { [weak self] in self?.onDurationChanged(item: $0, value: $1) }
+            )
+        ]
+        keyValueObservations += [
+            player.currentItem?.observe(
+                \.isPlaybackLikelyToKeepUp,
+                 changeHandler: { [weak self] in self?.onPlaybackLikelyToKeepUpChanged(item: $0, value: $1) }
+            )
+        ]
+        keyValueObservations += [
+            player.currentItem?.observe(
+                \.loadedTimeRanges,
+                 changeHandler: { [weak self] in self?.onLoadedTimeRangesChanged(item: $0, value: $1) }
+            )
+        ]
 
         // AVPlayer のプロパティの監視
-        keyValueObservations += [player.observe(\.timeControlStatus, changeHandler: { [weak self] in self?.onTimeControlStatusChanged(player: $0, value: $1)})]
+        keyValueObservations += [
+            player.observe(
+                \.timeControlStatus,
+                 changeHandler: { [weak self] in self?.onTimeControlStatusChanged(player: $0, value: $1)}
+            )
+        ]
 
         // 指定秒数の間隔で再生位置を通知
         let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-        timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main, using: { [weak self] in self?.onTimeObserverCall(time: $0) })
+        timeObserver = player.addPeriodicTimeObserver(
+            forInterval: interval,
+            queue: .main,
+            using: { [weak self] in self?.onTimeObserverCall(time: $0) }
+        )
     }
 
     // AVPlayerItem.status 変更時
@@ -265,7 +298,10 @@ extension VideoPlayer {
     }
 
     // AVPlayer.timeControlStatus 変更時
-    private func onTimeControlStatusChanged(player: AVPlayer, value: NSKeyValueObservedChange<AVPlayer.TimeControlStatus>) {
+    private func onTimeControlStatusChanged(
+        player: AVPlayer,
+        value: NSKeyValueObservedChange<AVPlayer.TimeControlStatus>
+    ) {
         switch player.timeControlStatus {
         case .paused:
             playStatusSubject.send(.paused)
@@ -287,7 +323,7 @@ extension VideoPlayer {
 
 extension VideoPlayer {
     // 画質(bandwidth)一覧を降順で取得
-    private static func parseMasterPlaylist(url: URL) async -> [Int] {
+    private static func parseMultivariantPlaylist(url: URL) async -> [Int] {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
 
@@ -340,13 +376,19 @@ extension VideoPlayer {
         let duration = try? await asset.load(.duration)
 
         if let videoTrack, let duration {
-            let addedVideoTrack = composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)
+            let addedVideoTrack = composition.addMutableTrack(
+                withMediaType: .video,
+                preferredTrackID: kCMPersistentTrackID_Invalid
+            )
             let range = CMTimeRange(start: .zero, duration: duration)
             try? addedVideoTrack?.insertTimeRange(range, of: videoTrack, at: .zero)
         }
 
         if let audioTrack, let duration {
-            let addedAudioTrack = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)
+            let addedAudioTrack = composition.addMutableTrack(
+                withMediaType: .audio,
+                preferredTrackID: kCMPersistentTrackID_Invalid
+            )
             let range = CMTimeRange(start: .zero, duration: duration)
             try? addedAudioTrack?.insertTimeRange(range, of: audioTrack, at: .zero)
         }

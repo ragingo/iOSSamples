@@ -59,7 +59,11 @@ class FlipFilter: CIFilter {
         guard let kernel = kernel else { return nil }
         guard let inputImage = inputImage else { return nil }
         let sampler = CISampler(image: inputImage)
-        return kernel.apply(extent: inputImage.extent, roiCallback: { _, r in r }, arguments: [sampler, isFlip ? 1 : 0])
+        return kernel.apply(
+            extent: inputImage.extent,
+            roiCallback: { _, rect in rect },
+            arguments: [sampler, isFlip ? 1 : 0]
+        )
     }
 
     private static func loadKernel() -> CIKernel? {
