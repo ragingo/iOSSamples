@@ -17,25 +17,22 @@ final class VideoListViewModel {
     private(set) var videos = [Video]()
     private(set) var isLoading = false
 
+    private let videoRepository: any VideoRepositoryProtocol
+
+    init(
+        videoRepository: any VideoRepositoryProtocol = VideoRepository()
+    ) {
+        self.videoRepository = videoRepository
+    }
+
     func fetchItems() async {
         defer {
             isLoading = false
         }
         isLoading = true
 
-        guard let url = URL(string: jsonFileURL) else {
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue("sample_video_player", forHTTPHeaderField: "User-Agent")
-
         do {
-            let (data, _) = try await URLSession.shared.data(for: request)
-            let decoder = JSONDecoder()
-            let response = try decoder.decode(VideosResponse.self, from: data)
-            videos = response.videos
+            videos = try await videoRepository.fetchVideos()
         } catch {
             print(error)
         }
