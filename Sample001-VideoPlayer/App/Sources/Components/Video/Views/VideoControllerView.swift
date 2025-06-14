@@ -56,7 +56,7 @@ struct VideoControllerView: View {
 
     @State private var flipFilter: FlipFilter?
 
-    private let player: VideoPlayerProtocol
+    private let player: any VideoPlayerProtocol
 
     private var positionLabel: Text {
         Text(formatTime(seconds: Int(isSliderEditing ? sliderValue * duration : position)))
@@ -207,7 +207,7 @@ struct VideoControllerView: View {
         }
     }
 
-    init(player: VideoPlayerProtocol, thumbnailPreviewPosition: Binding<Double>, bandwidths: Binding<[Int]>) {
+    init(player: any VideoPlayerProtocol, thumbnailPreviewPosition: Binding<Double>, bandwidths: Binding<[Int]>) {
         self.player = player
         self.thumbnailPreviewPosition = thumbnailPreviewPosition
         self.bandwidths = bandwidths

@@ -13,7 +13,7 @@ import Combine
 // プレーヤ
 struct VideoPlayerView: View {
     private static let thumbnailSize = CGSize(width: 200, height: 200)
-    private let player: VideoPlayerProtocol
+    private let player: any VideoPlayerProtocol
     private let speechRecognizer: SpeechRecognizer
 
     @State private var isReady = false
@@ -23,7 +23,7 @@ struct VideoPlayerView: View {
     @State private var bandwidths: [Int] = []
     @State fileprivate var closedCaption: String = "ここに字幕が表示されます"
 
-    init(player: VideoPlayerProtocol = VideoPlayer()) {
+    init(player: any VideoPlayerProtocol = VideoPlayer()) {
         self.player = player
         speechRecognizer = SpeechRecognizer()
         player.onAudioSampleBufferUpdate = { [self] sampleBuffer in
