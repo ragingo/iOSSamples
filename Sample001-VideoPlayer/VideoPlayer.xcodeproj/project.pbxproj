@@ -27,7 +27,6 @@
 		85CAD5BC40015666B15675E0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		BAF3A4750CC2837AEB5C233A /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F16ECC3C00467F5686B67DD2 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
-		FC7C30A2046C8E342BB87878 /* App-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "App-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -59,7 +58,6 @@
 			isa = PBXGroup;
 			children = (
 				523492BE2DFD3C6E0026A75A /* Sources */,
-				FC7C30A2046C8E342BB87878 /* App-Bridging-Header.h */,
 				F16ECC3C00467F5686B67DD2 /* App.swift */,
 				4F6BBCA37A7ED4337F106955 /* Assets.xcassets */,
 				85CAD5BC40015666B15675E0 /* Info.plist */,
