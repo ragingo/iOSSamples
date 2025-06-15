@@ -26,3 +26,8 @@ struct VideoView: View {
         }
     }
 }
+
+#Preview {
+    let video = Video(id: 1, title: "a", url: "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8")
+    VideoView(video: video)
+}

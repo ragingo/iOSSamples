@@ -47,3 +47,7 @@ struct VideoListView: View {
         }
     }
 }
+
+#Preview {
+    VideoListView()
+}
