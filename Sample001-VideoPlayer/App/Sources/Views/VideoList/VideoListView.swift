@@ -23,21 +23,21 @@ struct VideoListView: View {
     }
 
     var body: some View {
-        ZStack {
-            NavigationView {
-                List(filteredVideos) { video in
-                    NavigationLink(destination: VideoView(video: video)) {
-                        Text(video.title)
-                            .lineLimit(1)
-                    }
+        NavigationStack {
+            List(filteredVideos) { video in
+                NavigationLink(destination: VideoView(video: video)) {
+                    Text(video.title)
+                        .lineLimit(1)
                 }
-                .refreshable {
-                    await viewModel.fetchItems()
-                }
-                .searchable(text: $searchText)
-                .autocapitalization(.none)
-                .navigationTitle("videos")
             }
+            .refreshable {
+                await viewModel.fetchItems()
+            }
+            .searchable(text: $searchText)
+            .autocapitalization(.none)
+            .navigationTitle("videos")
+        }
+        .overlay {
             if viewModel.isLoading {
                 ProgressView()
             }
