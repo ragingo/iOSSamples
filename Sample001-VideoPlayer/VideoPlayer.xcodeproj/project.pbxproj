@@ -182,6 +182,7 @@
 				"swift format -i -p -r App AppTests",
 				"swift format lint -p -r App AppTests",
 				"",
+				"",
 			);
 		};
 /* End PBXShellScriptBuildPhase section */
