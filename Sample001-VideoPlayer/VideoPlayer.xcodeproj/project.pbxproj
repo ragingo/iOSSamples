@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 90;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -30,17 +30,23 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		523492BE2DFD3C6E0026A75A /* Sources */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Sources; sourceTree = "<group>"; };
-		523492E62DFDAFAB0026A75A /* AppTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = AppTests; sourceTree = "<group>"; };
+		523492BE2DFD3C6E0026A75A /* Sources */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		523492E62DFDAFAB0026A75A /* AppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AppTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		523492E22DFDAFAB0026A75A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
@@ -94,8 +100,6 @@
 				523492E62DFDAFAB0026A75A /* AppTests */,
 			);
 			name = AppTests;
-			packageProductDependencies = (
-			);
 			productName = AppTests;
 			productReference = 523492E52DFDAFAB0026A75A /* AppTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -109,8 +113,6 @@
 				A11FBF179C662C2DDB328AB9 /* Resources */,
 			);
 			buildRules = (
-			);
-			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
 				523492BE2DFD3C6E0026A75A /* Sources */,
@@ -137,7 +139,6 @@
 				};
 			};
 			buildConfigurationList = 7895313CADE2DF1623C5F82E /* Build configuration list for PBXProject "VideoPlayer" */;
-			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -147,6 +148,7 @@
 			mainGroup = B5FEA8915A32CB3EB822B96D;
 			packageReferences = (
 			);
+			preferredProjectObjectVersion = 90;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -159,18 +161,14 @@
 /* Begin PBXResourcesBuildPhase section */
 		523492E32DFDAFAB0026A75A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A11FBF179C662C2DDB328AB9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				BFB98BAD1B9E59E8D58B72E2 /* Assets.xcassets in Resources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
@@ -178,39 +176,27 @@
 		520BEC6C2E116CD9001A60CC /* Run swift-format */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
 			name = "Run swift-format";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "swift format -i -p -r App AppTests\nswift format lint -p -r App AppTests\n";
+			shellScript = (
+				"swift format -i -p -r App AppTests",
+				"swift format lint -p -r App AppTests",
+				"",
+			);
 		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		523492E12DFDAFAB0026A75A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 		9DF73E1E6D0CE1F93B32D75E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
 			files = (
 				8ED09141BCBEB8FEEA84D193 /* App.swift in Sources */,
 			);
-			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
@@ -223,7 +209,7 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		2200B69DBA2DC23BB78EACF0 /* Debug */ = {
+		2200B69DBA2DC23BB78EACF0 /* Debug configuration for PBXProject "VideoPlayer" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -284,7 +270,7 @@
 			};
 			name = Debug;
 		};
-		290A2D13ECCFDAB9462EE44E /* Release */ = {
+		290A2D13ECCFDAB9462EE44E /* Release configuration for PBXNativeTarget "App" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -300,7 +286,7 @@
 			};
 			name = Release;
 		};
-		523492EC2DFDAFAB0026A75A /* Debug */ = {
+		523492EC2DFDAFAB0026A75A /* Debug configuration for PBXNativeTarget "AppTests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -340,7 +326,7 @@
 			};
 			name = Debug;
 		};
-		523492ED2DFDAFAB0026A75A /* Release */ = {
+		523492ED2DFDAFAB0026A75A /* Release configuration for PBXNativeTarget "AppTests" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -377,7 +363,7 @@
 			};
 			name = Release;
 		};
-		AA88698F000A5481E9B985DF /* Debug */ = {
+		AA88698F000A5481E9B985DF /* Debug configuration for PBXNativeTarget "App" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
@@ -393,7 +379,7 @@
 			};
 			name = Debug;
 		};
-		ED867838EC7225E746DD6A5C /* Release */ = {
+		ED867838EC7225E746DD6A5C /* Release configuration for PBXProject "VideoPlayer" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -452,28 +438,25 @@
 		523492EB2DFDAFAB0026A75A /* Build configuration list for PBXNativeTarget "AppTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				523492EC2DFDAFAB0026A75A /* Debug */,
-				523492ED2DFDAFAB0026A75A /* Release */,
+				523492EC2DFDAFAB0026A75A /* Debug configuration for PBXNativeTarget "AppTests" */,
+				523492ED2DFDAFAB0026A75A /* Release configuration for PBXNativeTarget "AppTests" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
 		7895313CADE2DF1623C5F82E /* Build configuration list for PBXProject "VideoPlayer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				2200B69DBA2DC23BB78EACF0 /* Debug */,
-				ED867838EC7225E746DD6A5C /* Release */,
+				2200B69DBA2DC23BB78EACF0 /* Debug configuration for PBXProject "VideoPlayer" */,
+				ED867838EC7225E746DD6A5C /* Release configuration for PBXProject "VideoPlayer" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
 		94F1B562196885D181ECC700 /* Build configuration list for PBXNativeTarget "App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AA88698F000A5481E9B985DF /* Debug */,
-				290A2D13ECCFDAB9462EE44E /* Release */,
+				AA88698F000A5481E9B985DF /* Debug configuration for PBXNativeTarget "App" */,
+				290A2D13ECCFDAB9462EE44E /* Release configuration for PBXNativeTarget "App" */,
 			);
-			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
