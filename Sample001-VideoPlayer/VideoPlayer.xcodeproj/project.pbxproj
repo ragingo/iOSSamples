@@ -104,13 +104,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 94F1B562196885D181ECC700 /* Build configuration list for PBXNativeTarget "App" */;
 			buildPhases = (
+				520BEC6C2E116CD9001A60CC /* Run swift-format */,
 				9DF73E1E6D0CE1F93B32D75E /* Sources */,
 				A11FBF179C662C2DDB328AB9 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				52310B962DFD0DED00BAE6F2 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				523492BE2DFD3C6E0026A75A /* Sources */,
@@ -146,7 +146,6 @@
 			);
 			mainGroup = B5FEA8915A32CB3EB822B96D;
 			packageReferences = (
-				52310B942DFD0DC100BAE6F2 /* XCRemoteSwiftPackageReference "SwiftLint" */,
 			);
 			projectDirPath = "";
 			projectRoot = "";
@@ -175,6 +174,28 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		520BEC6C2E116CD9001A60CC /* Run swift-format */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run swift-format";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "swift format -i -p -r App AppTests\nswift format lint -p -r App AppTests\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		523492E12DFDAFAB0026A75A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -194,10 +215,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		52310B962DFD0DED00BAE6F2 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = 52310B952DFD0DED00BAE6F2 /* SwiftLintBuildToolPlugin */;
-		};
 		523492EA2DFDAFAB0026A75A /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D32248796AFB6D93E27B659E /* App */;
@@ -236,7 +253,6 @@
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -406,7 +422,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -462,25 +477,6 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		52310B942DFD0DC100BAE6F2 /* XCRemoteSwiftPackageReference "SwiftLint" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/realm/SwiftLint";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.59.1;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		52310B952DFD0DED00BAE6F2 /* SwiftLintBuildToolPlugin */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 52310B942DFD0DC100BAE6F2 /* XCRemoteSwiftPackageReference "SwiftLint" */;
-			productName = "plugin:SwiftLintBuildToolPlugin";
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 98CC3F71E6209BAA1756F445 /* Project object */;
 }
