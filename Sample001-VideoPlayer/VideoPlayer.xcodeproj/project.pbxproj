@@ -6,11 +6,6 @@
 	objectVersion = 90;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		8ED09141BCBEB8FEEA84D193 /* App.swift in Sources */ = {isa = PBXBuildFile; fileRef = F16ECC3C00467F5686B67DD2 /* App.swift */; };
-		BFB98BAD1B9E59E8D58B72E2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4F6BBCA37A7ED4337F106955 /* Assets.xcassets */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		523492E92DFDAFAB0026A75A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -22,22 +17,32 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		4F6BBCA37A7ED4337F106955 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		523492E52DFDAFAB0026A75A /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		85CAD5BC40015666B15675E0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		BAF3A4750CC2837AEB5C233A /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		F16ECC3C00467F5686B67DD2 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		523492BE2DFD3C6E0026A75A /* Sources */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Sources;
-			sourceTree = "<group>";
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		52418CDB2E117BCD007B43AC /* Exceptions for "App" folder in "App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = D32248796AFB6D93E27B659E /* App */;
 		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
 		523492E62DFDAFAB0026A75A /* AppTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = AppTests;
+			sourceTree = "<group>";
+		};
+		52418CBF2E117BCD007B43AC /* App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				52418CDB2E117BCD007B43AC /* Exceptions for "App" folder in "App" target */,
+			);
+			path = App;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -60,21 +65,10 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		51366B76E4DB3D88117534CC /* App */ = {
-			isa = PBXGroup;
-			children = (
-				523492BE2DFD3C6E0026A75A /* Sources */,
-				F16ECC3C00467F5686B67DD2 /* App.swift */,
-				4F6BBCA37A7ED4337F106955 /* Assets.xcassets */,
-				85CAD5BC40015666B15675E0 /* Info.plist */,
-			);
-			path = App;
-			sourceTree = "<group>";
-		};
 		B5FEA8915A32CB3EB822B96D = {
 			isa = PBXGroup;
 			children = (
-				51366B76E4DB3D88117534CC /* App */,
+				52418CBF2E117BCD007B43AC /* App */,
 				523492E62DFDAFAB0026A75A /* AppTests */,
 				1A96F4D52611487C06B4DE96 /* Products */,
 			);
@@ -115,7 +109,7 @@
 			buildRules = (
 			);
 			fileSystemSynchronizedGroups = (
-				523492BE2DFD3C6E0026A75A /* Sources */,
+				52418CBF2E117BCD007B43AC /* App */,
 			);
 			name = App;
 			productName = App;
@@ -167,7 +161,6 @@
 		A11FBF179C662C2DDB328AB9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
-				BFB98BAD1B9E59E8D58B72E2 /* Assets.xcassets in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -182,7 +175,6 @@
 				"swift format -i -p -r App AppTests",
 				"swift format lint -p -r App AppTests",
 				"",
-				"",
 			);
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -196,7 +188,6 @@
 		9DF73E1E6D0CE1F93B32D75E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
-				8ED09141BCBEB8FEEA84D193 /* App.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */
