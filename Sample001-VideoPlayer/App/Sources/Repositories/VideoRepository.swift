@@ -14,7 +14,6 @@ nonisolated protocol VideoRepositoryProtocol: HTTPRepositoryProtocol {
 nonisolated final class VideoRepository: VideoRepositoryProtocol {
     let urlSession: URLSession
 
-    // swiftlint:disable:next line_length
     private static let apiBaseURL = URL(string: "https://raw.githubusercontent.com/ragingo/iOSSamples/main/Sample001-VideoPlayer/SampleData/")!
 
     init(urlSession: URLSession = detaultURLSession) {

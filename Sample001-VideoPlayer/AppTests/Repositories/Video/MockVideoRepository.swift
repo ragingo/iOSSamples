@@ -33,7 +33,7 @@ final class MockVideoRepository: MockRepository {
     private func findEntry(for request: URLRequest) -> MockRepository.MockEntry? {
         return Self.entries.first { entry in
             entry.request.method.rawValue == request.httpMethod
-            && request.url?.absoluteString.hasSuffix(entry.request.path) == true
+                && request.url?.absoluteString.hasSuffix(entry.request.path) == true
         }
     }
 }

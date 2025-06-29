@@ -5,10 +5,10 @@
 //  Created by ragingo on 2021/06/03.
 //
 
+import Combine
+import Speech
 import SwiftUI
 import UIKit
-import Speech
-import Combine
 
 // プレーヤ
 struct VideoPlayerView: View {

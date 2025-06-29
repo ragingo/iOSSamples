@@ -5,13 +5,11 @@
 //  Created by ragingo on 2021/06/04.
 //
 
-// swiftlint:disable file_length
-
-import Foundation
 @preconcurrency import AVFoundation
 import Combine
 import CoreImage
 import CoreVideo
+import Foundation
 
 nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
     private let playerLayer = AVPlayerLayer()
@@ -148,7 +146,6 @@ nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
         guard let imageGenerator = self.imageGenerator else { return }
         imageGenerator.maximumSize = size
 
-        // swiftlint:disable:next line_length
         imageGenerator.generateCGImagesAsynchronously(forTimes: times) { (requestedTime, image, actualTime, result, error) in
             guard error == nil else { return }
             guard result == .succeeded else { return }
@@ -219,25 +216,25 @@ extension VideoPlayer {
         keyValueObservations += [
             player.currentItem?.observe(
                 \.status,
-                 changeHandler: { [weak self] in self?.onStatusChanged(item: $0, value: $1) }
+                changeHandler: { [weak self] in self?.onStatusChanged(item: $0, value: $1) }
             )
         ]
         keyValueObservations += [
             player.currentItem?.observe(
                 \.duration,
-                 changeHandler: { [weak self] in self?.onDurationChanged(item: $0, value: $1) }
+                changeHandler: { [weak self] in self?.onDurationChanged(item: $0, value: $1) }
             )
         ]
         keyValueObservations += [
             player.currentItem?.observe(
                 \.isPlaybackLikelyToKeepUp,
-                 changeHandler: { [weak self] in self?.onPlaybackLikelyToKeepUpChanged(item: $0, value: $1) }
+                changeHandler: { [weak self] in self?.onPlaybackLikelyToKeepUpChanged(item: $0, value: $1) }
             )
         ]
         keyValueObservations += [
             player.currentItem?.observe(
                 \.loadedTimeRanges,
-                 changeHandler: { [weak self] in self?.onLoadedTimeRangesChanged(item: $0, value: $1) }
+                changeHandler: { [weak self] in self?.onLoadedTimeRangesChanged(item: $0, value: $1) }
             )
         ]
 
@@ -245,7 +242,7 @@ extension VideoPlayer {
         keyValueObservations += [
             player.observe(
                 \.timeControlStatus,
-                 changeHandler: { [weak self] in self?.onTimeControlStatusChanged(player: $0, value: $1)}
+                changeHandler: { [weak self] in self?.onTimeControlStatusChanged(player: $0, value: $1) }
             )
         ]
 
@@ -355,7 +352,8 @@ extension VideoPlayer {
         // #EXT-X-STREAM-INF で始まる行だけ取り出す
         let streamInfs = lines.filter { line in line.starts(with: "#EXT-X-STREAM-INF:") }
         // BANDWIDTH=xxx の値だけ取り出す
-        let bandwidths = streamInfs
+        let bandwidths =
+            streamInfs
             .compactMap { inf -> Int? in
                 let inputRange = NSRange(location: 0, length: inf.count)
                 guard let result = regex.firstMatch(in: String(inf), range: inputRange) else {

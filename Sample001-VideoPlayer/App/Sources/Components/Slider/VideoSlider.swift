@@ -18,9 +18,10 @@ struct VideoSlider: View {
 
     private let onThumbDragging: (Bool, Double) -> Void
 
-    init(position: Binding<Double> = .constant(0),
-         loadedRange: Binding<(Double, Double)> = .constant((0, 0)),
-         onThumbDragging: @escaping (Bool, Double) -> Void = { _, _ in }
+    init(
+        position: Binding<Double> = .constant(0),
+        loadedRange: Binding<(Double, Double)> = .constant((0, 0)),
+        onThumbDragging: @escaping (Bool, Double) -> Void = { _, _ in }
     ) {
         self.position = position
         self.loadedRange = loadedRange
@@ -47,17 +48,17 @@ struct VideoSlider: View {
                     .foregroundColor(.white)
                     // TODO: 動的に thumb の width を取得して 1/2 にしたい
                     .offset(x: baseBarWidth - 15.0)
-                    .gesture(DragGesture()
-                        .onChanged { value in
-                            isDragging = true
-                            // swiftlint:disable:next line_length
-                            position.wrappedValue = Double(min(max(value.location.x, 0), proxy.size.width) / proxy.size.width)
-                            onThumbDragging(isDragging, Double(value.location.x / proxy.size.width))
-                        }
-                        .onEnded { value in
-                            isDragging = false
-                            onThumbDragging(isDragging, Double(value.location.x / proxy.size.width))
-                        }
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                isDragging = true
+                                position.wrappedValue = Double(min(max(value.location.x, 0), proxy.size.width) / proxy.size.width)
+                                onThumbDragging(isDragging, Double(value.location.x / proxy.size.width))
+                            }
+                            .onEnded { value in
+                                isDragging = false
+                                onThumbDragging(isDragging, Double(value.location.x / proxy.size.width))
+                            }
                     )
             }
             .onAppear {

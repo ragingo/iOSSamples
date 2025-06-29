@@ -9,13 +9,13 @@ import SwiftUI
 
 #if DEBUG
 
-struct VideoSlider_Previews: PreviewProvider {
-    static var previews: some View {
-        VideoSlider(
-            position: .constant(0.5),
-            loadedRange: .constant((0.3, 0.7))
-        )
+    struct VideoSlider_Previews: PreviewProvider {
+        static var previews: some View {
+            VideoSlider(
+                position: .constant(0.5),
+                loadedRange: .constant((0.3, 0.7))
+            )
+        }
     }
-}
 
 #endif

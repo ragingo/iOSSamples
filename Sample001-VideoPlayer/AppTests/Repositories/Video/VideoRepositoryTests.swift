@@ -7,6 +7,7 @@
 
 import Foundation
 import Testing
+
 @testable import App
 
 @Suite(.serialized)
@@ -26,10 +27,11 @@ struct VideoRepositoryTests {
         let repository = VideoRepository(urlSession: makeVideoRepositoryMock())
         let videos = try await repository.fetchVideos()
 
-        #expect(videos == [
-            Video(id: 1, title: "Sample Video 1", url: "https://example.com/video1.mp4"),
-            Video(id: 2, title: "Sample Video 2", url: "https://example.com/video2.mp4")
-        ])
+        #expect(
+            videos == [
+                Video(id: 1, title: "Sample Video 1", url: "https://example.com/video1.mp4"),
+                Video(id: 2, title: "Sample Video 2", url: "https://example.com/video2.mp4")
+            ])
     }
 }
 

@@ -5,8 +5,8 @@
 //  Created by ragingo on 2021/06/15.
 //
 
-import Foundation
 import CoreImage
+import Foundation
 
 nonisolated class FlipFilter: CIFilter {
     private let kernel: CIKernel?

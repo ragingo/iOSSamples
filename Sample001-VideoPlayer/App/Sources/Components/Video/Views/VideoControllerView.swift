@@ -17,14 +17,13 @@ private func formatTime(seconds: Int) -> String {
     return String(format: "%03d:%02d:%02d", hours, minutes, seconds)
 }
 
+// swift-format-ignore: AlwaysUseLowerCamelCase
 private enum RateSteps: String, CaseIterable, Identifiable {
     var id: RateSteps { self }
 
-    // swiftlint:disable identifier_name
     case x1_0 = "x 1.0"
     case x1_5 = "x 1.5"
     case x2_0 = "x 2.0"
-    // swiftlint:enable identifier_name
 }
 
 private enum Filter: String, CaseIterable, Identifiable {
@@ -94,35 +93,47 @@ struct VideoControllerView: View {
                 durationLabel
             }
             HStack {
-                Button(action: onLockButtonClicked, label: {
-                    isLocking
-                    ? Image(systemName: "lock.rotation")
-                    : Image(systemName: "lock.rotation.open")
-                })
+                Button(
+                    action: onLockButtonClicked,
+                    label: {
+                        isLocking
+                            ? Image(systemName: "lock.rotation")
+                            : Image(systemName: "lock.rotation.open")
+                    }
+                )
                 .rotationEffect(.degrees(lockingButtonRotationAngle))
                 .animation(.easeIn, value: lockingButtonRotationAngle)
                 .foregroundColor(isLocking ? .red : .primary)
 
                 // 10秒前へ
-                Button(action: onGoBackwardButtonClicked, label: {
-                    Image(systemName: "gobackward.10")
-                })
+                Button(
+                    action: onGoBackwardButtonClicked,
+                    label: {
+                        Image(systemName: "gobackward.10")
+                    }
+                )
                 .rotationEffect(.degrees(backwardButtonRotationAngle))
                 .animation(.easeIn, value: backwardButtonRotationAngle)
                 .foregroundColor(.primary)
                 .disabled(isLocking)
 
                 // 再生・一時停止
-                Button(action: onPlayButtonClicked, label: {
-                    isPlaying ? Image(systemName: "pause.fill") : Image(systemName: "play.fill")
-                })
+                Button(
+                    action: onPlayButtonClicked,
+                    label: {
+                        isPlaying ? Image(systemName: "pause.fill") : Image(systemName: "play.fill")
+                    }
+                )
                 .foregroundColor(.primary)
                 .disabled(isLocking)
 
                 // 10秒後へ
-                Button(action: onGoForwardButtonClicked, label: {
-                    Image(systemName: "goforward.10")
-                })
+                Button(
+                    action: onGoForwardButtonClicked,
+                    label: {
+                        Image(systemName: "goforward.10")
+                    }
+                )
                 .rotationEffect(.degrees(forwardButtonRotationAngle))
                 .animation(.easeIn, value: forwardButtonRotationAngle)
                 .foregroundColor(.primary)
@@ -131,11 +142,13 @@ struct VideoControllerView: View {
                 // 再生速度
                 Menu {
                     ForEach(RateSteps.allCases) { rate in
-                        Button(action: {
-                            onRateChanged(rate: rate)
-                        }, label: {
-                            Text(rate.rawValue)
-                        })
+                        Button(
+                            action: {
+                                onRateChanged(rate: rate)
+                            },
+                            label: {
+                                Text(rate.rawValue)
+                            })
                     }
                 } label: {
                     Text(selectedRate.rawValue)
@@ -147,12 +160,14 @@ struct VideoControllerView: View {
                 if !bandwidths.isEmpty {
                     Menu {
                         ForEach(bandwidths.indices, id: \.self) { index in
-                            Button(action: {
-                                onBandwidthChanged(value: bandwidths.wrappedValue[index])
-                            }, label: {
-                                let value = NSNumber(value: bandwidths.wrappedValue[index])
-                                Text(Self.numberFormatter.string(from: value) ?? "0")
-                            })
+                            Button(
+                                action: {
+                                    onBandwidthChanged(value: bandwidths.wrappedValue[index])
+                                },
+                                label: {
+                                    let value = NSNumber(value: bandwidths.wrappedValue[index])
+                                    Text(Self.numberFormatter.string(from: value) ?? "0")
+                                })
                         }
                     } label: {
                         Image(systemName: "list.number")
@@ -162,9 +177,12 @@ struct VideoControllerView: View {
                 }
 
                 // 左右反転
-                Button(action: onFlipButtonCliecked, label: {
-                    Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right")
-                })
+                Button(
+                    action: onFlipButtonCliecked,
+                    label: {
+                        Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right")
+                    }
+                )
                 .rotation3DEffect(.degrees(flipButtonRotationAngle), axis: (x: 0, y: 1, z: 0))
                 .animation(.easeIn, value: flipButtonRotationAngle)
                 .foregroundColor(.primary)
@@ -173,11 +191,13 @@ struct VideoControllerView: View {
                 // フィルター
                 Menu {
                     ForEach(Filter.allCases) { filter in
-                        Button(action: {
-                            onFilterChanged(filter: filter)
-                        }, label: {
-                            Text(filter.rawValue)
-                        })
+                        Button(
+                            action: {
+                                onFilterChanged(filter: filter)
+                            },
+                            label: {
+                                Text(filter.rawValue)
+                            })
                     }
                 } label: {
                     Text("filter")

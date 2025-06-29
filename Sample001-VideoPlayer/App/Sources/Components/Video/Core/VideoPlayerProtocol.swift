@@ -6,10 +6,10 @@
 //
 
 import Combine
-import Foundation
-import QuartzCore
 import CoreImage
 import CoreMedia
+import Foundation
+import QuartzCore
 
 enum VideoLoadStatus {
     case unknown
