@@ -153,3 +153,15 @@ class SpeechRecognizer {
     }
 
 }
+
+#Preview {
+    let videoURL = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
+    let playerView = VideoPlayerView()
+
+    VStack {
+        playerView
+    }
+    .onAppear {
+        playerView.open(urlString: videoURL)
+    }
+}

@@ -104,3 +104,10 @@ struct VideoSlider: View {
         loadedBarWidth = value
     }
 }
+
+#Preview {
+    VideoSlider(
+        position: .constant(0.5),
+        loadedRange: .constant((0.3, 0.7))
+    )
+}
