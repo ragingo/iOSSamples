@@ -56,7 +56,8 @@ actor ImageGenerator: Sendable {
     }
 }
 
-nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
+@MainActor
+final class VideoPlayer: VideoPlayerProtocol {
     private let playerLayer = AVPlayerLayer()
     private let player = AVPlayer()
     private var imageGenerator: ImageGenerator?
@@ -104,7 +105,7 @@ nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
         playerLayer.player = player
     }
 
-    deinit {
+    isolated deinit {
         invalidate()
     }
 
@@ -147,7 +148,7 @@ nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
             guard isPlayable else {
                 return
             }
-            await onAssetLoaded(asset)
+            try await onAssetLoaded(asset)
         } catch {
             print(error)
         }
@@ -161,16 +162,14 @@ nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
         player.pause()
     }
 
-    func seek(seconds: Double) {
+    func seek(seconds: Double) async {
         isSeekingSubject.send(true)
         let position = CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-        player.seek(to: position) { [weak self] isFinished in
-            guard let self else { return }
-            if !isFinished {
-                return
-            }
-            self.isSeekingSubject.send(false)
+        let isFinished = await player.seek(to: position)
+        if !isFinished {
+            return
         }
+        self.isSeekingSubject.send(false)
     }
 
     func requestGenerateImage(time: Double, size: CGSize) {
@@ -182,8 +181,10 @@ nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
 
         Task.detached(name: "\(self)", priority: .background) {
             let result = try await imageGenerator.generateImages(times: [time], size: size)
-            for (time, image) in result {
-                self.generatedImageSubject.send((time, image))
+            await MainActor.run {
+                for (time, image) in result {
+                    self.generatedImageSubject.send((time, image))
+                }
             }
         }
     }
@@ -221,8 +222,7 @@ nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
 // MARK: - Callbacks
 extension VideoPlayer {
     // AVURLAsset.loadValuesAsynchronously 完了時
-    @MainActor
-    private func onAssetLoaded(_ asset: AVURLAsset) async {
+    private func onAssetLoaded(_ asset: AVURLAsset) async throws {
         let playerItem = AVPlayerItem(asset: asset)
         player.replaceCurrentItem(with: playerItem)
 
@@ -230,45 +230,51 @@ extension VideoPlayer {
 
         // AVPlayerItem のプロパティの監視
         keyValueObservations += [
-            playerItem.observe(
-                \.status,
-                changeHandler: { [weak self] in self?.onStatusChanged(item: $0, value: $1) }
-            )
+            playerItem.observe(\.status) { [weak self] item, value in
+                guard let self else { return }
+                Task { @MainActor in
+                    self.onStatusChanged(item: item, value: value)
+                }
+            }
         ]
         keyValueObservations += [
-            playerItem.observe(
-                \.duration,
-                changeHandler: { [weak self] in self?.onDurationChanged(item: $0, value: $1) }
-            )
+            playerItem.observe(\.isPlaybackLikelyToKeepUp) { [weak self] item, _ in
+                guard let self else { return }
+                Task { @MainActor in
+                    self.onPlaybackLikelyToKeepUpChanged(item: item)
+                }
+            }
         ]
         keyValueObservations += [
-            playerItem.observe(
-                \.isPlaybackLikelyToKeepUp,
-                changeHandler: { [weak self] in self?.onPlaybackLikelyToKeepUpChanged(item: $0, value: $1) }
-            )
-        ]
-        keyValueObservations += [
-            playerItem.observe(
-                \.loadedTimeRanges,
-                changeHandler: { [weak self] in self?.onLoadedTimeRangesChanged(item: $0, value: $1) }
-            )
+            playerItem.observe(\.loadedTimeRanges) { [weak self] item, _ in
+                guard let self else { return }
+                Task { @MainActor in
+                    self.onLoadedTimeRangesChanged(item: item)
+                }
+            }
         ]
 
         // AVPlayer のプロパティの監視
         keyValueObservations += [
-            player.observe(
-                \.timeControlStatus,
-                changeHandler: { [weak self] in self?.onTimeControlStatusChanged(player: $0, value: $1) }
-            )
+            player.observe(\.timeControlStatus) { [weak self] item, _ in
+                guard let self else { return }
+                Task { @MainActor in
+                    self.onTimeControlStatusChanged(player: item)
+                }
+            }
         ]
+
+        let duration = try await asset.load(.duration)
+        durationSubject.send(duration.seconds)
 
         // 指定秒数の間隔で再生位置を通知
         let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-        timeObserver = player.addPeriodicTimeObserver(
-            forInterval: interval,
-            queue: .main,
-            using: { [weak self] in self?.onTimeObserverCall(time: $0) }
-        )
+        timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
+            guard let self else { return }
+            Task { @MainActor in
+                self.onTimeObserverCall(time: time)
+            }
+        }
     }
 
     // AVPlayerItem.status 変更時
@@ -285,18 +291,13 @@ extension VideoPlayer {
         }
     }
 
-    // AVPlayerItem.duration 変更時
-    private func onDurationChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<CMTime>) {
-        durationSubject.send(item.duration.seconds)
-    }
-
     // AVPlayerItem.isPlaybackLikelyToKeepUp 変更時
-    private func onPlaybackLikelyToKeepUpChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<Bool>) {
+    private func onPlaybackLikelyToKeepUpChanged(item: AVPlayerItem) {
         isPlaybackLikelyToKeepUpSubject.send(item.isPlaybackLikelyToKeepUp)
     }
 
     // AVPlayerItem.loadedTimeRanges 変更時
-    private func onLoadedTimeRangesChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<[NSValue]>) {
+    private func onLoadedTimeRangesChanged(item: AVPlayerItem) {
         guard let ranges = item.loadedTimeRanges as? [CMTimeRange] else { return }
         if ranges.isEmpty {
             return
@@ -311,10 +312,7 @@ extension VideoPlayer {
     }
 
     // AVPlayer.timeControlStatus 変更時
-    private func onTimeControlStatusChanged(
-        player: AVPlayer,
-        value: NSKeyValueObservedChange<AVPlayer.TimeControlStatus>
-    ) {
+    private func onTimeControlStatusChanged(player: AVPlayer) {
         switch player.timeControlStatus {
         case .paused:
             playStatusSubject.send(.paused)

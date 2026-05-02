@@ -23,7 +23,8 @@ enum VideoPlayStatus {
     case playing
 }
 
-nonisolated protocol VideoPlayerProtocol: AnyObject, Sendable {
+@MainActor
+protocol VideoPlayerProtocol: AnyObject {
     var onAudioSampleBufferUpdate: ((CMSampleBuffer) -> Void)? { get set }
     var layer: CALayer { get }
     var isLiveStreaming: Bool { get }
@@ -45,7 +46,7 @@ nonisolated protocol VideoPlayerProtocol: AnyObject, Sendable {
     func open(urlString: String) async
     func play()
     func pause()
-    func seek(seconds: Double)
+    func seek(seconds: Double) async
 
     func requestGenerateImage(time: Double, size: CGSize)
     func cancelImageGenerationRequests()

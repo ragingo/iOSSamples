@@ -249,7 +249,9 @@ struct VideoControllerView: View {
 
         isSliderEditing = false
         position = duration * sliderValue
-        player.seek(seconds: position)
+        Task {
+            await player.seek(seconds: position)
+        }
 
         player.cancelImageGenerationRequests()
         thumbnailPreviewPosition.wrappedValue = .nan
@@ -279,12 +281,16 @@ struct VideoControllerView: View {
     }
 
     private func onGoBackwardButtonClicked() {
-        player.seek(seconds: position - 10)
+        Task {
+            await player.seek(seconds: position - 10)
+        }
         backwardButtonRotationAngle -= 360.0
     }
 
     private func onGoForwardButtonClicked() {
-        player.seek(seconds: position + 10)
+        Task {
+            await player.seek(seconds: position + 10)
+        }
         forwardButtonRotationAngle += 360.0
     }
 
