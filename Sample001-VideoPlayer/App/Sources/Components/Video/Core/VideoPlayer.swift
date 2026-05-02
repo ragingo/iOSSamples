@@ -5,7 +5,7 @@
 //  Created by ragingo on 2021/06/04.
 //
 
-@preconcurrency import AVFoundation
+@unsafe @preconcurrency import AVFoundation
 import Combine
 import CoreImage
 import CoreVideo

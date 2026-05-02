@@ -14,7 +14,7 @@ private func formatTime(seconds: Int) -> String {
     let hours = seconds / secondsPerHour
     let minutes = seconds % secondsPerHour / secondsPerMinute
     let seconds = seconds % secondsPerHour % secondsPerMinute
-    return String(format: "%03d:%02d:%02d", hours, minutes, seconds)
+    return unsafe String(format: "%03d:%02d:%02d", hours, minutes, seconds)
 }
 
 // swift-format-ignore: AlwaysUseLowerCamelCase

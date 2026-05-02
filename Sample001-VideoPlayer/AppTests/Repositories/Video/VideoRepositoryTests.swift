@@ -14,7 +14,7 @@ import Testing
 struct VideoRepositoryTests {
     @Test
     func fetchVideosEmptyResponse() async throws {
-        MockVideoRepository.entries = [MockVideoRepository.fetchVideosGetEmptyEntry]
+        unsafe MockVideoRepository.entries = [MockVideoRepository.fetchVideosGetEmptyEntry]
         let repository = VideoRepository(urlSession: makeVideoRepositoryMock())
         let videos = try await repository.fetchVideos()
 
@@ -23,7 +23,7 @@ struct VideoRepositoryTests {
 
     @Test
     func fetchVideosMultipleResponse() async throws {
-        MockVideoRepository.entries = [MockVideoRepository.fetchVideosGetMultipleEntry]
+        unsafe MockVideoRepository.entries = [MockVideoRepository.fetchVideosGetMultipleEntry]
         let repository = VideoRepository(urlSession: makeVideoRepositoryMock())
         let videos = try await repository.fetchVideos()
 

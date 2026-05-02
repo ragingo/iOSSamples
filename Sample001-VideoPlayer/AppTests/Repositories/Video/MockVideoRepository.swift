@@ -8,7 +8,7 @@
 import Foundation
 
 final class MockVideoRepository: MockRepository {
-    static var entries: [MockRepository.MockEntry] = []
+    nonisolated(unsafe) static var entries: [MockRepository.MockEntry] = []
 
     override func startLoading() {
         defer {
@@ -31,7 +31,7 @@ final class MockVideoRepository: MockRepository {
     }
 
     private func findEntry(for request: URLRequest) -> MockRepository.MockEntry? {
-        return Self.entries.first { entry in
+        return unsafe Self.entries.first { entry in
             entry.request.method.rawValue == request.httpMethod
                 && request.url?.absoluteString.hasSuffix(entry.request.path) == true
         }
