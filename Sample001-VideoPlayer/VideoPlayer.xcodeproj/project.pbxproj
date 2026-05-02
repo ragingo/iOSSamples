@@ -17,8 +17,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		523492E52DFDAFAB0026A75A /* .xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = .xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		BAF3A4750CC2837AEB5C233A /* .app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = .app; sourceTree = BUILT_PRODUCTS_DIR; };
+		523492E52DFDAFAB0026A75A /* AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BAF3A4750CC2837AEB5C233A /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -59,8 +59,8 @@
 		1A96F4D52611487C06B4DE96 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				BAF3A4750CC2837AEB5C233A /* .app */,
-				523492E52DFDAFAB0026A75A /* .xctest */,
+				BAF3A4750CC2837AEB5C233A /* App.app */,
+				523492E52DFDAFAB0026A75A /* AppTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,7 +95,7 @@
 			);
 			name = AppTests;
 			productName = AppTests;
-			productReference = 523492E52DFDAFAB0026A75A /* .xctest */;
+			productReference = 523492E52DFDAFAB0026A75A /* AppTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		D32248796AFB6D93E27B659E /* App */ = {
@@ -113,7 +113,7 @@
 			);
 			name = App;
 			productName = App;
-			productReference = BAF3A4750CC2837AEB5C233A /* .app */;
+			productReference = BAF3A4750CC2837AEB5C233A /* App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -204,6 +204,7 @@
 		2200B69DBA2DC23BB78EACF0 /* Debug configuration for PBXProject "VideoPlayer" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_CXX_LIBRARY = "libc++";
 				COPY_PHASE_STRIP = NO;
@@ -285,6 +286,7 @@
 		ED867838EC7225E746DD6A5C /* Release configuration for PBXProject "VideoPlayer" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_CXX_LIBRARY = "libc++";
 				COPY_PHASE_STRIP = NO;
