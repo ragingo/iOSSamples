@@ -5,16 +5,16 @@
 //  Created by ragingo on 2021/06/04.
 //
 
-@unsafe @preconcurrency import AVFoundation
+import AVFoundation
 import Combine
 import CoreImage
 import CoreVideo
 import Foundation
 import os
 
-final class ImageGenerator: Sendable {
+actor ImageGenerator: Sendable {
     private let imageGenerator: AVAssetImageGenerator
-    private let cache: OSAllocatedUnfairLock = .init(initialState: [Double: CGImage]())
+    private var cache: [Double: CGImage] = [:]
 
     init(asset: AVAsset) {
         imageGenerator = .init(asset: asset)
@@ -23,7 +23,7 @@ final class ImageGenerator: Sendable {
     }
 
     func generateImage(time: Double, size: CGSize) async throws -> (Double, CGImage) {
-        if let image = (cache.withLock { $0[time] }) {
+        if let image = cache[time] {
             return (time, image)
         }
 
@@ -46,9 +46,7 @@ final class ImageGenerator: Sendable {
             for try await (time, image) in group {
                 result[time] = image
             }
-            _ = self.cache.withLock { [result] in
-                return $0.merging(result) { $1 }
-            }
+            cache.merge(result) { $1 }
             return result
         }
     }
@@ -176,7 +174,9 @@ nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
     }
 
     func requestGenerateImage(time: Double, size: CGSize) {
-        imageGenerator?.cancel()
+        Task {
+            await imageGenerator?.cancel()
+        }
 
         guard let imageGenerator else { return }
 
@@ -189,7 +189,9 @@ nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
     }
 
     func cancelImageGenerationRequests() {
-        imageGenerator?.cancel()
+        Task {
+            await imageGenerator?.cancel()
+        }
     }
 
     func changePreferredPeakBitRate(value: Int) {
@@ -221,39 +223,32 @@ extension VideoPlayer {
     // AVURLAsset.loadValuesAsynchronously 完了時
     @MainActor
     private func onAssetLoaded(_ asset: AVURLAsset) async {
-        if isLiveStreaming {
-            let playerItem = AVPlayerItem(asset: asset)
-            player.replaceCurrentItem(with: playerItem)
-        } else {
-            let composition = AVMutableComposition()
-            let playerItem = await Self.createVideoPlayerItem(asset: asset, composition: composition)
-            player.replaceCurrentItem(with: playerItem)
-            playerItem.videoComposition = createVideoComposition(composition: composition)
-        }
+        let playerItem = AVPlayerItem(asset: asset)
+        player.replaceCurrentItem(with: playerItem)
 
         imageGenerator = ImageGenerator(asset: asset)
 
         // AVPlayerItem のプロパティの監視
         keyValueObservations += [
-            player.currentItem?.observe(
+            playerItem.observe(
                 \.status,
                 changeHandler: { [weak self] in self?.onStatusChanged(item: $0, value: $1) }
             )
         ]
         keyValueObservations += [
-            player.currentItem?.observe(
+            playerItem.observe(
                 \.duration,
                 changeHandler: { [weak self] in self?.onDurationChanged(item: $0, value: $1) }
             )
         ]
         keyValueObservations += [
-            player.currentItem?.observe(
+            playerItem.observe(
                 \.isPlaybackLikelyToKeepUp,
                 changeHandler: { [weak self] in self?.onPlaybackLikelyToKeepUpChanged(item: $0, value: $1) }
             )
         ]
         keyValueObservations += [
-            player.currentItem?.observe(
+            playerItem.observe(
                 \.loadedTimeRanges,
                 changeHandler: { [weak self] in self?.onLoadedTimeRangesChanged(item: $0, value: $1) }
             )
@@ -387,55 +382,5 @@ extension VideoPlayer {
             .sorted()
 
         return bandwidths
-    }
-
-    private static func createVideoPlayerItem(asset: AVAsset, composition: AVMutableComposition) async -> AVPlayerItem {
-        let videoTrack = try? await asset.loadTracks(withMediaType: .video).first
-        let audioTrack = try? await asset.loadTracks(withMediaType: .audio).first
-        let duration = try? await asset.load(.duration)
-
-        if let videoTrack, let duration {
-            let addedVideoTrack = composition.addMutableTrack(
-                withMediaType: .video,
-                preferredTrackID: kCMPersistentTrackID_Invalid
-            )
-            let range = CMTimeRange(start: .zero, duration: duration)
-            try? addedVideoTrack?.insertTimeRange(range, of: videoTrack, at: .zero)
-        }
-
-        if let audioTrack, let duration {
-            let addedAudioTrack = composition.addMutableTrack(
-                withMediaType: .audio,
-                preferredTrackID: kCMPersistentTrackID_Invalid
-            )
-            let range = CMTimeRange(start: .zero, duration: duration)
-            try? addedAudioTrack?.insertTimeRange(range, of: audioTrack, at: .zero)
-        }
-
-        return await AVPlayerItem(asset: composition)
-    }
-
-    // AVVideoComposition を作って返す
-    private func createVideoComposition(composition: AVMutableComposition) -> AVMutableVideoComposition? {
-        let videoComposition = AVMutableVideoComposition(asset: composition) { [weak self] request in
-            guard let self = self else {
-                request.finish(with: request.sourceImage, context: nil)
-                return
-            }
-
-            var nextInputImage = request.sourceImage.clampedToExtent()
-
-            for filter in self.filters {
-                filter.setValue(nextInputImage, forKey: kCIInputImageKey)
-                guard let outputImage = filter.outputImage else { continue }
-                nextInputImage = outputImage.cropped(to: nextInputImage.extent)
-            }
-
-            request.finish(with: nextInputImage, context: nil)
-        }
-
-        videoComposition.renderSize = composition.naturalSize
-
-        return videoComposition
     }
 }
