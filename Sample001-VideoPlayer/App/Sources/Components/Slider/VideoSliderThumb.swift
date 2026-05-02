@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-private let defaultWidth: CGFloat = 30
-private let defaultHeight: CGFloat = 30
-private let defaultShadowRadius: CGFloat = 10
+@const private let defaultWidth: CGFloat = 30
+@const private let defaultHeight: CGFloat = 30
+@const private let defaultShadowRadius: CGFloat = 10
 
 struct VideoSliderThumb: View {
     var body: some View {

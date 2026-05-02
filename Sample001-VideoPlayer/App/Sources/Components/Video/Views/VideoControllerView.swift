@@ -7,8 +7,8 @@
 
 import SwiftUI
 
-let secondsPerHour = 3600
-let secondsPerMinute = 60
+@const private let secondsPerHour = 3600
+@const private let secondsPerMinute = 60
 
 private func formatTime(seconds: Int) -> String {
     let hours = seconds / secondsPerHour
