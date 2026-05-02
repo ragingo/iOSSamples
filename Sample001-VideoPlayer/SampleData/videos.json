@@ -2,108 +2,43 @@
   "videos": [
     {
       "id": 1,
-      "title": "[HLS] Sintel",
-      "url": "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
+      "title": "[HLS] Tears Of Steel 4K",
+      "url": "https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8"
     },
     {
       "id": 2,
+      "title": "[HLS] Apple Advanced Stream fMP4",
+      "url": "https://devstreaming-cdn.apple.com/videos/streaming/examples/adv_dv_atmos/main.m3u8"
+    },
+    {
+      "id": 3,
       "title": "[HLS] bipbopall 1",
       "url": "http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8"
     },
     {
-      "id": 3,
+      "id": 4,
       "title": "[HLS] bipbopall 2",
       "url": "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
     },
     {
-      "id": 4,
-      "title": "[HLS] x36xhzz",
+      "id": 5,
+      "title": "[HLS] Big Buck Bunny 4K",
       "url": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"
     },
     {
-      "id": 5,
+      "id": 6,
       "title": "[HLS] test_001",
       "url": "https://test-streams.mux.dev/test_001/stream.m3u8"
     },
     {
-      "id": 6,
+      "id": 7,
       "title": "[HLS] wwdc2019 hls_vod_mvp",
       "url": "https://devstreaming-cdn.apple.com/videos/wwdc/2019/506lqy7sprpfyo800/506/hls_vod_mvp.m3u8"
     },
     {
-      "id": 7,
+      "id": 8,
       "title": "[HLS] wwdc2019 i-frame",
       "url": "https://devstreaming-cdn.apple.com/videos/wwdc/2019/506lqy7sprpfyo800/506/0640/0640_I-Frame.m3u8"
-    },
-    {
-      "id": 8,
-      "title": "[mp4] Earth",
-      "url": "https://file-examples-com.github.io/uploads/2017/04/file_example_MP4_1920_18MG.mp4"
-    },
-    {
-      "id": 9,
-      "title": "[mp4] Big Buck Bunny",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-    },
-    {
-      "id": 10,
-      "title": "[mp4] Elephants Dream",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"
-    },
-    {
-      "id": 11,
-      "title": "[mp4] For Bigger Blazes",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-    },
-    {
-      "id": 12,
-      "title": "[mp4] For Bigger Escapes",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4"
-    },
-    {
-      "id": 13,
-      "title": "[mp4] For Bigger Fun",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
-    },
-    {
-      "id": 14,
-      "title": "[mp4] For Bigger Joyrides",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
-    },
-    {
-      "id": 15,
-      "title": "[mp4] For Bigger Meltdowns",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4"
-    },
-    {
-      "id": 16,
-      "title": "[mp4] Sintel",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"
-    },
-    {
-      "id": 17,
-      "title": "[mp4] SubaruOutbackOnStreetAndDirt",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4"
-    },
-    {
-      "id": 18,
-      "title": "[mp4] Tears Of Steel",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"
-    },
-    {
-      "id": 19,
-      "title": "[mp4] Volkswagen GTI Review",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/VolkswagenGTIReview.mp4"
-    },
-    {
-      "id": 20,
-      "title": "[mp4] We Are Going On Bullrun",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4"
-    },
-    {
-      "id": 21,
-      "title": "[mp4] What Car Can You Get For A Grand",
-      "url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WhatCarCanYouGetForAGrand.mp4"
     }
   ]
 }
