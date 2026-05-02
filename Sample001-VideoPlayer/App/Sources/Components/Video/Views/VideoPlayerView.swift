@@ -91,7 +91,7 @@ struct VideoPlayerView: View {
         .onReceive(player.isPlaybackLikelyToKeepUpSubject) { value in
             isBuffering = !value
         }
-        .onReceive(player.generatedImageSubject) { (_, cgImage) in
+        .onReceive(player.generatedImageSubject.receive(on: RunLoop.main)) { (_, cgImage) in
             seekThumbnail = Image(uiImage: UIImage(cgImage: cgImage))
         }
         .onReceive(player.bandwidthsSubject) { value in

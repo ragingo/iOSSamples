@@ -10,14 +10,60 @@ import Combine
 import CoreImage
 import CoreVideo
 import Foundation
+import os
+
+final class ImageGenerator: Sendable {
+    private let imageGenerator: AVAssetImageGenerator
+    private let cache: OSAllocatedUnfairLock = .init(initialState: [Double: CGImage]())
+
+    init(asset: AVAsset) {
+        imageGenerator = .init(asset: asset)
+        imageGenerator.requestedTimeToleranceBefore = .zero
+        imageGenerator.requestedTimeToleranceAfter = .zero
+    }
+
+    func generateImage(time: Double, size: CGSize) async throws -> (Double, CGImage) {
+        if let image = (cache.withLock { $0[time] }) {
+            return (time, image)
+        }
+
+        let cmTime = CMTime(seconds: time, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        let (image, time) = try await imageGenerator.__generateCGImage(for: cmTime)
+        return (time.seconds, image)
+    }
+
+    func generateImages(times: [Double], size: CGSize) async throws -> [Double: CGImage] {
+        imageGenerator.maximumSize = size
+
+        return try await withThrowingTaskGroup(of: (Double, CGImage?).self) { group in
+            var result: [Double: CGImage] = [:]
+            for time in times {
+                group.addTask(name: "\(type(of: self))", priority: .background) { [weak self] in
+                    guard let self else { return (time, nil) }
+                    return try await generateImage(time: time, size: size)
+                }
+            }
+            for try await (time, image) in group {
+                result[time] = image
+            }
+            _ = self.cache.withLock { [result] in
+                return $0.merging(result) { $1 }
+            }
+            return result
+        }
+    }
+
+    func cancel() {
+        imageGenerator.cancelAllCGImageGeneration()
+    }
+}
 
 nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
     private let playerLayer = AVPlayerLayer()
     private let player = AVPlayer()
-    private var imageGenerator: AVAssetImageGenerator?
+    private var imageGenerator: ImageGenerator?
     private var keyValueObservations: [NSKeyValueObservation?] = []
     private var timeObserver: Any?
-    private var generatedImageCache: [Double: CGImage] = [:]
     private var filters: [CIFilter] = []
 
     var onAudioSampleBufferUpdate: ((CMSampleBuffer) -> Void)?
@@ -83,8 +129,6 @@ nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
 
         player.replaceCurrentItem(with: nil)
         playerLayer.player = nil
-
-        generatedImageCache.removeAll()
     }
 
     func open(urlString: String) async {
@@ -123,7 +167,7 @@ nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
         isSeekingSubject.send(true)
         let position = CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         player.seek(to: position) { [weak self] isFinished in
-            guard let self = self else { return }
+            guard let self else { return }
             if !isFinished {
                 return
             }
@@ -131,42 +175,21 @@ nonisolated final class VideoPlayer: VideoPlayerProtocol, @unchecked Sendable {
         }
     }
 
-    // completion はメインスレッドを保証する
-    // HLS の場合、Iフレームのみのプレイリストというものが無い場合、 generateCGImagesAsynchronously は失敗するらしい ><
-    // https://stackoverflow.com/questions/32112205/m3u8-file-avassetimagegenerator-error
     func requestGenerateImage(time: Double, size: CGSize) {
-        if let image = generatedImageCache[time] {
-            generatedImageSubject.send((time, image))
-            return
-        }
+        imageGenerator?.cancel()
 
-        var times: [NSValue] = []
-        times += [NSValue(time: CMTime(seconds: time, preferredTimescale: CMTimeScale(NSEC_PER_SEC)))]
+        guard let imageGenerator else { return }
 
-        guard let imageGenerator = self.imageGenerator else { return }
-        imageGenerator.maximumSize = size
-
-        imageGenerator.generateCGImagesAsynchronously(forTimes: times) { (requestedTime, image, actualTime, result, error) in
-            guard error == nil else { return }
-            guard result == .succeeded else { return }
-            guard let image = image else { return }
-            let requestedSeconds = floor(requestedTime.seconds)
-            let actualSeconds = floor(actualTime.seconds)
-            if !requestedSeconds.isEqual(to: actualSeconds) {
-                return
-            }
-
-            DispatchQueue.main.async { [weak self] in
-                guard let self = self else { return }
-                // 雑に枚数上限無しで保持させてみる
-                self.generatedImageCache[requestedSeconds] = image
-                self.generatedImageSubject.send((requestedSeconds, image))
+        Task.detached(name: "\(self)", priority: .background) {
+            let result = try await imageGenerator.generateImages(times: [time], size: size)
+            for (time, image) in result {
+                self.generatedImageSubject.send((time, image))
             }
         }
     }
 
     func cancelImageGenerationRequests() {
-        imageGenerator?.cancelAllCGImageGeneration()
+        imageGenerator?.cancel()
     }
 
     func changePreferredPeakBitRate(value: Int) {
@@ -208,9 +231,7 @@ extension VideoPlayer {
             playerItem.videoComposition = createVideoComposition(composition: composition)
         }
 
-        imageGenerator = AVAssetImageGenerator(asset: asset)
-        imageGenerator?.requestedTimeToleranceBefore = .zero
-        imageGenerator?.requestedTimeToleranceAfter = .zero
+        imageGenerator = ImageGenerator(asset: asset)
 
         // AVPlayerItem のプロパティの監視
         keyValueObservations += [
