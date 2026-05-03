@@ -18,7 +18,6 @@ final class VideoPlayer: VideoPlayerProtocol {
     private var imageGenerator: ImageGenerator?
     private var keyValueObservations: [NSKeyValueObservation?] = []
     private var timeObserver: Any?
-    private var filters: [CIFilter] = []
 
     var layer: CALayer {
         playerLayer
@@ -80,14 +79,6 @@ final class VideoPlayer: VideoPlayerProtocol {
 
     func changePreferredPeakBitRate(value: Int) {
         player.currentItem?.preferredPeakBitRate = Double(value)
-    }
-
-    func addFilter(filter: CIFilter) {
-        self.filters += [filter]
-    }
-
-    func clearFilters() {
-        filters.removeAll()
     }
 
     // 音声関連の初期化

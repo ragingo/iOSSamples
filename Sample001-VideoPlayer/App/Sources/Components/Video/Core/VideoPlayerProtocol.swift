@@ -57,6 +57,4 @@ protocol VideoPlayerProtocol: AnyObject {
     func requestGenerateImage(time: Double, size: CGSize)
     func cancelImageGenerationRequests()
     func changePreferredPeakBitRate(value: Int)
-    func addFilter(filter: CIFilter)
-    func clearFilters()
 }

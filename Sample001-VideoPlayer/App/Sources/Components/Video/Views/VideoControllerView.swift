@@ -66,8 +66,6 @@ struct VideoControllerView: View {
     @State private var isFlip = false
     private var thumbnailPreviewPosition: Binding<Double>
 
-    @State private var flipFilter: FlipFilter?
-
     private let player: any (VideoPlayerProtocol & VideoPlaybackControl)
 
     private var positionLabel: Text {
@@ -78,7 +76,10 @@ struct VideoControllerView: View {
         Text(formatTime(seconds: Int(duration)))
     }
 
-    init(player: any (VideoPlayerProtocol & VideoPlaybackControl), thumbnailPreviewPosition: Binding<Double>) {
+    init(
+        player: any (VideoPlayerProtocol & VideoPlaybackControl),
+        thumbnailPreviewPosition: Binding<Double>
+    ) {
         self.player = player
         self.thumbnailPreviewPosition = thumbnailPreviewPosition
     }
@@ -247,36 +248,14 @@ struct VideoControllerView: View {
     private func onFlipButtonCliecked() {
         isFlip = !isFlip
         flipButtonRotationAngle += 180.0
-
-        if flipFilter == nil {
-            flipFilter = FlipFilter()
-        }
-        if let flipFilter = flipFilter {
-            flipFilter.setValue(isFlip, forKey: FlipFilter.Keys.isFlip)
-            player.addFilter(filter: flipFilter)
-        }
     }
 
     private func onFilterChanged(filter: VideoFilter) {
         switch filter {
         case .invert:
-            if let ciFilter = CIFilter(name: "CIColorInvert") {
-                player.clearFilters()
-                if let flipFilter = flipFilter {
-                    flipFilter.setValue(isFlip, forKey: FlipFilter.Keys.isFlip)
-                    player.addFilter(filter: flipFilter)
-                }
-                player.addFilter(filter: ciFilter)
-            }
+            break
         case .gaussianBlur:
-            if let ciFilter = CIFilter(name: "CIGaussianBlur") {
-                player.clearFilters()
-                if let flipFilter = flipFilter {
-                    flipFilter.setValue(isFlip, forKey: FlipFilter.Keys.isFlip)
-                    player.addFilter(filter: flipFilter)
-                }
-                player.addFilter(filter: ciFilter)
-            }
+            break
         }
     }
 }
