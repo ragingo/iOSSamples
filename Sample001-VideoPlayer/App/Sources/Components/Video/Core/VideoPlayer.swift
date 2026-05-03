@@ -20,13 +20,9 @@ final class VideoPlayer: VideoPlayerProtocol {
     private var timeObserver: Any?
     private var filters: [CIFilter] = []
 
-    var onAudioSampleBufferUpdate: ((CMSampleBuffer) -> Void)?
-
     var layer: CALayer {
         playerLayer
     }
-
-    private(set) var isLiveStreaming = false
 
     // 再生中か
     var isPlaying: Bool {
@@ -90,7 +86,6 @@ final class VideoPlayer: VideoPlayerProtocol {
             return
         }
         if url.pathExtension == "m3u8" {
-            isLiveStreaming = true
             let bandwidths = await Self.parseMultivariantPlaylist(url: url)
             DispatchQueue.main.async { [weak self] in
                 self?.bandwidthsSubject.send(bandwidths)

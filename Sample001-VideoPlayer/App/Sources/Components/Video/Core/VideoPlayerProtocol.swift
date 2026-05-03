@@ -25,9 +25,7 @@ enum VideoPlayStatus {
 
 @MainActor
 protocol VideoPlayerProtocol: AnyObject {
-    var onAudioSampleBufferUpdate: ((CMSampleBuffer) -> Void)? { get set }
     var layer: CALayer { get }
-    var isLiveStreaming: Bool { get }
     var isPlaying: Bool { get }
     var isBuffering: Bool { get }
     var rate: Float { get set }

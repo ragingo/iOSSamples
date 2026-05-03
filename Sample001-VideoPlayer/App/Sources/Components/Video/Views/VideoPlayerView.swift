@@ -6,7 +6,6 @@
 //
 
 import Combine
-import Speech
 import SwiftUI
 import UIKit
 
@@ -14,7 +13,6 @@ import UIKit
 struct VideoPlayerView: View {
     private static let thumbnailSize = CGSize(width: 200, height: 200)
     private let player: any VideoPlayerProtocol
-    private let speechRecognizer: SpeechRecognizer
 
     @State private var isReady = false
     @State private var isBuffering = false
@@ -25,10 +23,6 @@ struct VideoPlayerView: View {
 
     init(player: any VideoPlayerProtocol = VideoPlayer()) {
         self.player = player
-        speechRecognizer = SpeechRecognizer()
-        player.onAudioSampleBufferUpdate = { [self] sampleBuffer in
-            speechRecognizer.appendBuffer(sampleBuffer: sampleBuffer)
-        }
     }
 
     var body: some View {
@@ -74,7 +68,6 @@ struct VideoPlayerView: View {
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
             player.prepare()
-            speechRecognizer.run()
         }
         .onDisappear {
             UIApplication.shared.isIdleTimerDisabled = false
@@ -97,9 +90,6 @@ struct VideoPlayerView: View {
         .onReceive(player.bandwidthsSubject) { value in
             bandwidths = value
         }
-        .onReceive(speechRecognizer.partialClosedCaption) { value in
-            closedCaption = value
-        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
             player.pause()
         }
@@ -119,39 +109,6 @@ struct VideoPlayerView: View {
             await player?.open(urlString: urlString)
         }
     }
-}
-
-class SpeechRecognizer {
-    let partialClosedCaption = PassthroughSubject<String, Never>()
-
-    private let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US"))!
-    private let request: SFSpeechAudioBufferRecognitionRequest
-    private var task: SFSpeechRecognitionTask?
-
-    init() {
-        request = SFSpeechAudioBufferRecognitionRequest()
-        request.shouldReportPartialResults = true
-        // デバイス上で音声認識(インターネット接続しない。インターネット版を使うと毎分リクエストが途切れるから再セットアップ処理が必要。)
-        request.requiresOnDeviceRecognition = true
-    }
-
-    func run() {
-        task = recognizer.recognitionTask(with: request) { [weak self] result, _ in
-            guard let self = self else {
-                return
-            }
-            guard let result = result else {
-                return
-            }
-            let text = result.bestTranscription.formattedString
-            self.partialClosedCaption.send(text)
-        }
-    }
-
-    func appendBuffer(sampleBuffer: CMSampleBuffer) {
-        request.appendAudioSampleBuffer(sampleBuffer)
-    }
-
 }
 
 #Preview {
