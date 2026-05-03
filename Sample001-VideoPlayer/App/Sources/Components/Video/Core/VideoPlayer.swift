@@ -24,12 +24,6 @@ final class VideoPlayer: VideoPlayerProtocol {
         playerLayer
     }
 
-    // 再生速度
-    var rate: Float {
-        get { player.rate }
-        set { player.rate = newValue }
-    }
-
     let state: VideoPlayerState = .init()
 
     init() {
@@ -59,46 +53,6 @@ final class VideoPlayer: VideoPlayerProtocol {
 
         player.replaceCurrentItem(with: nil)
         playerLayer.player = nil
-    }
-
-    func open(urlString: String) async {
-        guard let url = URL(string: urlString) else {
-            return
-        }
-        if url.pathExtension == "m3u8" {
-            state.videoQualities = await Self.parseMultivariantPlaylist(url: url)
-        }
-        // 非同期でロード開始
-        let asset = AVURLAsset(url: url)
-        do {
-            let isPlayable = try await asset.load(.isPlayable)
-            guard isPlayable else {
-                return
-            }
-            try await onAssetLoaded(asset)
-        } catch {
-            print(error)
-        }
-    }
-
-    func play() {
-        player.play()
-    }
-
-    func pause() {
-        player.pause()
-    }
-
-    func seek(seconds: Double) async {
-        state.isSeeking = true
-        defer {
-            state.isSeeking = false
-        }
-        let position = CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
-        let isFinished = await player.seek(to: position)
-        if !isFinished {
-            return
-        }
     }
 
     func requestGenerateImage(time: Double, size: CGSize) {
@@ -189,6 +143,14 @@ extension VideoPlayer {
                 guard let self else { return }
                 Task { @MainActor in
                     self.onTimeControlStatusChanged(player: item)
+                }
+            }
+        ]
+        keyValueObservations += [
+            player.observe(\.rate) { [weak self] item, value in
+                guard let self else { return }
+                Task { @MainActor in
+                    state.rate = value.newValue ?? 1.0
                 }
             }
         ]
@@ -312,5 +274,52 @@ extension VideoPlayer {
             .sorted()
 
         return bandwidths
+    }
+}
+
+extension VideoPlayer: VideoPlaybackControl {
+    // 再生速度
+    func rate(_ value: Float) {
+        player.rate = value
+    }
+
+    func open(urlString: String) async {
+        guard let url = URL(string: urlString) else {
+            return
+        }
+        if url.pathExtension == "m3u8" {
+            state.videoQualities = await Self.parseMultivariantPlaylist(url: url)
+        }
+        // 非同期でロード開始
+        let asset = AVURLAsset(url: url)
+        do {
+            let isPlayable = try await asset.load(.isPlayable)
+            guard isPlayable else {
+                return
+            }
+            try await onAssetLoaded(asset)
+        } catch {
+            print(error)
+        }
+    }
+
+    func play() {
+        player.play()
+    }
+
+    func pause() {
+        player.pause()
+    }
+
+    func seek(seconds: Double) async {
+        state.isSeeking = true
+        defer {
+            state.isSeeking = false
+        }
+        let position = CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        let isFinished = await player.seek(to: position)
+        if !isFinished {
+            return
+        }
     }
 }

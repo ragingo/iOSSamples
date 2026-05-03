@@ -29,6 +29,7 @@ final class VideoPlayerState {
     var isPlaying: Bool = false
     var isBuffering: Bool = false
     var isSeeking: Bool = false
+    var rate: Float = 1.0
     var videoQualities: [Int] = []
     var duration: Double = .zero
     var position: Double = .zero
@@ -37,17 +38,21 @@ final class VideoPlayerState {
 }
 
 @MainActor
-protocol VideoPlayerProtocol: AnyObject {
-    var layer: CALayer { get }
-    var rate: Float { get set }
-    var state: VideoPlayerState { get }
-
-    func prepare()
-    func invalidate()
+protocol VideoPlaybackControl {
     func open(urlString: String) async
     func play()
     func pause()
     func seek(seconds: Double) async
+    func rate(_ value: Float)
+}
+
+@MainActor
+protocol VideoPlayerProtocol: AnyObject {
+    var layer: CALayer { get }
+    var state: VideoPlayerState { get }
+
+    func prepare()
+    func invalidate()
 
     func requestGenerateImage(time: Double, size: CGSize)
     func cancelImageGenerationRequests()

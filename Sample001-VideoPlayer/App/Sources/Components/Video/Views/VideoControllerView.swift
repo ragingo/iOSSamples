@@ -18,12 +18,25 @@ private func formatTime(seconds: Int) -> String {
 }
 
 // swift-format-ignore: AlwaysUseLowerCamelCase
-enum VideoRate: String, CaseIterable, Identifiable {
+enum VideoRate: Float, CaseIterable, Identifiable {
     var id: VideoRate { self }
 
-    case x1_0 = "x 1.0"
-    case x1_5 = "x 1.5"
-    case x2_0 = "x 2.0"
+    case x1_0 = 1.0
+    case x1_5 = 1.5
+    case x2_0 = 2.0
+}
+
+extension VideoRate: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .x1_0:
+            "x1.0"
+        case .x1_5:
+            "x1.5"
+        case .x2_0:
+            "x2.0"
+        }
+    }
 }
 
 enum VideoFilter: String, CaseIterable, Identifiable {
@@ -55,7 +68,7 @@ struct VideoControllerView: View {
 
     @State private var flipFilter: FlipFilter?
 
-    private let player: any VideoPlayerProtocol
+    private let player: any (VideoPlayerProtocol & VideoPlaybackControl)
 
     private var positionLabel: Text {
         Text(formatTime(seconds: Int(isSliderEditing ? sliderValue * duration : position)))
@@ -65,7 +78,7 @@ struct VideoControllerView: View {
         Text(formatTime(seconds: Int(duration)))
     }
 
-    init(player: any VideoPlayerProtocol, thumbnailPreviewPosition: Binding<Double>) {
+    init(player: any (VideoPlayerProtocol & VideoPlaybackControl), thumbnailPreviewPosition: Binding<Double>) {
         self.player = player
         self.thumbnailPreviewPosition = thumbnailPreviewPosition
     }
@@ -224,14 +237,7 @@ struct VideoControllerView: View {
 
     private func onRateChanged(rate: VideoRate) {
         selectedRate = rate
-        switch rate {
-        case .x1_0:
-            player.rate = 1.0
-        case .x1_5:
-            player.rate = 1.5
-        case .x2_0:
-            player.rate = 2.0
-        }
+        player.rate(rate.rawValue)
     }
 
     private func onBandwidthChanged(value: Int) {

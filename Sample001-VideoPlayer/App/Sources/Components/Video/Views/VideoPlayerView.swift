@@ -12,12 +12,12 @@ import UIKit
 // プレーヤ
 struct VideoPlayerView: View {
     private static let thumbnailSize = CGSize(width: 200, height: 200)
-    private let player: any VideoPlayerProtocol
+    private let player: any (VideoPlayerProtocol & VideoPlaybackControl)
 
     @State private var seekThumbnail: Image?
     @State private var thumbnailPreviewPosition: Double = .nan
 
-    init(player: any VideoPlayerProtocol = VideoPlayer()) {
+    init(player: any (VideoPlayerProtocol & VideoPlaybackControl) = VideoPlayer()) {
         self.player = player
     }
 
