@@ -43,6 +43,23 @@ extension VideoQualityMenu: Equatable {
 }
 
 #Preview {
-    @Previewable @State var qualities = [1, 10, 100, 1_000, 10_000, 100_000]
+    @Previewable @State var qualities = [
+        1,
+        10,
+        100,
+        1_000,
+        10_000,
+        100_000,
+        1_000_000,
+        10_000_000,
+        100_000_000,
+        1_000_000_000,
+        10_000_000_000,
+        100_000_000_000,
+        1_000_000_000_000,
+        10_000_000_000_000,
+        100_000_000_000_000,
+        1_000_000_000_000_000,
+    ]
     VideoQualityMenu(qualities: $qualities, action: { _ in })
 }

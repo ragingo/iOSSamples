@@ -24,33 +24,13 @@ final class VideoPlayer: VideoPlayerProtocol {
         playerLayer
     }
 
-    // 再生中か
-    var isPlaying: Bool {
-        player.timeControlStatus == .playing || player.timeControlStatus == .waitingToPlayAtSpecifiedRate
-    }
-
-    // バッファリング中か
-    var isBuffering: Bool {
-        player.timeControlStatus == .waitingToPlayAtSpecifiedRate
-    }
-
     // 再生速度
     var rate: Float {
         get { player.rate }
         set { player.rate = newValue }
     }
 
-    private(set) var loadStatusSubject = PassthroughSubject<VideoLoadStatus, Never>()
-    private(set) var playStatusSubject = PassthroughSubject<VideoPlayStatus, Never>()
-    // 動画長(単位：秒)
-    private(set) var durationSubject = PassthroughSubject<Double, Never>()
-    // 再生位置(単位：秒)
-    private(set) var positionSubject = PassthroughSubject<Double, Never>()
-    private(set) var isPlaybackLikelyToKeepUpSubject = PassthroughSubject<Bool, Never>()
-    private(set) var isSeekingSubject = PassthroughSubject<Bool, Never>()
-    private(set) var loadedBufferRangeSubject = PassthroughSubject<(Double, Double), Never>()
-    private(set) var generatedImageSubject = PassthroughSubject<(Double, CGImage), Never>()
-    private(set) var bandwidthsSubject = PassthroughSubject<[Int], Never>()
+    let state: VideoPlayerState = .init()
 
     init() {
         playerLayer.player = player
@@ -86,10 +66,7 @@ final class VideoPlayer: VideoPlayerProtocol {
             return
         }
         if url.pathExtension == "m3u8" {
-            let bandwidths = await Self.parseMultivariantPlaylist(url: url)
-            DispatchQueue.main.async { [weak self] in
-                self?.bandwidthsSubject.send(bandwidths)
-            }
+            state.videoQualities = await Self.parseMultivariantPlaylist(url: url)
         }
         // 非同期でロード開始
         let asset = AVURLAsset(url: url)
@@ -113,13 +90,15 @@ final class VideoPlayer: VideoPlayerProtocol {
     }
 
     func seek(seconds: Double) async {
-        isSeekingSubject.send(true)
+        state.isSeeking = true
+        defer {
+            state.isSeeking = false
+        }
         let position = CMTime(seconds: seconds, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         let isFinished = await player.seek(to: position)
         if !isFinished {
             return
         }
-        self.isSeekingSubject.send(false)
     }
 
     func requestGenerateImage(time: Double, size: CGSize) {
@@ -133,7 +112,7 @@ final class VideoPlayer: VideoPlayerProtocol {
             let result = try await imageGenerator.generateImages(times: [time], size: size)
             await MainActor.run {
                 for (time, image) in result {
-                    self.generatedImageSubject.send((time, image))
+                    self.state.seekThumbnail = .init(time: time, image: image)
                 }
             }
         }
@@ -215,7 +194,7 @@ extension VideoPlayer {
         ]
 
         let duration = try await asset.load(.duration)
-        durationSubject.send(duration.seconds)
+        state.duration = duration.seconds
 
         // 指定秒数の間隔で再生位置を通知
         let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
@@ -231,11 +210,11 @@ extension VideoPlayer {
     private func onStatusChanged(item: AVPlayerItem, value: NSKeyValueObservedChange<AVPlayerItem.Status>) {
         switch item.status {
         case .readyToPlay:
-            loadStatusSubject.send(.readyToPlay)
+            state.isReady = true
         case .unknown:
-            loadStatusSubject.send(.unknown)
+            state.isReady = false
         case .failed:
-            loadStatusSubject.send(.failed)
+            state.isReady = false
         @unknown default:
             fatalError()
         }
@@ -243,7 +222,7 @@ extension VideoPlayer {
 
     // AVPlayerItem.isPlaybackLikelyToKeepUp 変更時
     private func onPlaybackLikelyToKeepUpChanged(item: AVPlayerItem) {
-        isPlaybackLikelyToKeepUpSubject.send(item.isPlaybackLikelyToKeepUp)
+        state.isBuffering = true
     }
 
     // AVPlayerItem.loadedTimeRanges 変更時
@@ -258,18 +237,21 @@ extension VideoPlayer {
         if start.isNaN || start.isInfinite || end.isNaN || end.isInfinite {
             return
         }
-        loadedBufferRangeSubject.send((start, end))
+        state.loadedBufferRange = .init(start: start, end: end)
     }
 
     // AVPlayer.timeControlStatus 変更時
     private func onTimeControlStatusChanged(player: AVPlayer) {
         switch player.timeControlStatus {
         case .paused:
-            playStatusSubject.send(.paused)
+            state.isPlaying = false
+            state.isBuffering = false
         case .waitingToPlayAtSpecifiedRate:
-            playStatusSubject.send(.buffering)
+            state.isPlaying = true
+            state.isBuffering = true
         case .playing:
-            playStatusSubject.send(.playing)
+            state.isPlaying = true
+            state.isBuffering = false
         @unknown default:
             fatalError()
         }
@@ -278,7 +260,7 @@ extension VideoPlayer {
     // AVPlayer.addPeriodicTimeObserver() で指定した関数
     // 定期的にメインスレッドで実行される
     private func onTimeObserverCall(time: CMTime) {
-        positionSubject.send(time.seconds)
+        state.position = time.seconds
     }
 }
 

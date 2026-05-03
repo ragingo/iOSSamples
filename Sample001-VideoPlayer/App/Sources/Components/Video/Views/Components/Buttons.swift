@@ -34,13 +34,12 @@ struct ForwardButton: View {
 }
 
 struct PlayButton: View {
-    @Binding var isPlaying: Bool
+    let isPlaying: Bool
     let action: () -> Void
 
     var body: some View {
         Button(
             action: {
-                isPlaying.toggle()
                 action()
             },
             label: {
@@ -51,7 +50,7 @@ struct PlayButton: View {
 }
 
 struct LockButton: View {
-    @Binding var isLocking: Bool
+    let isLocking: Bool
     let action: () -> Void
 
     var body: some View {

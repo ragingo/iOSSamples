@@ -42,7 +42,6 @@ struct VideoControllerView: View {
     // 再生位置表示用 (秒)
     @State private var position = 0.0
     @State private var loadedBufferRange = (0.0, 0.0)
-    @State private var isPlaying = false
     @State private var isSeeking = false
     @State private var isSliderEditing = false
     @State private var isLocking = false
@@ -53,7 +52,6 @@ struct VideoControllerView: View {
     @State private var flipButtonRotationAngle = 0.0
     @State private var isFlip = false
     private var thumbnailPreviewPosition: Binding<Double>
-    private var bandwidths: Binding<[Int]>
 
     @State private var flipFilter: FlipFilter?
 
@@ -67,16 +65,9 @@ struct VideoControllerView: View {
         Text(formatTime(seconds: Int(duration)))
     }
 
-    private static var numberFormatter: NumberFormatter {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        return formatter
-    }
-
-    init(player: any VideoPlayerProtocol, thumbnailPreviewPosition: Binding<Double>, bandwidths: Binding<[Int]>) {
+    init(player: any VideoPlayerProtocol, thumbnailPreviewPosition: Binding<Double>) {
         self.player = player
         self.thumbnailPreviewPosition = thumbnailPreviewPosition
-        self.bandwidths = bandwidths
     }
 
     var body: some View {
@@ -101,7 +92,7 @@ struct VideoControllerView: View {
             }
 
             HStack {
-                LockButton(isLocking: $isLocking, action: onLockButtonClicked)
+                LockButton(isLocking: isLocking, action: onLockButtonClicked)
                     .rotationEffect(.degrees(lockingButtonRotationAngle))
                     .animation(.easeIn, value: lockingButtonRotationAngle)
                     .foregroundColor(isLocking ? .red : .primary)
@@ -114,7 +105,7 @@ struct VideoControllerView: View {
                     .disabled(isLocking)
 
                 // 再生・一時停止
-                PlayButton(isPlaying: $isPlaying, action: onPlayButtonClicked)
+                PlayButton(isPlaying: player.state.isPlaying, action: onPlayButtonClicked)
                     .foregroundColor(.primary)
                     .disabled(isLocking)
 
@@ -131,10 +122,13 @@ struct VideoControllerView: View {
                     .disabled(isLocking)
 
                 // 画質(bandwidth)
-                if !bandwidths.isEmpty {
-                    VideoQualityMenu(qualities: bandwidths, action: onBandwidthChanged(value:))
-                        .foregroundColor(.primary)
-                        .disabled(isLocking)
+                if !player.state.videoQualities.isEmpty {
+                    VideoQualityMenu(
+                        qualities: .constant(player.state.videoQualities),
+                        action: onBandwidthChanged(value:)
+                    )
+                    .foregroundColor(.primary)
+                    .disabled(isLocking)
                 }
 
                 // 左右反転
@@ -151,20 +145,18 @@ struct VideoControllerView: View {
             }
         }
         .frame(height: 100, alignment: .top)
-        .onReceive(player.loadStatusSubject) { status in
-            if status == .readyToPlay {
-                play()
-            }
+        .onChange(of: player.state.isReady) {
+            play()
         }
-        .onReceive(player.durationSubject) { duration in
+        .onChange(of: player.state.duration) { _, duration in
             self.duration = duration
         }
-        .onReceive(player.positionSubject) { position in
+        .onChange(of: player.state.position) { _, position in
             self.position = position
             // スライダつまみ位置 = 再生位置(秒) / 動画長(秒)
             self.sliderValue = position / self.duration
         }
-        .onReceive(player.isSeekingSubject) { isSeeking in
+        .onChange(of: player.state.isSeeking) { _, isSeeking in
             self.isSeeking = isSeeking
             if !isSeeking {
                 play()
@@ -172,8 +164,8 @@ struct VideoControllerView: View {
                 onRateChanged(rate: selectedRate)
             }
         }
-        .onReceive(player.loadedBufferRangeSubject) { value in
-            let range = (value.0 / duration, value.1 / duration)
+        .onChange(of: player.state.loadedBufferRange) { _, value in
+            let range = (value.start / duration, value.end / duration)
             loadedBufferRange = range
         }
     }
@@ -196,12 +188,10 @@ struct VideoControllerView: View {
     }
 
     private func play() {
-        isPlaying = true
         player.play()
     }
 
     private func pause() {
-        isPlaying = false
         player.pause()
     }
 
@@ -211,7 +201,7 @@ struct VideoControllerView: View {
     }
 
     private func onPlayButtonClicked() {
-        if player.isPlaying {
+        if player.state.isPlaying {
             pause()
         } else {
             play()
@@ -289,14 +279,10 @@ struct VideoControllerView: View {
     let videoURL = "https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8"
     let player = VideoPlayer()
 
-    VideoControllerView(
-        player: player,
-        thumbnailPreviewPosition: .constant(0),
-        bandwidths: .constant([1, 2, 3])
-    )
-    .onAppear {
-        Task {
-            await player.open(urlString: videoURL)
+    VideoControllerView(player: player, thumbnailPreviewPosition: .constant(0))
+        .onAppear {
+            Task {
+                await player.open(urlString: videoURL)
+            }
         }
-    }
 }

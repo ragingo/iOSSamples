@@ -11,33 +11,36 @@ import CoreMedia
 import Foundation
 import QuartzCore
 
-enum VideoLoadStatus {
-    case unknown
-    case readyToPlay
-    case failed
+struct VideoBufferRange: Equatable {
+    let start: Double
+    let end: Double
+
+    static let zero = VideoBufferRange(start: .zero, end: .zero)
 }
 
-enum VideoPlayStatus {
-    case paused
-    case buffering
-    case playing
+struct VideoSeekThumbnail: Equatable {
+    let time: Double
+    let image: CGImage
+}
+
+@Observable
+final class VideoPlayerState {
+    var isReady: Bool = false
+    var isPlaying: Bool = false
+    var isBuffering: Bool = false
+    var isSeeking: Bool = false
+    var videoQualities: [Int] = []
+    var duration: Double = .zero
+    var position: Double = .zero
+    var loadedBufferRange: VideoBufferRange = .zero
+    var seekThumbnail: VideoSeekThumbnail?
 }
 
 @MainActor
 protocol VideoPlayerProtocol: AnyObject {
     var layer: CALayer { get }
-    var isPlaying: Bool { get }
-    var isBuffering: Bool { get }
     var rate: Float { get set }
-    var loadStatusSubject: PassthroughSubject<VideoLoadStatus, Never> { get }
-    var playStatusSubject: PassthroughSubject<VideoPlayStatus, Never> { get }
-    var durationSubject: PassthroughSubject<Double, Never> { get }
-    var positionSubject: PassthroughSubject<Double, Never> { get }
-    var isPlaybackLikelyToKeepUpSubject: PassthroughSubject<Bool, Never> { get }
-    var isSeekingSubject: PassthroughSubject<Bool, Never> { get }
-    var loadedBufferRangeSubject: PassthroughSubject<(Double, Double), Never> { get }
-    var generatedImageSubject: PassthroughSubject<(Double, CGImage), Never> { get }
-    var bandwidthsSubject: PassthroughSubject<[Int], Never> { get }
+    var state: VideoPlayerState { get }
 
     func prepare()
     func invalidate()
