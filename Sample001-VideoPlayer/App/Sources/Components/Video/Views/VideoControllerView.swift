@@ -18,16 +18,16 @@ private func formatTime(seconds: Int) -> String {
 }
 
 // swift-format-ignore: AlwaysUseLowerCamelCase
-private enum RateSteps: String, CaseIterable, Identifiable {
-    var id: RateSteps { self }
+enum VideoRate: String, CaseIterable, Identifiable {
+    var id: VideoRate { self }
 
     case x1_0 = "x 1.0"
     case x1_5 = "x 1.5"
     case x2_0 = "x 2.0"
 }
 
-private enum Filter: String, CaseIterable, Identifiable {
-    var id: Filter { self }
+enum VideoFilter: String, CaseIterable, Identifiable {
+    var id: VideoFilter { self }
 
     case invert = "invert"
     case gaussianBlur = "gaussian blur"
@@ -46,7 +46,7 @@ struct VideoControllerView: View {
     @State private var isSeeking = false
     @State private var isSliderEditing = false
     @State private var isLocking = false
-    @State private var selectedRate: RateSteps = .x1_0
+    @State private var selectedRate: VideoRate = .x1_0
     @State private var lockingButtonRotationAngle = 0.0
     @State private var backwardButtonRotationAngle = 0.0
     @State private var forwardButtonRotationAngle = 0.0
@@ -73,6 +73,12 @@ struct VideoControllerView: View {
         return formatter
     }
 
+    init(player: any VideoPlayerProtocol, thumbnailPreviewPosition: Binding<Double>, bandwidths: Binding<[Int]>) {
+        self.player = player
+        self.thumbnailPreviewPosition = thumbnailPreviewPosition
+        self.bandwidths = bandwidths
+    }
+
     var body: some View {
         VStack {
             VideoSlider(
@@ -87,123 +93,61 @@ struct VideoControllerView: View {
                 thumbnailPreviewPosition.wrappedValue = duration * sliderValue
             }
             .disabled(isLocking)
+
             HStack {
                 positionLabel
                 Spacer()
                 durationLabel
             }
+
             HStack {
-                Button(
-                    action: onLockButtonClicked,
-                    label: {
-                        isLocking
-                            ? Image(systemName: "lock.rotation")
-                            : Image(systemName: "lock.rotation.open")
-                    }
-                )
-                .rotationEffect(.degrees(lockingButtonRotationAngle))
-                .animation(.easeIn, value: lockingButtonRotationAngle)
-                .foregroundColor(isLocking ? .red : .primary)
+                LockButton(isLocking: $isLocking, action: onLockButtonClicked)
+                    .rotationEffect(.degrees(lockingButtonRotationAngle))
+                    .animation(.easeIn, value: lockingButtonRotationAngle)
+                    .foregroundColor(isLocking ? .red : .primary)
 
                 // 10秒前へ
-                Button(
-                    action: onGoBackwardButtonClicked,
-                    label: {
-                        Image(systemName: "gobackward.10")
-                    }
-                )
-                .rotationEffect(.degrees(backwardButtonRotationAngle))
-                .animation(.easeIn, value: backwardButtonRotationAngle)
-                .foregroundColor(.primary)
-                .disabled(isLocking)
+                BackwardButton(action: onGoBackwardButtonClicked)
+                    .rotationEffect(.degrees(backwardButtonRotationAngle))
+                    .animation(.easeIn, value: backwardButtonRotationAngle)
+                    .foregroundColor(.primary)
+                    .disabled(isLocking)
 
                 // 再生・一時停止
-                Button(
-                    action: onPlayButtonClicked,
-                    label: {
-                        isPlaying ? Image(systemName: "pause.fill") : Image(systemName: "play.fill")
-                    }
-                )
-                .foregroundColor(.primary)
-                .disabled(isLocking)
+                PlayButton(isPlaying: $isPlaying, action: onPlayButtonClicked)
+                    .foregroundColor(.primary)
+                    .disabled(isLocking)
 
                 // 10秒後へ
-                Button(
-                    action: onGoForwardButtonClicked,
-                    label: {
-                        Image(systemName: "goforward.10")
-                    }
-                )
-                .rotationEffect(.degrees(forwardButtonRotationAngle))
-                .animation(.easeIn, value: forwardButtonRotationAngle)
-                .foregroundColor(.primary)
-                .disabled(isLocking)
+                ForwardButton(action: onGoForwardButtonClicked)
+                    .rotationEffect(.degrees(forwardButtonRotationAngle))
+                    .animation(.easeIn, value: forwardButtonRotationAngle)
+                    .foregroundColor(.primary)
+                    .disabled(isLocking)
 
                 // 再生速度
-                Menu {
-                    ForEach(RateSteps.allCases) { rate in
-                        Button(
-                            action: {
-                                onRateChanged(rate: rate)
-                            },
-                            label: {
-                                Text(rate.rawValue)
-                            })
-                    }
-                } label: {
-                    Text(selectedRate.rawValue)
-                }
-                .foregroundColor(.primary)
-                .disabled(isLocking)
+                VideoRateMenu(action: onRateChanged(rate:))
+                    .foregroundColor(.primary)
+                    .disabled(isLocking)
 
                 // 画質(bandwidth)
                 if !bandwidths.isEmpty {
-                    Menu {
-                        ForEach(bandwidths.indices, id: \.self) { index in
-                            Button(
-                                action: {
-                                    onBandwidthChanged(value: bandwidths.wrappedValue[index])
-                                },
-                                label: {
-                                    let value = NSNumber(value: bandwidths.wrappedValue[index])
-                                    Text(Self.numberFormatter.string(from: value) ?? "0")
-                                })
-                        }
-                    } label: {
-                        Image(systemName: "list.number")
-                    }
-                    .foregroundColor(.primary)
-                    .disabled(isLocking)
+                    VideoQualityMenu(qualities: bandwidths, action: onBandwidthChanged(value:))
+                        .foregroundColor(.primary)
+                        .disabled(isLocking)
                 }
 
                 // 左右反転
-                Button(
-                    action: onFlipButtonCliecked,
-                    label: {
-                        Image(systemName: "arrow.left.and.right.righttriangle.left.righttriangle.right")
-                    }
-                )
-                .rotation3DEffect(.degrees(flipButtonRotationAngle), axis: (x: 0, y: 1, z: 0))
-                .animation(.easeIn, value: flipButtonRotationAngle)
-                .foregroundColor(.primary)
-                .disabled(isLocking)
+                FlipButton(action: onFlipButtonCliecked)
+                    .rotation3DEffect(.degrees(flipButtonRotationAngle), axis: (x: 0, y: 1, z: 0))
+                    .animation(.easeIn, value: flipButtonRotationAngle)
+                    .foregroundColor(.primary)
+                    .disabled(isLocking)
 
                 // フィルター
-                Menu {
-                    ForEach(Filter.allCases) { filter in
-                        Button(
-                            action: {
-                                onFilterChanged(filter: filter)
-                            },
-                            label: {
-                                Text(filter.rawValue)
-                            })
-                    }
-                } label: {
-                    Text("filter")
-                }
-                .foregroundColor(.primary)
-                .disabled(isLocking)
+                VideoFilterMenu(action: onFilterChanged(filter:))
+                    .foregroundColor(.primary)
+                    .disabled(isLocking)
             }
         }
         .frame(height: 100, alignment: .top)
@@ -232,12 +176,6 @@ struct VideoControllerView: View {
             let range = (value.0 / duration, value.1 / duration)
             loadedBufferRange = range
         }
-    }
-
-    init(player: any VideoPlayerProtocol, thumbnailPreviewPosition: Binding<Double>, bandwidths: Binding<[Int]>) {
-        self.player = player
-        self.thumbnailPreviewPosition = thumbnailPreviewPosition
-        self.bandwidths = bandwidths
     }
 
     private func onSliderEditingChanged(isDragging: Bool, value: Double) {
@@ -294,7 +232,7 @@ struct VideoControllerView: View {
         forwardButtonRotationAngle += 360.0
     }
 
-    private func onRateChanged(rate: RateSteps) {
+    private func onRateChanged(rate: VideoRate) {
         selectedRate = rate
         switch rate {
         case .x1_0:
@@ -323,7 +261,7 @@ struct VideoControllerView: View {
         }
     }
 
-    private func onFilterChanged(filter: Filter) {
+    private func onFilterChanged(filter: VideoFilter) {
         switch filter {
         case .invert:
             if let ciFilter = CIFilter(name: "CIColorInvert") {
