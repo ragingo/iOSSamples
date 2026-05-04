@@ -149,6 +149,25 @@ extension VideoPlayer {
         let duration = try await asset.load(.duration)
         state.duration = duration.seconds
 
+        if let group = try await asset.loadMediaSelectionGroup(for: .legible) {
+            print("字幕一覧")
+            for option in group.options {
+                print("  字幕名: \(option.displayName)")
+            }
+            print("使える字幕一覧")
+            let availableOptions = group.options
+                .filter { !$0.hasMediaCharacteristic(.containsOnlyForcedSubtitles) }
+                .filter { !$0.hasMediaCharacteristic(.transcribesSpokenDialogForAccessibility) }
+            for option in availableOptions {
+                print("  字幕名: \(option.displayName)")
+            }
+            let locale = Locale(identifier: "en_US")
+            let options = AVMediaSelectionGroup.mediaSelectionOptions(from: availableOptions, with: locale)
+            if let option = options.first {
+                playerItem.select(option, in: group)
+            }
+        }
+
         // 指定秒数の間隔で再生位置を通知
         let interval = CMTime(seconds: 0.5, preferredTimescale: CMTimeScale(NSEC_PER_SEC))
         timeObserver = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
