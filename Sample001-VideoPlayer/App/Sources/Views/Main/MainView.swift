@@ -10,9 +10,7 @@ import SwiftUI
 // メイン画面
 struct MainView: View {
     var body: some View {
-        VStack {
-            VideoListView()
-        }
+        VideoListView()
     }
 }
 
