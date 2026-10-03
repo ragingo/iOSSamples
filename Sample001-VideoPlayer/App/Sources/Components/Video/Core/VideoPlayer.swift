@@ -61,12 +61,16 @@ final class VideoPlayer: VideoPlayerProtocol {
 
         guard let imageGenerator else { return }
 
-        Task.detached(name: "\(self)", priority: .background) {
-            let result = try await imageGenerator.generateImages(times: [time], size: size)
-            await MainActor.run {
-                for (time, image) in result {
-                    self.state.seekThumbnail = .init(time: time, image: image)
+        Task(name: "\(self)", priority: .background) {
+            do {
+                let result = try await imageGenerator.generateImages(times: [time], size: size)
+                await MainActor.run {
+                    for (time, image) in result {
+                        self.state.seekThumbnail = .init(time: time, image: image)
+                    }
                 }
+            } catch {
+                print(error)
             }
         }
     }
