@@ -5,6 +5,7 @@
 //  Created by ragingo on 2021/06/04.
 //
 
+import AVFoundation
 import Combine
 import CoreImage
 import CoreMedia
@@ -23,6 +24,51 @@ struct VideoSeekThumbnail: Equatable {
     let image: CGImage
 }
 
+struct VideoQuality: Sendable, Identifiable, Hashable {
+    let id: String
+    let size: CGSize
+    let averageBitRate: Double?
+    let peakBitRate: Double?
+
+    var width: Int {
+        Int(size.width)
+    }
+
+    var height: Int {
+        Int(size.height)
+    }
+
+    init(
+        size: CGSize,
+        averageBitRate: Double?,
+        peakBitRate: Double?
+    ) {
+        self.size = size
+        self.averageBitRate = averageBitRate
+        self.peakBitRate = peakBitRate
+
+        self.id = [
+            Int(size.width),
+            Int(size.height),
+            Int(peakBitRate ?? 0)
+        ]
+        .map(String.init)
+        .joined(separator: "-")
+    }
+
+    init?(variant: AVAssetVariant) {
+        guard let videoAttributes = variant.videoAttributes else {
+            return nil
+        }
+
+        self.init(
+            size: videoAttributes.presentationSize,
+            averageBitRate: variant.averageBitRate,
+            peakBitRate: variant.peakBitRate
+        )
+    }
+}
+
 @Observable
 final class VideoPlayerState {
     var isReady: Bool = false
@@ -30,7 +76,7 @@ final class VideoPlayerState {
     var isBuffering: Bool = false
     var isSeeking: Bool = false
     var rate: Float = 1.0
-    var videoQualities: [Int] = []
+    var videoQualities: [VideoQuality] = []
     var duration: Double = .zero
     var position: Double = .zero
     var loadedBufferRange: VideoBufferRange = .zero
@@ -56,5 +102,5 @@ protocol VideoPlayerProtocol: AnyObject {
 
     func requestGenerateImage(time: Double, size: CGSize)
     func cancelImageGenerationRequests()
-    func changePreferredPeakBitRate(value: Int)
+    func changePreferredPeakBitRate(value: VideoQuality)
 }

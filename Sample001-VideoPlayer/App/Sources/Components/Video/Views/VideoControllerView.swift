@@ -241,7 +241,7 @@ struct VideoControllerView: View {
         player.rate(rate.rawValue)
     }
 
-    private func onBandwidthChanged(value: Int) {
+    private func onBandwidthChanged(value: VideoQuality) {
         player.changePreferredPeakBitRate(value: value)
     }
 
